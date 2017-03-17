@@ -309,7 +309,7 @@ const (
 	MsgGistStatusCode    = "Failed to upload Gist :("
 	MsgGistUrlFail       = "Failed getting url from Gist service"
 	MsgHelpHelp          = "You're probably right. I probably didn't think of this case."
-	MsgHelpLearn         = "Type `?learn <call> <the response the bot should read>`. When you type `?call`, the bot will reply with the response.\n\nThe first character of the call and response must be alphanumeric\n\nUse $1 in the response to substitute all arguments"
+	MsgHelpLearn         = "Type `?learn <call> <the response the bot should read>`. When you type `?call`, the bot will reply with the response.\n\nThe first character of the call and response must not begin with /, ?, or !\n\nUse $1 in the response to substitute all arguments"
 	MsgHelpList          = "Type `?list` to get the URL of a Gist with all builtin and learned commands"
 	MsgLearnFail         = "I already know ?%s"
 	MsgLearnSuccess      = "Learned about %s"
