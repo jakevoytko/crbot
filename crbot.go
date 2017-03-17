@@ -246,10 +246,11 @@ func parseLearn(redisClient *redis.Client, splitContent []string) (*Command, err
 		fatal("parseLearn called with non-learn command", errors.New("wat"))
 	}
 
-	r := regexp.MustCompile("(?s)^[[:alnum:]].*$")
+	callRegexp := regexp.MustCompile("(?s)^[[:alnum:]].*$")
+	responseRegexp := regexp.MustCompile("(?s)^[^/?!].*$")
 
 	// Show help when not enough data is present, or malicious data is present.
-	if len(splitContent) < 3 || !r.MatchString(splitContent[1]) || !r.MatchString(splitContent[2]) {
+	if len(splitContent) < 3 || !callRegexp.MatchString(splitContent[1]) || !responseRegexp.MatchString(splitContent[2]) {
 		return &Command{
 			Type: Type_Help,
 			Help: &HelpData{
