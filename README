@@ -1,0 +1,12 @@
+Prerequisites
+-------------
+
+* Redis instance, standard port, no password, DB 0
+* `go get github.com/bwmarrin/discordgo`
+* `go get gopkg.in/redis.v5`
+* Add `secret.json` with single key, `bot_token`
+
+Running
+------
+
+`go run *.go`
