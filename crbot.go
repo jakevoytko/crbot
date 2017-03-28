@@ -46,6 +46,7 @@ func main() {
 	featureRegistry := NewFeatureRegistry()
 	featureRegistry.Register(NewHelpFeature(featureRegistry))
 	featureRegistry.Register(NewLearnFeature(featureRegistry, redisClient))
+	featureRegistry.Register(NewUnlearnFeature(featureRegistry, redisClient))
 	featureRegistry.Register(NewListFeature(featureRegistry, redisClient))
 	customFeature := NewCustomFeature(redisClient)
 	featureRegistry.Register(customFeature)
@@ -90,12 +91,14 @@ const (
 	Type_Unrecognized
 	Type_Help
 	Type_Learn
+	Type_Unlearn
 	Type_Custom
 	Type_List
 
-	Name_Help  = "?help"
-	Name_Learn = "?learn"
-	Name_List  = "?list"
+	Name_Help    = "?help"
+	Name_Learn   = "?learn"
+	Name_Unlearn = "?unlearn"
+	Name_List    = "?list"
 
 	Redis_Hash = "crbot-custom-commands"
 )
@@ -159,6 +162,11 @@ type LearnData struct {
 	Response string
 }
 
+type UnlearnData struct {
+	CallOpen bool
+	Call     string
+}
+
 type CustomData struct {
 	Call string
 	Args string
@@ -166,10 +174,11 @@ type CustomData struct {
 
 // TODO(jake): Make this an interface that has only getType(), cast in features.
 type Command struct {
-	Type   int
-	Help   *HelpData
-	Learn  *LearnData
-	Custom *CustomData
+	Type    int
+	Help    *HelpData
+	Learn   *LearnData
+	Unlearn *UnlearnData
+	Custom  *CustomData
 }
 
 // Parses the raw text string from the user. Returns an executable command.
