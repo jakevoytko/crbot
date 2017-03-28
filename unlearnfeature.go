@@ -1,6 +1,5 @@
 package main
 
-// Completely untested, largely stolen from 'learnfeature'
 import (
 	"errors"
 	"fmt"
@@ -47,10 +46,9 @@ func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
 	}
 
 	callRegexp := regexp.MustCompile("(?s)^[[:alnum:]].*$")
-	responseRegexp := regexp.MustCompile("(?s)^[^/?!].*$")
 
 	// Show help when not enough data is present, or malicious data is present.
-	if len(splitContent) < 2 || !callRegexp.MatchString(splitContent[1]) || !responseRegexp.MatchString(splitContent[2]) {
+	if len(splitContent) < 2 || !callRegexp.MatchString(splitContent[1])) {
 		return &Command{
 			Type: Type_Help,
 			Help: &HelpData{
@@ -82,10 +80,11 @@ func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
 
 const (
 	MsgUnlearnFail    = "I can't unlearn ?%s"
-	MsgUnlearnSuccess = "Unlearned %s"
+	MsgUnlearnSuccess = "Forgot about %s"
 )
 
-// Execute replies over the given channel with a help message.
+// Execute replies over the given channel indicating successful unlearning, or
+// failure to unlearn.
 func (f *UnlearnFeature) Execute(s *discordgo.Session, channel string, command *Command) {
 	if command.Unlearn == nil {
 		fatal("Incorrectly generated unlearn command", errors.New("wat"))

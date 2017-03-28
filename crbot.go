@@ -87,18 +87,18 @@ func info(msg string, err error) {
 ///////////////////////////////////////////////////////////////////////////////
 
 const (
-	Type_None = iota
-	Type_Unrecognized
+	Type_Custom = iota
 	Type_Help
 	Type_Learn
-	Type_Unlearn
-	Type_Custom
 	Type_List
+	Type_None
+	Type_Unlearn
+	Type_Unrecognized
 
 	Name_Help    = "?help"
 	Name_Learn   = "?learn"
-	Name_Unlearn = "?unlearn"
 	Name_List    = "?list"
+	Name_Unlearn = "?unlearn"
 
 	Redis_Hash = "crbot-custom-commands"
 )
@@ -174,11 +174,11 @@ type CustomData struct {
 
 // TODO(jake): Make this an interface that has only getType(), cast in features.
 type Command struct {
-	Type    int
+	Custom  *CustomData
 	Help    *HelpData
 	Learn   *LearnData
+	Type    int
 	Unlearn *UnlearnData
-	Custom  *CustomData
 }
 
 // Parses the raw text string from the user. Returns an executable command.
