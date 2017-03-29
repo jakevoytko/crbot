@@ -48,7 +48,7 @@ func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
 	callRegexp := regexp.MustCompile("(?s)^[[:alnum:]].*$")
 
 	// Show help when not enough data is present, or malicious data is present.
-	if len(splitContent) < 2 || !callRegexp.MatchString(splitContent[1])) {
+	if len(splitContent) < 2 || !callRegexp.MatchString(splitContent[1]) {
 		return &Command{
 			Type: Type_Help,
 			Help: &HelpData{
@@ -79,7 +79,7 @@ func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
 }
 
 const (
-	MsgUnlearnFail    = "I can't unlearn ?%s"
+	MsgUnlearnFail    = "I can't unlearn `?%s`"
 	MsgUnlearnSuccess = "Forgot about %s"
 )
 

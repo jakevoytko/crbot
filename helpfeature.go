@@ -56,6 +56,7 @@ const (
 	MsgHelpHelp    = "You're probably right. I probably didn't think of this case."
 	MsgHelpLearn   = "Type `?learn <call> <the response the bot should read>`. When you type `?call`, the bot will reply with the response.\n\nThe first character of the call must be alphanumeric, and the first character of the response must not begin with /, ?, or !\n\nUse $1 in the response to substitute all arguments"
 	MsgHelpList    = "Type `?list` to get the URL of a Gist with all builtin and learned commands"
+	MsgHelpUnlearn = "Type `?unlearn <call>` to forget a user-defined command."
 )
 
 // Execute replies over the given channel with a help message.
@@ -82,6 +83,10 @@ func (f *HelpFeature) Execute(s *discordgo.Session, channel string, command *Com
 	case Type_List:
 		if _, err := s.ChannelMessageSend(channel, MsgHelpList); err != nil {
 			info("Failed to send list help message", err)
+		}
+	case Type_Unlearn:
+		if _, err := s.ChannelMessageSend(channel, MsgHelpUnlearn); err != nil {
+			info("Failed to send unlearn help message", err)
 		}
 	}
 }
