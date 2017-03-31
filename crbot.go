@@ -138,6 +138,7 @@ func getHandleMessage(redisClient *redis.Client, featureRegistry *FeatureRegistr
 		command, err := parseCommand(redisClient, featureRegistry, m.Content)
 		if err != nil {
 			info("Error parsing command", err)
+			return
 		}
 
 		feature := featureRegistry.GetFeatureByType(command.Type)
