@@ -5,22 +5,20 @@ import (
 	"fmt"
 	"regexp"
 
-	"gopkg.in/redis.v5"
-
 	"github.com/bwmarrin/discordgo"
 )
 
 // UnlearnFeature allows crbot to unlearn existing calls
 type UnlearnFeature struct {
 	featureRegistry *FeatureRegistry
-	redisClient     *redis.Client
+	commandMap      StringMap
 }
 
 // NewUnlearnFeature returns a new UnlearnFeature.
-func NewUnlearnFeature(featureRegistry *FeatureRegistry, redisClient *redis.Client) *UnlearnFeature {
+func NewUnlearnFeature(featureRegistry *FeatureRegistry, commandMap StringMap) *UnlearnFeature {
 	return &UnlearnFeature{
 		featureRegistry: featureRegistry,
-		redisClient:     redisClient,
+		commandMap:      commandMap,
 	}
 }
 
@@ -58,7 +56,11 @@ func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
 	}
 
 	// Only unlearn commands that aren't built-in and exist
-	if !f.redisClient.HExists(Redis_Hash, splitContent[1]).Val() || f.featureRegistry.GetTypeFromName(splitContent[1]) != Type_None {
+	has, err := f.commandMap.Has(splitContent[1])
+	if err != nil {
+		return nil, err
+	}
+	if !has || f.featureRegistry.GetTypeFromName(splitContent[1]) != Type_None {
 		return &Command{
 			Type: Type_Unlearn,
 			Unlearn: &UnlearnData{
@@ -95,10 +97,15 @@ func (f *UnlearnFeature) Execute(s *discordgo.Session, channel string, command *
 	}
 
 	// Remove the command.
-	if !f.redisClient.HExists(Redis_Hash, command.Unlearn.Call).Val() {
-		fatal("Tried to unlearn command that doesn't exist: "+command.Unlearn.Call, errors.New("wat"))
+	if has, err := f.commandMap.Has(command.Unlearn.Call); !has || err != nil {
+		if has {
+			fatal("Tried to unlearn command that doesn't exist: "+command.Unlearn.Call, errors.New("wat"))
+		}
+		fatal("Error in UnlearnFeature#execute, testing a command", err)
 	}
-	f.redisClient.HDel(Redis_Hash, command.Unlearn.Call)
+	if err := f.commandMap.Delete(command.Unlearn.Call); err != nil {
+		fatal("Unsuccessful unlearning a key; Dying since it might work with a restart", err)
+	}
 
 	// Send ack.
 	s.ChannelMessageSend(channel, fmt.Sprintf(MsgUnlearnSuccess, command.Unlearn.Call))

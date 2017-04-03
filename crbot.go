@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	redis "gopkg.in/redis.v5"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -23,21 +22,17 @@ func main() {
 	var filename = flag.String("filename", "secret.json", "Filename of configuration json")
 	flag.Parse()
 
-	// Initialize redis.
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	_, err := redisClient.Ping().Result()
+	// Parse config.
+	secret, err := ParseSecret(*filename)
 	if err != nil {
-		fatal("Could not ping Redis", err)
+		fatal("Secret parsing failed", err)
 	}
 
-	// Parse config.
-	secret, e := ParseSecret(*filename)
-	if e != nil {
-		fatal("Secret parsing failed", e)
+	// TODO(jake): Refactor Features to provide multiple parsers and executors,
+	// and add this to the Learn feature.
+	commandMap, err := NewRedisStringMap(Redis_Hash)
+	if err != nil {
+		fatal("Unable to initialize Redis", err)
 	}
 
 	// Initializing builtin features.
@@ -45,21 +40,21 @@ func main() {
 	// a better pattern here.
 	featureRegistry := NewFeatureRegistry()
 	featureRegistry.Register(NewHelpFeature(featureRegistry))
-	featureRegistry.Register(NewLearnFeature(featureRegistry, redisClient))
-	featureRegistry.Register(NewUnlearnFeature(featureRegistry, redisClient))
-	featureRegistry.Register(NewListFeature(featureRegistry, redisClient))
-	customFeature := NewCustomFeature(redisClient)
+	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
+	featureRegistry.Register(NewUnlearnFeature(featureRegistry, commandMap))
+	featureRegistry.Register(NewListFeature(featureRegistry, commandMap))
+	customFeature := NewCustomFeature(commandMap)
 	featureRegistry.Register(customFeature)
 	featureRegistry.FallbackFeature = customFeature
 
 	// Set up Discord API.
 	discord, err := discordgo.New("Bot " + secret.BotToken)
 	if err != nil {
-		fatal("Error initializing Discord client library", e)
+		fatal("Error initializing Discord client library", err)
 	}
 
 	// Open communications with Discord.
-	discord.AddHandler(getHandleMessage(redisClient, featureRegistry))
+	discord.AddHandler(getHandleMessage(commandMap, featureRegistry))
 	if err := discord.Open(); err != nil {
 		fatal("Error opening Discord session", err)
 	}
@@ -78,6 +73,7 @@ func fatal(msg string, err error) {
 	panic(msg + ": " + err.Error())
 }
 
+// info prints error information to stdout.
 func info(msg string, err error) {
 	fmt.Printf(msg+": %v\n", err.Error())
 }
@@ -104,6 +100,25 @@ const (
 )
 
 ///////////////////////////////////////////////////////////////////////////////
+// Interfaces
+///////////////////////////////////////////////////////////////////////////////
+
+// StringMap stores key/value string pairs. It is always synchronous, but may be
+// stored outside the memory space of the program. For instance, in Redis.
+type StringMap interface {
+	// Has returns whether or not key is present.
+	Has(key string) (bool, error)
+	// Get returns the given key. Error if key is not present.
+	Get(key string) (string, error)
+	// Set sets the given key. Allowed to overwrite.
+	Set(key, value string) error
+	// Delete deletes the given key. Error if key is not present.
+	Delete(key string) error
+	// GetAll returns every entry as a map.
+	GetAll() (map[string]string, error)
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Configuration handling
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -128,14 +143,14 @@ func ParseSecret(filename string) (*Secret, error) {
 ///////////////////////////////////////////////////////////////////////////////
 
 // getHandleMessage returns the main handler for incoming messages.
-func getHandleMessage(redisClient *redis.Client, featureRegistry *FeatureRegistry) func(*discordgo.Session, *discordgo.MessageCreate) {
+func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry) func(*discordgo.Session, *discordgo.MessageCreate) {
 	return func(s *discordgo.Session, m *discordgo.MessageCreate) {
 		// Never reply to a bot.
 		if m.Author.Bot {
 			return
 		}
 
-		command, err := parseCommand(redisClient, featureRegistry, m.Content)
+		command, err := parseCommand(commandMap, featureRegistry, m.Content)
 		if err != nil {
 			info("Error parsing command", err)
 			return
@@ -183,7 +198,7 @@ type Command struct {
 }
 
 // Parses the raw text string from the user. Returns an executable command.
-func parseCommand(redisClient *redis.Client, registry *FeatureRegistry, content string) (*Command, error) {
+func parseCommand(commandMap StringMap, registry *FeatureRegistry, content string) (*Command, error) {
 	if !strings.HasPrefix(content, "?") {
 		return &Command{
 			Type: Type_None,
@@ -197,7 +212,12 @@ func parseCommand(redisClient *redis.Client, registry *FeatureRegistry, content 
 	}
 
 	// See if it's a custom command.
-	if redisClient.HExists(Redis_Hash, splitContent[0][1:]).Val() {
+	has, err := commandMap.Has(splitContent[0][1:])
+	if err != nil {
+		info("Error doing custom parsing", err)
+		return nil, err
+	}
+	if has {
 		return registry.FallbackFeature.Parse(splitContent)
 	}
 

@@ -4,21 +4,19 @@ import (
 	"errors"
 	"strings"
 
-	"gopkg.in/redis.v5"
-
 	"github.com/bwmarrin/discordgo"
 )
 
 // CustomFeature is the fallback Feature that issues user-defined call and
 // response commands. Accordingly, CustomFeature probably has a mouth on it.
 type CustomFeature struct {
-	redisClient *redis.Client
+	commandMap StringMap
 }
 
 // NewCustomFeature returns a new CustomFeature.
-func NewCustomFeature(redisClient *redis.Client) *CustomFeature {
+func NewCustomFeature(commandMap StringMap) *CustomFeature {
 	return &CustomFeature{
-		redisClient: redisClient,
+		commandMap: commandMap,
 	}
 }
 
@@ -40,7 +38,11 @@ func (f *CustomFeature) Invokable() bool {
 // Parse parses the given custom command.
 func (f *CustomFeature) Parse(splitContent []string) (*Command, error) {
 	// TODO(jake): Drop this and external hash check, handle missing commands solely in execute.
-	if !f.redisClient.HExists(Redis_Hash, splitContent[0][1:]).Val() {
+	has, err := f.commandMap.Has(splitContent[0][1:])
+	if err != nil {
+		return nil, err
+	}
+	if !has {
 		fatal("parseCustom called with non-custom command", errors.New("wat"))
 	}
 	return &Command{
@@ -62,11 +64,18 @@ func (f *CustomFeature) Execute(s *discordgo.Session, channel string, command *C
 		fatal("Incorrectly generated learn command", errors.New("wat"))
 	}
 
-	if !f.redisClient.HExists(Redis_Hash, command.Custom.Call).Val() {
+	has, err := f.commandMap.Has(command.Custom.Call)
+	if err != nil {
+		fatal("Error testing custom feature", err)
+	}
+	if !has {
 		fatal("Accidentally found a mismatched call/response pair", errors.New("Call response mismatch"))
 	}
 
-	response := f.redisClient.HGet(Redis_Hash, command.Custom.Call).Val()
+	response, err := f.commandMap.Get(command.Custom.Call)
+	if err != nil {
+		fatal("Error reading custom response", err)
+	}
 
 	if strings.Contains(response, "$1") {
 		if command.Custom.Args == "" {

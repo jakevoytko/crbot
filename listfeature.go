@@ -8,22 +8,20 @@ import (
 	"sort"
 	"strconv"
 
-	"gopkg.in/redis.v5"
-
 	"github.com/bwmarrin/discordgo"
 )
 
 // ListFeature is a Feature that lists commands that are available.
 type ListFeature struct {
 	featureRegistry *FeatureRegistry
-	redisClient     *redis.Client
+	commandMap      StringMap
 }
 
 // NewListFeature returns a new ListFeature.
-func NewListFeature(featureRegistry *FeatureRegistry, redisClient *redis.Client) *ListFeature {
+func NewListFeature(featureRegistry *FeatureRegistry, commandMap StringMap) *ListFeature {
 	return &ListFeature{
 		featureRegistry: featureRegistry,
-		redisClient:     redisClient,
+		commandMap:      commandMap,
 	}
 }
 
@@ -66,8 +64,12 @@ const (
 // Execute uploads the command list to github and pings the gist link in chat.
 func (f *ListFeature) Execute(s *discordgo.Session, channel string, command *Command) {
 	builtins := f.featureRegistry.GetInvokableFeatureNames()
-	custom := []string{}
-	for name := range f.redisClient.HGetAll(Redis_Hash).Val() {
+	all, err := f.commandMap.GetAll()
+	if err != nil {
+		fatal("Error reading all commands", err)
+	}
+	custom := make([]string, 0, len(all))
+	for name := range all {
 		custom = append(custom, name)
 	}
 

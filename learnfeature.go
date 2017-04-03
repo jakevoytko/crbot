@@ -6,22 +6,20 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/redis.v5"
-
 	"github.com/bwmarrin/discordgo"
 )
 
 // LearnFeature allows crbot to learn new calls and responses
 type LearnFeature struct {
 	featureRegistry *FeatureRegistry
-	redisClient     *redis.Client
+	commandMap      StringMap
 }
 
 // NewLearnFeature returns a new LearnFeature.
-func NewLearnFeature(featureRegistry *FeatureRegistry, redisClient *redis.Client) *LearnFeature {
+func NewLearnFeature(featureRegistry *FeatureRegistry, commandMap StringMap) *LearnFeature {
 	return &LearnFeature{
 		featureRegistry: featureRegistry,
-		redisClient:     redisClient,
+		commandMap:      commandMap,
 	}
 }
 
@@ -60,7 +58,11 @@ func (f *LearnFeature) Parse(splitContent []string) (*Command, error) {
 	}
 
 	// Don't overwrite old or builtin commands.
-	if f.redisClient.HExists(Redis_Hash, splitContent[1]).Val() || f.featureRegistry.GetTypeFromName(splitContent[1]) != Type_None {
+	has, err := f.commandMap.Has(splitContent[1])
+	if err != nil {
+		return nil, err
+	}
+	if has || f.featureRegistry.GetTypeFromName(splitContent[1]) != Type_None {
 		return &Command{
 			Type: Type_Learn,
 			Learn: &LearnData{
@@ -98,10 +100,15 @@ func (f *LearnFeature) Execute(s *discordgo.Session, channel string, command *Co
 	}
 
 	// Teach the command.
-	if f.redisClient.HExists(Redis_Hash, command.Learn.Call).Val() {
-		fatal("Collision when adding a call for "+command.Learn.Call, errors.New("wat"))
+	if has, err := f.commandMap.Has(command.Learn.Call); err != nil || has {
+		if has {
+			fatal("Collision when adding a call for "+command.Learn.Call, errors.New("wat"))
+		}
+		fatal("Error in LearnFeature#Execute, testing a command", err)
 	}
-	f.redisClient.HSet(Redis_Hash, command.Learn.Call, command.Learn.Response)
+	if err := f.commandMap.Set(command.Learn.Call, command.Learn.Response); err != nil {
+		fatal("Error storing a learn command. Dying since it might work with restart", err)
+	}
 
 	// Send ack.
 	s.ChannelMessageSend(channel, fmt.Sprintf(MsgLearnSuccess, command.Learn.Call))
