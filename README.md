@@ -1,3 +1,33 @@
+CRBot
+-----
+
+CRBot is a Discord bot that you can teach to respond to user-defined
+commands. CRBot is short for "Call and Response Bot". Commands are taught using
+`?learn <call> <response>`, and can retrieve the response with `?call`.
+
+It works really well for media retrieval; the Discord unfurler will inline
+images, videos, etc.
+
+This was initially a weekend project to see if my friends would like it. Now
+that they haven't banned the bot (or me), I'm in the process of turning this
+into something that's maintainable.
+
+Example
+--------
+
+```
+Jake: ?help
+crbot: Type ?help for this message, ?list to list all commands, or
+       ?help <command> to get help for a particular command.
+
+Jake: ?learn bearshrug ʅʕ•ᴥ•ʔʃ
+crbot: Learned about bearshrug
+
+One of my friends: What's the weather tomorrow?
+Jake: ?bearshrug
+crbot: ʅʕ•ᴥ•ʔʃ
+```
+
 Prerequisites
 ---------------
 
@@ -11,7 +41,20 @@ Running
 
 `go run *.go`
 
+You have to run this with a bot account. You can register a bot account for
+free [at the Discord site](https://discordapp.com/developers/docs/intro). Take
+the bot ID that you are given, and
+visit
+[https://discordapp.com/oauth2/authorize?&client_id={$bot_id}](https://discordapp.com/oauth2/authorize?&client_id={bot-id}) in
+your browser, where {$bot_id} is replaced with the bot ID that you are given
+from the Discord developers site.
+
 Before sending PR
 -------------------
 
-Run through [test doc](https://docs.google.com/document/d/1-SZ7FtDNo0-GX0zDwD6nX1yY4Bg_eoGifP-_xAChM6c/edit)
+Run through [test doc](https://docs.google.com/document/d/1-SZ7FtDNo0-GX0zDwD6nX1yY4Bg_eoGifP-_xAChM6c/edit). Tests coming soon!
+
+More reading
+-------------
+
+**Blog post**: [Writing a Discord bot, and techniques for writing effective small programs](https://www.bitlog.com/index.php/2017/03/31/techniques-for-effectively-growing-small-programs/)
