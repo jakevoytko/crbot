@@ -52,7 +52,7 @@ func (f *ListFeature) Parse(splitContent []string) (*Command, error) {
 }
 
 const (
-	MsgGistAddress       = "The list of commands is here: "
+	MsgGistAddress       = "The list of commands is here"
 	MsgGistPostFail      = "Unable to connect to Gist service. Give it a few minutes and try again"
 	MsgGistResponseFail  = "Failure reading response from Gist service"
 	MsgGistSerializeFail = "Unable to serialize Gist"

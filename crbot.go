@@ -44,7 +44,13 @@ func main() {
 	}
 
 	// Open communications with Discord.
-	discord.AddHandler(getHandleMessage(commandMap, featureRegistry))
+	handler := getHandleMessage(commandMap, featureRegistry)
+
+	// Wrapper is needed so the discordgo registry recognizes the input types.
+	wrappedHandler := func(s *discordgo.Session, c *discordgo.MessageCreate) {
+		handler(s, c)
+	}
+	discord.AddHandler(wrappedHandler)
 	if err := discord.Open(); err != nil {
 		fatal("Error opening Discord session", err)
 	}

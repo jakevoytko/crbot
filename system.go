@@ -75,8 +75,8 @@ type Gist interface {
 ///////////////////////////////////////////////////////////////////////////////
 
 // getHandleMessage returns the main handler for incoming messages.
-func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry) func(*discordgo.Session, *discordgo.MessageCreate) {
-	return func(s *discordgo.Session, m *discordgo.MessageCreate) {
+func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry) func(DiscordSession, *discordgo.MessageCreate) {
+	return func(s DiscordSession, m *discordgo.MessageCreate) {
 		// Never reply to a bot.
 		if m.Author.Bot {
 			return
