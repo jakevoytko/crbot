@@ -33,8 +33,9 @@ func main() {
 	if err != nil {
 		fatal("Unable to initialize Redis", err)
 	}
+	gist := NewRemoteGist()
 
-	featureRegistry := InitializeRegistry(commandMap)
+	featureRegistry := InitializeRegistry(commandMap, gist)
 
 	// Set up Discord API.
 	discord, err := discordgo.New("Bot " + secret.BotToken)

@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func InitializeRegistry(commandMap StringMap) *FeatureRegistry {
+func InitializeRegistry(commandMap StringMap, gist Gist) *FeatureRegistry {
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
 	// a better pattern here.
@@ -14,7 +14,7 @@ func InitializeRegistry(commandMap StringMap) *FeatureRegistry {
 	featureRegistry.Register(NewHelpFeature(featureRegistry))
 	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
 	featureRegistry.Register(NewUnlearnFeature(featureRegistry, commandMap))
-	featureRegistry.Register(NewListFeature(featureRegistry, commandMap))
+	featureRegistry.Register(NewListFeature(featureRegistry, commandMap, gist))
 	customFeature := NewCustomFeature(commandMap)
 	featureRegistry.Register(customFeature)
 	featureRegistry.FallbackFeature = customFeature
@@ -59,8 +59,15 @@ type StringMap interface {
 	GetAll() (map[string]string, error)
 }
 
+// DiscordSession is an interface for interacting with Discord within a session
+// message handler.
 type DiscordSession interface {
 	ChannelMessageSend(channel, message string) (*discordgo.Message, error)
+}
+
+// Gist is a wrapper around a simple Gist uploader. Returns the URL on success.
+type Gist interface {
+	Upload(contents string) (string, error)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
