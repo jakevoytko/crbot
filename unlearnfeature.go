@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 // UnlearnFeature allows crbot to unlearn existing calls
@@ -87,7 +85,7 @@ const (
 
 // Execute replies over the given channel indicating successful unlearning, or
 // failure to unlearn.
-func (f *UnlearnFeature) Execute(s *discordgo.Session, channel string, command *Command) {
+func (f *UnlearnFeature) Execute(s DiscordSession, channel string, command *Command) {
 	if command.Unlearn == nil {
 		fatal("Incorrectly generated unlearn command", errors.New("wat"))
 	}

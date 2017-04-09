@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 // ListFeature is a Feature that lists commands that are available.
@@ -62,7 +60,7 @@ const (
 )
 
 // Execute uploads the command list to github and pings the gist link in chat.
-func (f *ListFeature) Execute(s *discordgo.Session, channel string, command *Command) {
+func (f *ListFeature) Execute(s DiscordSession, channel string, command *Command) {
 	builtins := f.featureRegistry.GetInvokableFeatureNames()
 	all, err := f.commandMap.GetAll()
 	if err != nil {

@@ -1,10 +1,6 @@
 package main
 
-import (
-	"errors"
-
-	"github.com/bwmarrin/discordgo"
-)
+import "errors"
 
 // HelpFeature is a Feature that prints a help prompt for the user.
 type HelpFeature struct {
@@ -60,7 +56,7 @@ const (
 )
 
 // Execute replies over the given channel with a help message.
-func (f *HelpFeature) Execute(s *discordgo.Session, channel string, command *Command) {
+func (f *HelpFeature) Execute(s DiscordSession, channel string, command *Command) {
 	if command.Help == nil {
 		fatal("Incorrectly generated help command", errors.New("wat"))
 	}

@@ -3,8 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 // Feature encapsulates all of the behavior necessary for a built-in
@@ -18,7 +16,7 @@ type Feature interface {
 	// Parses the given split command line.
 	Parse([]string) (*Command, error)
 	// Execute the given command, for the session and channel name provided.
-	Execute(*discordgo.Session, string, *Command)
+	Execute(DiscordSession, string, *Command)
 }
 
 // FeatureRegistry stores all of the features.

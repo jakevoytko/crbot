@@ -3,8 +3,6 @@ package main
 import (
 	"errors"
 	"strings"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 // CustomFeature is the fallback Feature that issues user-defined call and
@@ -59,7 +57,7 @@ const (
 )
 
 // Execute returns the response if possible.
-func (f *CustomFeature) Execute(s *discordgo.Session, channel string, command *Command) {
+func (f *CustomFeature) Execute(s DiscordSession, channel string, command *Command) {
 	if command.Custom == nil {
 		fatal("Incorrectly generated learn command", errors.New("wat"))
 	}

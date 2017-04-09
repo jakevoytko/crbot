@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 // LearnFeature allows crbot to learn new calls and responses
@@ -90,7 +88,7 @@ const (
 )
 
 // Execute replies over the given channel with a help message.
-func (f *LearnFeature) Execute(s *discordgo.Session, channel string, command *Command) {
+func (f *LearnFeature) Execute(s DiscordSession, channel string, command *Command) {
 	if command.Learn == nil {
 		fatal("Incorrectly generated learn command", errors.New("wat"))
 	}
