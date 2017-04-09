@@ -63,6 +63,7 @@ type StringMap interface {
 // message handler.
 type DiscordSession interface {
 	ChannelMessageSend(channel, message string) (*discordgo.Message, error)
+	Channel(channelID string) (*discordgo.Channel, error)
 }
 
 // Gist is a wrapper around a simple Gist uploader. Returns the URL on success.

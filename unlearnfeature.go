@@ -79,8 +79,9 @@ func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
 }
 
 const (
-	MsgUnlearnFail    = "I can't unlearn `?%s`"
-	MsgUnlearnSuccess = "Forgot about %s"
+	MsgUnlearnFail         = "I can't unlearn `?%s`"
+	MsgUnlearnMustBePublic = "I can't unlearn in a private message."
+	MsgUnlearnSuccess      = "Forgot about %s"
 )
 
 // Execute replies over the given channel indicating successful unlearning, or
@@ -89,6 +90,17 @@ func (f *UnlearnFeature) Execute(s DiscordSession, channel string, command *Comm
 	if command.Unlearn == nil {
 		fatal("Incorrectly generated unlearn command", errors.New("wat"))
 	}
+
+	// Get the current channel and check if we're being asked to unlearn in a
+	// private message.
+	c, err := s.Channel(channel)
+	if err != nil {
+		fatal("This message didn't come from a valid channel", errors.New("wat"))
+	}
+	if c.IsPrivate {
+		s.ChannelMessageSend(channel, MsgUnlearnMustBePublic)
+	}
+
 	if !command.Unlearn.CallOpen {
 		s.ChannelMessageSend(channel, fmt.Sprintf(MsgUnlearnFail, command.Unlearn.Call))
 		return

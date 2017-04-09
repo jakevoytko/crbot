@@ -61,3 +61,10 @@ func (s *InMemoryDiscordSession) ChannelMessageSend(channel, message string) (*d
 		Reactions:       []*discordgo.MessageReactions{},
 	}, nil
 }
+
+// Channel returns the Channel struct of the given channel ID. Can be used to
+// determine attributes such as the channel name, topic, etc.
+func (s *InMemoryDiscordSession) Channel(channelID string) (*discordgo.Channel, error) {
+	// TODO: Implement logic for what should be returned here, with respect to tests.
+	return new(discordgo.Channel), nil
+}
