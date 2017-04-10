@@ -1,6 +1,10 @@
 package util
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"errors"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 // Message encapsulates a channel/message pair.
 type Message struct {
@@ -19,14 +23,17 @@ func NewMessage(channel, message string) *Message {
 // InMemoryDiscordSession is a fake for the discord session.
 type InMemoryDiscordSession struct {
 	Messages  []*Message
+	Channels  map[string]*discordgo.Channel
 	currentID int
 	author    *discordgo.User
 }
 
 // NewInMemoryDiscordSession works as advertised.
 func NewInMemoryDiscordSession() *InMemoryDiscordSession {
+	channels := make(map[string]*discordgo.Channel)
 	return &InMemoryDiscordSession{
 		Messages:  []*Message{},
+		Channels:  channels,
 		currentID: 0,
 		author: &discordgo.User{
 			"bot_id",
@@ -65,6 +72,15 @@ func (s *InMemoryDiscordSession) ChannelMessageSend(channel, message string) (*d
 // Channel returns the Channel struct of the given channel ID. Can be used to
 // determine attributes such as the channel name, topic, etc.
 func (s *InMemoryDiscordSession) Channel(channelID string) (*discordgo.Channel, error) {
-	// TODO: Implement logic for what should be returned here, with respect to tests.
-	return new(discordgo.Channel), nil
+	if channel := s.Channels[channelID]; channel != nil {
+		return channel, nil
+	}
+	return nil, errors.New("Attempted to get missing channel " + channelID)
+}
+
+// SetChannel adds a channel to the map of channels that InMemoryDiscordSession
+// holds. Can be used to test features that only work under certain channel
+// conditions.
+func (s *InMemoryDiscordSession) SetChannel(channel *discordgo.Channel) {
+	s.Channels[channel.ID] = channel
 }

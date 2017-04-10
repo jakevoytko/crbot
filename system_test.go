@@ -125,6 +125,14 @@ func Test_Integration(t *testing.T) {
 	customMap := util.NewInMemoryStringMap()
 	gist := util.NewInMemoryGist()
 	discordSession := util.NewInMemoryDiscordSession()
+	discordSession.SetChannel(&discordgo.Channel{
+		ID:        "channel",
+		IsPrivate: false,
+	})
+	discordSession.SetChannel(&discordgo.Channel{
+		ID:        "literally anything else",
+		IsPrivate: true,
+	})
 
 	registry := InitializeRegistry(customMap, gist)
 	runner := &TestRunner{
@@ -222,6 +230,8 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?unlearn", MsgHelpUnlearn)
 	runner.SendMessage("channel", "?unlearn ", MsgHelpUnlearn)
 	runner.SendMessage("channel", "?unlearn  bears", MsgHelpUnlearn)
+	// Can't unlearn in a private channel
+	runner.SendMessage("literally anything else", "?unlearn call", MsgUnlearnMustBePublic)
 	// Can't unlearn builtin commands.
 	runner.SendMessage("channel", "?unlearn help", fmt.Sprintf(MsgUnlearnFail, "help"))
 	runner.SendMessage("channel", "?unlearn learn", fmt.Sprintf(MsgUnlearnFail, "learn"))

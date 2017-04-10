@@ -93,12 +93,13 @@ func (f *UnlearnFeature) Execute(s DiscordSession, channel string, command *Comm
 
 	// Get the current channel and check if we're being asked to unlearn in a
 	// private message.
-	c, err := s.Channel(channel)
+	discordChannel, err := s.Channel(channel)
 	if err != nil {
 		fatal("This message didn't come from a valid channel", errors.New("wat"))
 	}
-	if c.IsPrivate {
+	if discordChannel.IsPrivate {
 		s.ChannelMessageSend(channel, MsgUnlearnMustBePublic)
+		return
 	}
 
 	if !command.Unlearn.CallOpen {
