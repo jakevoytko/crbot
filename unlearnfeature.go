@@ -41,7 +41,7 @@ func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
 		fatal("parseUnlearn called with non-unlearn command", errors.New("wat"))
 	}
 
-	callRegexp := regexp.MustCompile("(?s)^[[:alnum:]].*$")
+	callRegexp := regexp.MustCompile("^[[:alnum:]].*$")
 
 	// Show help when not enough data is present, or malicious data is present.
 	if len(splitContent) < 2 || !callRegexp.MatchString(splitContent[1]) {
