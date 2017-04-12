@@ -188,6 +188,7 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?learn /call response", MsgHelpLearn)
 	runner.SendMessage("channel", "?learn  call response", MsgHelpLearn)
 	runner.SendMessage("channel", "?learn ", MsgHelpLearn)
+	runner.SendMessage("channel", "?learn multi\nline\ncall response", MsgHelpLearn)
 	// Wrong response format.
 	runner.SendMessage("channel", "?learn call ?response", MsgHelpLearn)
 	runner.SendMessage("channel", "?learn call !response", MsgHelpLearn)

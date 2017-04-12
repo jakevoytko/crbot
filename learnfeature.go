@@ -42,7 +42,7 @@ func (f *LearnFeature) Parse(splitContent []string) (*Command, error) {
 		fatal("parseLearn called with non-learn command", errors.New("wat"))
 	}
 
-	callRegexp := regexp.MustCompile("(?s)^[[:alnum:]].*$")
+	callRegexp := regexp.MustCompile("^[[:alnum:]].*$")
 	responseRegexp := regexp.MustCompile("(?s)^[^/?!].*$")
 
 	// Show help when not enough data is present, or malicious data is present.
