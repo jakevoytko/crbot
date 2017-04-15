@@ -27,8 +27,7 @@ func main() {
 		fatal("Secret parsing failed", err)
 	}
 
-	// TODO(jake): Refactor Features to provide multiple parsers and executors,
-	// and add this to the Learn feature.
+	// Initialize external resources.
 	commandMap, err := NewRedisStringMap(Redis_Hash)
 	if err != nil {
 		fatal("Unable to initialize Redis", err)

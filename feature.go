@@ -7,7 +7,6 @@ import (
 
 // Feature encapsulates all of the behavior necessary for a built-in
 // feature.
-// TODO(jvoytko): Refactor to provide parsers and command executors.
 type Feature interface {
 	// Returns all parsers associated with this feature.
 	Parsers() []Parser
