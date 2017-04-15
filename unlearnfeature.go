@@ -20,11 +20,6 @@ func NewUnlearnFeature(featureRegistry *FeatureRegistry, commandMap StringMap) *
 	}
 }
 
-// GetType returns the type of this feature.
-func (f *UnlearnFeature) GetType() int {
-	return Type_Unlearn
-}
-
 // Parsers returns the parsers for ?unlearn.
 func (f *UnlearnFeature) Parsers() []Parser {
 	return []Parser{
@@ -35,6 +30,10 @@ func (f *UnlearnFeature) Parsers() []Parser {
 // FallbackParser returns nil.
 func (f *UnlearnFeature) FallbackParser() Parser {
 	return nil
+}
+
+func (f *UnlearnFeature) Executors() []Executor {
+	return []Executor{NewUnlearnExecutor(f.commandMap)}
 }
 
 // UnlearnParser parses ?unlearn commands.
@@ -114,9 +113,22 @@ const (
 	MsgUnlearnSuccess      = "Forgot about %s"
 )
 
+type UnlearnExecutor struct {
+	commandMap StringMap
+}
+
+func NewUnlearnExecutor(commandMap StringMap) *UnlearnExecutor {
+	return &UnlearnExecutor{commandMap: commandMap}
+}
+
+// GetType returns the type of this feature.
+func (f *UnlearnExecutor) GetType() int {
+	return Type_Unlearn
+}
+
 // Execute replies over the given channel indicating successful unlearning, or
 // failure to unlearn.
-func (f *UnlearnFeature) Execute(s DiscordSession, channel string, command *Command) {
+func (e *UnlearnExecutor) Execute(s DiscordSession, channel string, command *Command) {
 	if command.Unlearn == nil {
 		fatal("Incorrectly generated unlearn command", errors.New("wat"))
 	}
@@ -138,13 +150,13 @@ func (f *UnlearnFeature) Execute(s DiscordSession, channel string, command *Comm
 	}
 
 	// Remove the command.
-	if has, err := f.commandMap.Has(command.Unlearn.Call); !has || err != nil {
+	if has, err := e.commandMap.Has(command.Unlearn.Call); !has || err != nil {
 		if has {
 			fatal("Tried to unlearn command that doesn't exist: "+command.Unlearn.Call, errors.New("wat"))
 		}
 		fatal("Error in UnlearnFeature#execute, testing a command", err)
 	}
-	if err := f.commandMap.Delete(command.Unlearn.Call); err != nil {
+	if err := e.commandMap.Delete(command.Unlearn.Call); err != nil {
 		fatal("Unsuccessful unlearning a key; Dying since it might work with a restart", err)
 	}
 

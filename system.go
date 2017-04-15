@@ -87,9 +87,9 @@ func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry) fu
 			return
 		}
 
-		feature := featureRegistry.GetFeatureByType(command.Type)
-		if feature != nil {
-			feature.Execute(s, m.ChannelID, command)
+		executor := featureRegistry.GetExecutorByType(command.Type)
+		if executor != nil {
+			executor.Execute(s, m.ChannelID, command)
 		}
 	}
 }

@@ -18,11 +18,6 @@ func NewCustomFeature(commandMap StringMap) *CustomFeature {
 	}
 }
 
-// GetType returns the type of this feature.
-func (f *CustomFeature) GetType() int {
-	return Type_Custom
-}
-
 // Parsers returns nothing, since the custom parsers is a fallthrough parser.
 func (f *CustomFeature) Parsers() []Parser {
 	return []Parser{}
@@ -31,6 +26,10 @@ func (f *CustomFeature) Parsers() []Parser {
 // FallbackParser returns the custom parser.
 func (f *CustomFeature) FallbackParser() Parser {
 	return NewCustomParser(f.commandMap)
+}
+
+func (f *CustomFeature) Executors() []Executor {
+	return []Executor{NewCustomExecutor(f.commandMap)}
 }
 
 // CustomParser parses all fallthrough commands.
@@ -78,13 +77,26 @@ const (
 	MsgCustomNeedsArgs = "This command takes args. Please type `?command <more text>` instead of `?command`"
 )
 
+type CustomExecutor struct {
+	commandMap StringMap
+}
+
+func NewCustomExecutor(commandMap StringMap) *CustomExecutor {
+	return &CustomExecutor{commandMap: commandMap}
+}
+
+// GetType returns the type of this feature.
+func (e *CustomExecutor) GetType() int {
+	return Type_Custom
+}
+
 // Execute returns the response if possible.
-func (f *CustomFeature) Execute(s DiscordSession, channel string, command *Command) {
+func (e *CustomExecutor) Execute(s DiscordSession, channel string, command *Command) {
 	if command.Custom == nil {
 		fatal("Incorrectly generated learn command", errors.New("wat"))
 	}
 
-	has, err := f.commandMap.Has(command.Custom.Call)
+	has, err := e.commandMap.Has(command.Custom.Call)
 	if err != nil {
 		fatal("Error testing custom feature", err)
 	}
@@ -92,7 +104,7 @@ func (f *CustomFeature) Execute(s DiscordSession, channel string, command *Comma
 		fatal("Accidentally found a mismatched call/response pair", errors.New("Call response mismatch"))
 	}
 
-	response, err := f.commandMap.Get(command.Custom.Call)
+	response, err := e.commandMap.Get(command.Custom.Call)
 	if err != nil {
 		fatal("Error reading custom response", err)
 	}

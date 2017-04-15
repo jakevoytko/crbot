@@ -26,11 +26,6 @@ func NewListFeature(
 	}
 }
 
-// GetType returns the type of this feature.
-func (f *ListFeature) GetType() int {
-	return Type_List
-}
-
 // Parsers returns the parsers.
 func (f *ListFeature) Parsers() []Parser {
 	return []Parser{NewListParser()}
@@ -39,6 +34,10 @@ func (f *ListFeature) Parsers() []Parser {
 // FallbackParser returns nil.
 func (f *ListFeature) FallbackParser() Parser {
 	return nil
+}
+
+func (f *ListFeature) Executors() []Executor {
+	return []Executor{NewListExecutor(f.featureRegistry, f.commandMap, f.gist)}
 }
 
 // ListParser parses ?list commands.
@@ -84,10 +83,29 @@ const (
 	MsgListCustom        = "List of learned commands:"
 )
 
+type ListExecutor struct {
+	featureRegistry *FeatureRegistry
+	commandMap      StringMap
+	gist            Gist
+}
+
+func NewListExecutor(featureRegistry *FeatureRegistry, commandMap StringMap, gist Gist) *ListExecutor {
+	return &ListExecutor{
+		featureRegistry: featureRegistry,
+		commandMap:      commandMap,
+		gist:            gist,
+	}
+}
+
+// GetType returns the type of this feature.
+func (e *ListExecutor) GetType() int {
+	return Type_List
+}
+
 // Execute uploads the command list to github and pings the gist link in chat.
-func (f *ListFeature) Execute(s DiscordSession, channel string, command *Command) {
-	builtins := f.featureRegistry.GetInvokableFeatureNames()
-	all, err := f.commandMap.GetAll()
+func (e *ListExecutor) Execute(s DiscordSession, channel string, command *Command) {
+	builtins := e.featureRegistry.GetInvokableFeatureNames()
+	all, err := e.commandMap.GetAll()
 	if err != nil {
 		fatal("Error reading all commands", err)
 	}
@@ -118,7 +136,7 @@ func (f *ListFeature) Execute(s DiscordSession, channel string, command *Command
 		buffer.WriteString("\n")
 	}
 
-	url, err := f.gist.Upload(buffer.String())
+	url, err := e.gist.Upload(buffer.String())
 	if err != nil {
 		s.ChannelMessageSend(channel, err.Error())
 		return

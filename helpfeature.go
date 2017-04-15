@@ -14,21 +14,19 @@ func NewHelpFeature(featureRegistry *FeatureRegistry) *HelpFeature {
 	}
 }
 
-// GetType returns the type.
-func (f *HelpFeature) GetType() int {
-	return Type_Help
-}
-
 // Parsers returns the parsers.
 func (f *HelpFeature) Parsers() []Parser {
-	return []Parser{
-		NewHelpParser(f.featureRegistry),
-	}
+	return []Parser{NewHelpParser(f.featureRegistry)}
 }
 
 // FallbackParser returns nil.
 func (f *HelpFeature) FallbackParser() Parser {
 	return nil
+}
+
+// Executors gets the executors.
+func (f *HelpFeature) Executors() []Executor {
+	return []Executor{NewHelpExecutor(f.featureRegistry)}
 }
 
 // HelpParser parses ?help commands.
@@ -81,13 +79,30 @@ const (
 	MsgDefaultHelp = "Type `?help` for this message, `?list` to list all commands, or `?help <command>` to get help for a particular command."
 )
 
+// HelpExecutor prints help text for help commands.
+type HelpExecutor struct {
+	featureRegistry *FeatureRegistry
+}
+
+// NewHelpExecutor works as advertised.
+func NewHelpExecutor(featureRegistry *FeatureRegistry) *HelpExecutor {
+	return &HelpExecutor{
+		featureRegistry: featureRegistry,
+	}
+}
+
+// GetType returns the type.
+func (e *HelpExecutor) GetType() int {
+	return Type_Help
+}
+
 // Execute replies over the given channel with a help message.
-func (f *HelpFeature) Execute(s DiscordSession, channel string, command *Command) {
+func (e *HelpExecutor) Execute(s DiscordSession, channel string, command *Command) {
 	if command.Help == nil {
 		fatal("Incorrectly generated help command", errors.New("wat"))
 	}
 
-	parser := f.featureRegistry.GetParserByName(command.Help.Command)
+	parser := e.featureRegistry.GetParserByName(command.Help.Command)
 	if parser != nil {
 		if _, err := s.ChannelMessageSend(channel, parser.HelpText()); err != nil {
 			info("Failed to send default help message", err)

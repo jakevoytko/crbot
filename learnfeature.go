@@ -21,11 +21,6 @@ func NewLearnFeature(featureRegistry *FeatureRegistry, commandMap StringMap) *Le
 	}
 }
 
-// GetType returns the type of this feature.
-func (f *LearnFeature) GetType() int {
-	return Type_Learn
-}
-
 // Parsers gets the learn feature parsers.
 func (f *LearnFeature) Parsers() []Parser {
 	return []Parser{
@@ -36,6 +31,10 @@ func (f *LearnFeature) Parsers() []Parser {
 // FallbackParser returns nil.
 func (f *LearnFeature) FallbackParser() Parser {
 	return nil
+}
+
+func (f *LearnFeature) Executors() []Executor {
+	return []Executor{NewLearnExecutor(f.commandMap)}
 }
 
 // LearnParser parses ?learn commands.
@@ -117,8 +116,23 @@ const (
 	MsgLearnSuccess = "Learned about %s"
 )
 
+// LearnExecutor learns a user-generated command.
+type LearnExecutor struct {
+	commandMap StringMap
+}
+
+// NewLearnExecutor works as advertised.
+func NewLearnExecutor(commandMap StringMap) *LearnExecutor {
+	return &LearnExecutor{commandMap: commandMap}
+}
+
+// GetType returns the type of this feature.
+func (f *LearnExecutor) GetType() int {
+	return Type_Learn
+}
+
 // Execute replies over the given channel with a help message.
-func (f *LearnFeature) Execute(s DiscordSession, channel string, command *Command) {
+func (f *LearnExecutor) Execute(s DiscordSession, channel string, command *Command) {
 	if command.Learn == nil {
 		fatal("Incorrectly generated learn command", errors.New("wat"))
 	}

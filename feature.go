@@ -9,14 +9,14 @@ import (
 // feature.
 // TODO(jvoytko): Refactor to provide parsers and command executors.
 type Feature interface {
-	GetType() int
 	// Returns all parsers associated with this feature.
 	Parsers() []Parser
 	// FallbackParser returns the parser to execute if no other parser is
 	// recognized by name. There can only be one system-wide.
 	FallbackParser() Parser
-	// Execute the given command, for the session and channel name provided.
-	Execute(DiscordSession, string, *Command)
+
+	// Returns all executors associated with this feature.
+	Executors() []Executor
 }
 
 // Parsers is used to multiplex on builtin ?* commands, and ensure that the
@@ -26,8 +26,16 @@ type Parser interface {
 	GetName() string
 	// Parses the given split command line.
 	Parse([]string) (*Command, error)
-	// HelpText returns user-facing help text for the message.
+	// The user-facing help text for the given name.
 	HelpText() string
+}
+
+// Executor actually performs the given action based on the given command.
+type Executor interface {
+	// The command type to execute.
+	GetType() int
+	// Execute the given command, for the session and channel name provided.
+	Execute(DiscordSession, string, *Command)
 }
 
 // FeatureRegistry stores all of the features.
@@ -37,7 +45,7 @@ type FeatureRegistry struct {
 	FallbackParser Parser
 
 	nameToParser          map[string]Parser
-	typeToFeature         map[int]Feature
+	typeToExecutor        map[int]Executor
 	invokableFeatureNames []string
 }
 
@@ -45,7 +53,7 @@ type FeatureRegistry struct {
 func NewFeatureRegistry() *FeatureRegistry {
 	return &FeatureRegistry{
 		nameToParser:          map[string]Parser{},
-		typeToFeature:         map[int]Feature{},
+		typeToExecutor:        map[int]Executor{},
 		invokableFeatureNames: []string{},
 	}
 }
@@ -72,11 +80,14 @@ func (r *FeatureRegistry) Register(feature Feature) error {
 		r.FallbackParser = feature.FallbackParser()
 	}
 
-	// Set up internals.
-	if _, ok := r.typeToFeature[feature.GetType()]; ok {
-		return errors.New(fmt.Sprintf("Duplicate type: %v", feature.GetType()))
+	// Register executors.
+	for _, executor := range feature.Executors() {
+		if _, ok := r.typeToExecutor[executor.GetType()]; ok {
+			return errors.New(fmt.Sprintf("Duplicate executor: %v", executor.GetType()))
+		}
+		r.typeToExecutor[executor.GetType()] = executor
 	}
-	r.typeToFeature[feature.GetType()] = feature
+
 	return nil
 }
 
@@ -92,10 +103,10 @@ func (r *FeatureRegistry) GetParserByName(name string) Parser {
 	return nil
 }
 
-// GetFeatureByType returns the feature with the given type, or null if no
+// GetExecutorByType returns the executor with the given type, or null if no
 // feature handles this type.
-func (r *FeatureRegistry) GetFeatureByType(featureType int) Feature {
-	if f, ok := r.typeToFeature[featureType]; ok {
+func (r *FeatureRegistry) GetExecutorByType(commandType int) Executor {
+	if f, ok := r.typeToExecutor[commandType]; ok {
 		return f
 	}
 	return nil
