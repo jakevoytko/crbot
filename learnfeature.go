@@ -25,17 +25,42 @@ func NewLearnFeature(featureRegistry *FeatureRegistry, commandMap StringMap) *Le
 func (f *LearnFeature) Parsers() []Parser {
 	return []Parser{
 		NewLearnParser(f.featureRegistry, f.commandMap),
+		NewUnlearnParser(f.featureRegistry, f.commandMap),
 	}
 }
 
-// FallbackParser returns nil.
+// FallbackParser returns the custom parser, to recognize custom ? commands. It
+// should be the only fallback parser in the project.
 func (f *LearnFeature) FallbackParser() Parser {
-	return nil
+	return NewCustomParser(f.commandMap)
 }
 
 func (f *LearnFeature) Executors() []Executor {
-	return []Executor{NewLearnExecutor(f.commandMap)}
+	return []Executor{
+		NewLearnExecutor(f.commandMap),
+		NewUnlearnExecutor(f.commandMap),
+		NewCustomExecutor(f.commandMap),
+	}
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Messages
+///////////////////////////////////////////////////////////////////////////////
+
+const (
+	MsgCustomNeedsArgs     = "This command takes args. Please type `?command <more text>` instead of `?command`"
+	MsgHelpLearn           = "Type `?learn <call> <the response the bot should read>`. When you type `?call`, the bot will reply with the response.\n\nThe first character of the call must be alphanumeric, and the first character of the response must not begin with /, ?, or !\n\nUse $1 in the response to substitute all arguments"
+	MsgHelpUnlearn         = "Type `?unlearn <call>` to forget a user-defined command."
+	MsgLearnFail           = "I already know ?%s"
+	MsgLearnSuccess        = "Learned about %s"
+	MsgUnlearnFail         = "I can't unlearn `?%s`"
+	MsgUnlearnMustBePublic = "I can't unlearn in a private message."
+	MsgUnlearnSuccess      = "Forgot about %s"
+)
+
+///////////////////////////////////////////////////////////////////////////////
+// Parsers
+///////////////////////////////////////////////////////////////////////////////
 
 // LearnParser parses ?learn commands.
 type LearnParser struct {
@@ -55,10 +80,6 @@ func NewLearnParser(featureRegistry *FeatureRegistry, commandMap StringMap) *Lea
 func (p *LearnParser) GetName() string {
 	return Name_Learn
 }
-
-const (
-	MsgHelpLearn = "Type `?learn <call> <the response the bot should read>`. When you type `?call`, the bot will reply with the response.\n\nThe first character of the call must be alphanumeric, and the first character of the response must not begin with /, ?, or !\n\nUse $1 in the response to substitute all arguments"
-)
 
 // HelpText explains how to use ?learn.
 func (p *LearnParser) HelpText() string {
@@ -111,10 +132,117 @@ func (f *LearnParser) Parse(splitContent []string) (*Command, error) {
 	}, nil
 }
 
-const (
-	MsgLearnFail    = "I already know ?%s"
-	MsgLearnSuccess = "Learned about %s"
-)
+// UnlearnParser parses ?unlearn commands.
+type UnlearnParser struct {
+	featureRegistry *FeatureRegistry
+	commandMap      StringMap
+}
+
+// NewUnlearnParser works as advertised.
+func NewUnlearnParser(featureRegistry *FeatureRegistry, commandMap StringMap) *UnlearnParser {
+	return &UnlearnParser{
+		featureRegistry: featureRegistry,
+		commandMap:      commandMap,
+	}
+}
+
+// GetName returns the named type of this feature.
+func (p *UnlearnParser) GetName() string {
+	return Name_Unlearn
+}
+
+// HelpText returns the help text for ?unlearn.
+func (p *UnlearnParser) HelpText() string {
+	return MsgHelpUnlearn
+}
+
+// Parse parses the given unlearn command.
+func (p *UnlearnParser) Parse(splitContent []string) (*Command, error) {
+	if splitContent[0] != p.GetName() {
+		fatal("parseUnlearn called with non-unlearn command", errors.New("wat"))
+	}
+
+	callRegexp := regexp.MustCompile("^[[:alnum:]].*$")
+
+	// Show help when not enough data is present, or malicious data is present.
+	if len(splitContent) < 2 || !callRegexp.MatchString(splitContent[1]) {
+		return &Command{
+			Type: Type_Help,
+			Help: &HelpData{
+				Command: Name_Unlearn,
+			},
+		}, nil
+	}
+
+	// Only unlearn commands that aren't built-in and exist
+	has, err := p.commandMap.Has(splitContent[1])
+	if err != nil {
+		return nil, err
+	}
+	if !has || p.featureRegistry.IsInvokable(splitContent[1]) {
+		return &Command{
+			Type: Type_Unlearn,
+			Unlearn: &UnlearnData{
+				CallOpen: false,
+				Call:     splitContent[1],
+			},
+		}, nil
+	}
+
+	// Everything is good.
+	return &Command{
+		Type: Type_Unlearn,
+		Unlearn: &UnlearnData{
+			CallOpen: true,
+			Call:     splitContent[1],
+		},
+	}, nil
+}
+
+// CustomParser parses all fallthrough commands.
+type CustomParser struct {
+	commandMap StringMap
+}
+
+// NewCustomParser works as advertised.
+func NewCustomParser(commandMap StringMap) *CustomParser {
+	return &CustomParser{
+		commandMap: commandMap,
+	}
+}
+
+// GetName returns nothing, since it doesn't have a user-invokable name.
+func (p *CustomParser) GetName() string {
+	return ""
+}
+
+// HelpText panics, since it should never be invoked.
+func (p *CustomParser) HelpText() string {
+	panic("CustomParser.HelpText cannot be called")
+}
+
+// Parse parses the given custom command.
+func (f *CustomParser) Parse(splitContent []string) (*Command, error) {
+	// TODO(jake): Drop this and external hash check, handle missing commands solely in execute.
+	has, err := f.commandMap.Has(splitContent[0][1:])
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		fatal("parseCustom called with non-custom command", errors.New("wat"))
+	}
+	return &Command{
+		Type: Type_Custom,
+		Custom: &CustomData{
+			Call: splitContent[0][1:],
+			Args: strings.Join(splitContent[1:], " "),
+		},
+	}, nil
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Executors
+///////////////////////////////////////////////////////////////////////////////
 
 // LearnExecutor learns a user-generated command.
 type LearnExecutor struct {
@@ -154,4 +282,97 @@ func (f *LearnExecutor) Execute(s DiscordSession, channel string, command *Comma
 
 	// Send ack.
 	s.ChannelMessageSend(channel, fmt.Sprintf(MsgLearnSuccess, command.Learn.Call))
+}
+
+type UnlearnExecutor struct {
+	commandMap StringMap
+}
+
+func NewUnlearnExecutor(commandMap StringMap) *UnlearnExecutor {
+	return &UnlearnExecutor{commandMap: commandMap}
+}
+
+// GetType returns the type of this feature.
+func (f *UnlearnExecutor) GetType() int {
+	return Type_Unlearn
+}
+
+// Execute replies over the given channel indicating successful unlearning, or
+// failure to unlearn.
+func (e *UnlearnExecutor) Execute(s DiscordSession, channel string, command *Command) {
+	if command.Unlearn == nil {
+		fatal("Incorrectly generated unlearn command", errors.New("wat"))
+	}
+
+	// Get the current channel and check if we're being asked to unlearn in a
+	// private message.
+	discordChannel, err := s.Channel(channel)
+	if err != nil {
+		fatal("This message didn't come from a valid channel", errors.New("wat"))
+	}
+	if discordChannel.IsPrivate {
+		s.ChannelMessageSend(channel, MsgUnlearnMustBePublic)
+		return
+	}
+
+	if !command.Unlearn.CallOpen {
+		s.ChannelMessageSend(channel, fmt.Sprintf(MsgUnlearnFail, command.Unlearn.Call))
+		return
+	}
+
+	// Remove the command.
+	if has, err := e.commandMap.Has(command.Unlearn.Call); !has || err != nil {
+		if has {
+			fatal("Tried to unlearn command that doesn't exist: "+command.Unlearn.Call, errors.New("wat"))
+		}
+		fatal("Error in UnlearnFeature#execute, testing a command", err)
+	}
+	if err := e.commandMap.Delete(command.Unlearn.Call); err != nil {
+		fatal("Unsuccessful unlearning a key; Dying since it might work with a restart", err)
+	}
+
+	// Send ack.
+	s.ChannelMessageSend(channel, fmt.Sprintf(MsgUnlearnSuccess, command.Unlearn.Call))
+}
+
+type CustomExecutor struct {
+	commandMap StringMap
+}
+
+func NewCustomExecutor(commandMap StringMap) *CustomExecutor {
+	return &CustomExecutor{commandMap: commandMap}
+}
+
+// GetType returns the type of this feature.
+func (e *CustomExecutor) GetType() int {
+	return Type_Custom
+}
+
+// Execute returns the response if possible.
+func (e *CustomExecutor) Execute(s DiscordSession, channel string, command *Command) {
+	if command.Custom == nil {
+		fatal("Incorrectly generated learn command", errors.New("wat"))
+	}
+
+	has, err := e.commandMap.Has(command.Custom.Call)
+	if err != nil {
+		fatal("Error testing custom feature", err)
+	}
+	if !has {
+		fatal("Accidentally found a mismatched call/response pair", errors.New("Call response mismatch"))
+	}
+
+	response, err := e.commandMap.Get(command.Custom.Call)
+	if err != nil {
+		fatal("Error reading custom response", err)
+	}
+
+	if strings.Contains(response, "$1") {
+		if command.Custom.Args == "" {
+			response = MsgCustomNeedsArgs
+		} else {
+			response = strings.Replace(response, "$1", command.Custom.Args, 1)
+		}
+	}
+	s.ChannelMessageSend(channel, response)
 }

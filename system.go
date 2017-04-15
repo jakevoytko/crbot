@@ -13,9 +13,7 @@ func InitializeRegistry(commandMap StringMap, gist Gist) *FeatureRegistry {
 	featureRegistry := NewFeatureRegistry()
 	featureRegistry.Register(NewHelpFeature(featureRegistry))
 	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
-	featureRegistry.Register(NewUnlearnFeature(featureRegistry, commandMap))
 	featureRegistry.Register(NewListFeature(featureRegistry, commandMap, gist))
-	featureRegistry.Register(NewCustomFeature(commandMap))
 	return featureRegistry
 }
 
