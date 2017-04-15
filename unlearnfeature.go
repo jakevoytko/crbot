@@ -20,24 +20,54 @@ func NewUnlearnFeature(featureRegistry *FeatureRegistry, commandMap StringMap) *
 	}
 }
 
-// GetName returns the named type of this feature.
-func (f *UnlearnFeature) GetName() string {
-	return Name_Unlearn
-}
-
 // GetType returns the type of this feature.
 func (f *UnlearnFeature) GetType() int {
 	return Type_Unlearn
 }
 
-// Invokable returns whether the user can execute this command by name.
-func (f *UnlearnFeature) Invokable() bool {
-	return true
+// Parsers returns the parsers for ?unlearn.
+func (f *UnlearnFeature) Parsers() []Parser {
+	return []Parser{
+		NewUnlearnParser(f.featureRegistry, f.commandMap),
+	}
+}
+
+// FallbackParser returns nil.
+func (f *UnlearnFeature) FallbackParser() Parser {
+	return nil
+}
+
+// UnlearnParser parses ?unlearn commands.
+type UnlearnParser struct {
+	featureRegistry *FeatureRegistry
+	commandMap      StringMap
+}
+
+// NewUnlearnParser works as advertised.
+func NewUnlearnParser(featureRegistry *FeatureRegistry, commandMap StringMap) *UnlearnParser {
+	return &UnlearnParser{
+		featureRegistry: featureRegistry,
+		commandMap:      commandMap,
+	}
+}
+
+// GetName returns the named type of this feature.
+func (p *UnlearnParser) GetName() string {
+	return Name_Unlearn
+}
+
+const (
+	MsgHelpUnlearn = "Type `?unlearn <call>` to forget a user-defined command."
+)
+
+// HelpText returns the help text for ?unlearn.
+func (p *UnlearnParser) HelpText() string {
+	return MsgHelpUnlearn
 }
 
 // Parse parses the given unlearn command.
-func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
-	if splitContent[0] != f.GetName() {
+func (p *UnlearnParser) Parse(splitContent []string) (*Command, error) {
+	if splitContent[0] != p.GetName() {
 		fatal("parseUnlearn called with non-unlearn command", errors.New("wat"))
 	}
 
@@ -48,17 +78,17 @@ func (f *UnlearnFeature) Parse(splitContent []string) (*Command, error) {
 		return &Command{
 			Type: Type_Help,
 			Help: &HelpData{
-				Type: Type_Unlearn,
+				Command: Name_Unlearn,
 			},
 		}, nil
 	}
 
 	// Only unlearn commands that aren't built-in and exist
-	has, err := f.commandMap.Has(splitContent[1])
+	has, err := p.commandMap.Has(splitContent[1])
 	if err != nil {
 		return nil, err
 	}
-	if !has || f.featureRegistry.GetTypeFromName(splitContent[1]) != Type_None {
+	if !has || p.featureRegistry.IsInvokable(splitContent[1]) {
 		return &Command{
 			Type: Type_Unlearn,
 			Unlearn: &UnlearnData{

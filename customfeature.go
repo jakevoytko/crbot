@@ -18,23 +18,45 @@ func NewCustomFeature(commandMap StringMap) *CustomFeature {
 	}
 }
 
-// GetName returns the named type of this feature.
-func (f *CustomFeature) GetName() string {
-	return ""
-}
-
 // GetType returns the type of this feature.
 func (f *CustomFeature) GetType() int {
 	return Type_Custom
 }
 
-// Invokable returns whether users can invoke this from the command line.
-func (f *CustomFeature) Invokable() bool {
-	return false
+// Parsers returns nothing, since the custom parsers is a fallthrough parser.
+func (f *CustomFeature) Parsers() []Parser {
+	return []Parser{}
+}
+
+// FallbackParser returns the custom parser.
+func (f *CustomFeature) FallbackParser() Parser {
+	return NewCustomParser(f.commandMap)
+}
+
+// CustomParser parses all fallthrough commands.
+type CustomParser struct {
+	commandMap StringMap
+}
+
+// NewCustomParser works as advertised.
+func NewCustomParser(commandMap StringMap) *CustomParser {
+	return &CustomParser{
+		commandMap: commandMap,
+	}
+}
+
+// GetName returns nothing, since it doesn't have a user-invokable name.
+func (p *CustomParser) GetName() string {
+	return ""
+}
+
+// HelpText panics, since it should never be invoked.
+func (p *CustomParser) HelpText() string {
+	panic("CustomParser.HelpText cannot be called")
 }
 
 // Parse parses the given custom command.
-func (f *CustomFeature) Parse(splitContent []string) (*Command, error) {
+func (f *CustomParser) Parse(splitContent []string) (*Command, error) {
 	// TODO(jake): Drop this and external hash check, handle missing commands solely in execute.
 	has, err := f.commandMap.Has(splitContent[0][1:])
 	if err != nil {

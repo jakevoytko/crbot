@@ -26,24 +26,46 @@ func NewListFeature(
 	}
 }
 
-// GetName returns the named type of this feature.
-func (f *ListFeature) GetName() string {
-	return Name_List
-}
-
 // GetType returns the type of this feature.
 func (f *ListFeature) GetType() int {
 	return Type_List
 }
 
-// Invokable indicates whether the user can invoke this feature by name.
-func (f *ListFeature) Invokable() bool {
-	return true
+// Parsers returns the parsers.
+func (f *ListFeature) Parsers() []Parser {
+	return []Parser{NewListParser()}
+}
+
+// FallbackParser returns nil.
+func (f *ListFeature) FallbackParser() Parser {
+	return nil
+}
+
+// ListParser parses ?list commands.
+type ListParser struct{}
+
+// NewListParser works as advertised.
+func NewListParser() *ListParser {
+	return &ListParser{}
+}
+
+// GetName returns the named type of this feature.
+func (p *ListParser) GetName() string {
+	return Name_List
+}
+
+const (
+	MsgHelpList = "Type `?list` to get the URL of a Gist with all builtin and learned commands"
+)
+
+// HelpText explains how to use ?list.
+func (p *ListParser) HelpText() string {
+	return MsgHelpList
 }
 
 // Parse parses the given list command.
-func (f *ListFeature) Parse(splitContent []string) (*Command, error) {
-	if splitContent[0] != f.GetName() {
+func (p *ListParser) Parse(splitContent []string) (*Command, error) {
+	if splitContent[0] != p.GetName() {
 		fatal("parseList called with non-list command", errors.New("wat"))
 	}
 	return &Command{

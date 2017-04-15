@@ -15,9 +15,7 @@ func InitializeRegistry(commandMap StringMap, gist Gist) *FeatureRegistry {
 	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
 	featureRegistry.Register(NewUnlearnFeature(featureRegistry, commandMap))
 	featureRegistry.Register(NewListFeature(featureRegistry, commandMap, gist))
-	customFeature := NewCustomFeature(commandMap)
-	featureRegistry.Register(customFeature)
-	featureRegistry.FallbackFeature = customFeature
+	featureRegistry.Register(NewCustomFeature(commandMap))
 	return featureRegistry
 }
 
@@ -102,7 +100,7 @@ func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry) fu
 
 // HelpData holds data for Help commands.
 type HelpData struct {
-	Type int
+	Command string
 }
 
 type LearnData struct {
@@ -140,8 +138,8 @@ func parseCommand(commandMap StringMap, registry *FeatureRegistry, content strin
 	splitContent := strings.Split(content, " ")
 
 	// Parse builtins.
-	if feature := registry.GetFeatureByName(splitContent[0]); feature != nil {
-		return feature.Parse(splitContent)
+	if parser := registry.GetParserByName(splitContent[0]); parser != nil {
+		return parser.Parse(splitContent)
 	}
 
 	// See if it's a custom command.
@@ -151,7 +149,7 @@ func parseCommand(commandMap StringMap, registry *FeatureRegistry, content strin
 		return nil, err
 	}
 	if has {
-		return registry.FallbackFeature.Parse(splitContent)
+		return registry.FallbackParser.Parse(splitContent)
 	}
 
 	// No such command!

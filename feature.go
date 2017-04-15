@@ -9,34 +9,43 @@ import (
 // feature.
 // TODO(jvoytko): Refactor to provide parsers and command executors.
 type Feature interface {
-	GetName() string
 	GetType() int
-	// Returns whether a user can execute this command by typing the name.
-	Invokable() bool
-	// Parses the given split command line.
-	Parse([]string) (*Command, error)
+	// Returns all parsers associated with this feature.
+	Parsers() []Parser
+	// FallbackParser returns the parser to execute if no other parser is
+	// recognized by name. There can only be one system-wide.
+	FallbackParser() Parser
 	// Execute the given command, for the session and channel name provided.
 	Execute(DiscordSession, string, *Command)
+}
+
+// Parsers is used to multiplex on builtin ?* commands, and ensure that the
+// commands are correctly formatted.
+type Parser interface {
+	// The user-facing name of the command. Must be unique.
+	GetName() string
+	// Parses the given split command line.
+	Parse([]string) (*Command, error)
+	// HelpText returns user-facing help text for the message.
+	HelpText() string
 }
 
 // FeatureRegistry stores all of the features.
 type FeatureRegistry struct {
 	// FallbackFeature is the feature that should attempt to parse the command
 	// line if no named feature matches.
-	FallbackFeature Feature
+	FallbackParser Parser
 
-	nameToFeature         map[string]Feature
+	nameToParser          map[string]Parser
 	typeToFeature         map[int]Feature
-	nameToType            map[string]int
 	invokableFeatureNames []string
 }
 
 // NewFeatureRegistry works as advertised.
 func NewFeatureRegistry() *FeatureRegistry {
 	return &FeatureRegistry{
-		nameToFeature:         map[string]Feature{},
+		nameToParser:          map[string]Parser{},
 		typeToFeature:         map[int]Feature{},
-		nameToType:            map[string]int{},
 		invokableFeatureNames: []string{},
 	}
 }
@@ -44,28 +53,40 @@ func NewFeatureRegistry() *FeatureRegistry {
 // Register attempts to register the given feature by name. If a feature with
 // the given name exists, then error.
 func (r *FeatureRegistry) Register(feature Feature) error {
-	if feature.Invokable() {
-		if _, ok := r.nameToFeature[feature.GetName()]; ok {
-			return errors.New(fmt.Sprintf("Duplicate feature: %v", feature.GetName()))
+	// Register regular parsers.
+	for _, parser := range feature.Parsers() {
+		if _, ok := r.nameToParser[parser.GetName()]; ok {
+			return errors.New(fmt.Sprintf("Duplicate parser: %v", parser.GetName()))
 		}
-		r.nameToFeature[feature.GetName()] = feature
-		r.invokableFeatureNames = append(r.invokableFeatureNames, feature.GetName())
+		if len(parser.GetName()) > 0 {
+			r.nameToParser[parser.GetName()] = parser
+			r.invokableFeatureNames = append(r.invokableFeatureNames, parser.GetName())
+		}
 	}
 
+	// Register fallback parser.
+	if fallback := feature.FallbackParser(); fallback != nil {
+		if r.FallbackParser != nil {
+			return errors.New("More than one fallback parser found")
+		}
+		r.FallbackParser = feature.FallbackParser()
+	}
+
+	// Set up internals.
 	if _, ok := r.typeToFeature[feature.GetType()]; ok {
 		return errors.New(fmt.Sprintf("Duplicate type: %v", feature.GetType()))
 	}
 	r.typeToFeature[feature.GetType()] = feature
-	if feature.Invokable() {
-		r.nameToType[feature.GetName()] = feature.GetType()
-	}
 	return nil
 }
 
-// GetFeatureByName returns the feature with the given name, or null if no such
+// GetParserByName returns the feature with the given name, or null if no such
 // feature exists.
-func (r *FeatureRegistry) GetFeatureByName(name string) Feature {
-	if f, ok := r.nameToFeature[name]; ok {
+func (r *FeatureRegistry) GetParserByName(name string) Parser {
+	if f, ok := r.nameToParser[name]; ok {
+		return f
+	}
+	if f, ok := r.nameToParser["?"+name]; ok {
 		return f
 	}
 	return nil
@@ -80,17 +101,12 @@ func (r *FeatureRegistry) GetFeatureByType(featureType int) Feature {
 	return nil
 }
 
-// For the given feature name, returns the corresponding handled command
-// type. Handles missing and present leading ?. If it's unrecognized, returns
-// Type_None.
-func (r *FeatureRegistry) GetTypeFromName(name string) int {
-	if t, ok := r.nameToType[name]; ok {
-		return t
-	}
-	if t, ok := r.nameToType["?"+name]; ok {
-		return t
-	}
-	return Type_None
+// IsInvokable tests that the given string is a user-invokable command. Will
+// pass whether the string is prefixed by a ? or not.
+func (r *FeatureRegistry) IsInvokable(name string) bool {
+	_, ok1 := r.nameToParser[name]
+	_, ok2 := r.nameToParser["?"+name]
+	return ok1 || ok2
 }
 
 // Gets the invokable feature names.

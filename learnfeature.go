@@ -21,23 +21,53 @@ func NewLearnFeature(featureRegistry *FeatureRegistry, commandMap StringMap) *Le
 	}
 }
 
-// GetName returns the named type of this feature.
-func (f *LearnFeature) GetName() string {
-	return Name_Learn
-}
-
 // GetType returns the type of this feature.
 func (f *LearnFeature) GetType() int {
 	return Type_Learn
 }
 
-// Invokable returns whether the user can execute this command by name.
-func (f *LearnFeature) Invokable() bool {
-	return true
+// Parsers gets the learn feature parsers.
+func (f *LearnFeature) Parsers() []Parser {
+	return []Parser{
+		NewLearnParser(f.featureRegistry, f.commandMap),
+	}
+}
+
+// FallbackParser returns nil.
+func (f *LearnFeature) FallbackParser() Parser {
+	return nil
+}
+
+// LearnParser parses ?learn commands.
+type LearnParser struct {
+	featureRegistry *FeatureRegistry
+	commandMap      StringMap
+}
+
+// NewLearnParser works as advertised.
+func NewLearnParser(featureRegistry *FeatureRegistry, commandMap StringMap) *LearnParser {
+	return &LearnParser{
+		featureRegistry: featureRegistry,
+		commandMap:      commandMap,
+	}
+}
+
+// GetName returns the named type of this feature.
+func (p *LearnParser) GetName() string {
+	return Name_Learn
+}
+
+const (
+	MsgHelpLearn = "Type `?learn <call> <the response the bot should read>`. When you type `?call`, the bot will reply with the response.\n\nThe first character of the call must be alphanumeric, and the first character of the response must not begin with /, ?, or !\n\nUse $1 in the response to substitute all arguments"
+)
+
+// HelpText explains how to use ?learn.
+func (p *LearnParser) HelpText() string {
+	return MsgHelpLearn
 }
 
 // Parse parses the given learn command.
-func (f *LearnFeature) Parse(splitContent []string) (*Command, error) {
+func (f *LearnParser) Parse(splitContent []string) (*Command, error) {
 	if splitContent[0] != f.GetName() {
 		fatal("parseLearn called with non-learn command", errors.New("wat"))
 	}
@@ -50,7 +80,7 @@ func (f *LearnFeature) Parse(splitContent []string) (*Command, error) {
 		return &Command{
 			Type: Type_Help,
 			Help: &HelpData{
-				Type: Type_Learn,
+				Command: Name_Learn,
 			},
 		}, nil
 	}
@@ -60,7 +90,7 @@ func (f *LearnFeature) Parse(splitContent []string) (*Command, error) {
 	if err != nil {
 		return nil, err
 	}
-	if has || f.featureRegistry.GetTypeFromName(splitContent[1]) != Type_None {
+	if has || f.featureRegistry.IsInvokable(splitContent[1]) {
 		return &Command{
 			Type: Type_Learn,
 			Learn: &LearnData{
