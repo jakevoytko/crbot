@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"sort"
+	"strings"
 )
 
 // ListFeature is a Feature that lists commands that are available.
@@ -123,6 +124,16 @@ func (e *ListExecutor) Execute(s DiscordSession, channel string, command *Comman
 	for _, name := range builtins {
 		buffer.WriteString(" - ")
 		buffer.WriteString(name)
+		helpText, err := e.featureRegistry.GetParserByName(name).HelpText(name)
+
+		// Log and continue if something goes wrong, to give the gist a chance of publishing.
+		if err == nil {
+			buffer.WriteString(": ")
+			buffer.WriteString(helpText)
+		} else {
+			info("Error getting builtin help text", err)
+		}
+
 		buffer.WriteString("\n")
 	}
 
@@ -133,6 +144,9 @@ func (e *ListExecutor) Execute(s DiscordSession, channel string, command *Comman
 	for _, name := range custom {
 		buffer.WriteString(" - ?")
 		buffer.WriteString(name)
+		if strings.Contains(all[name], "$1") {
+			buffer.WriteString(" <args>")
+		}
 		buffer.WriteString("\n")
 	}
 

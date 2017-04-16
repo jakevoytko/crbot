@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/bwmarrin/discordgo"
@@ -89,14 +90,20 @@ func (r *TestRunner) SendListMessage(channel string) {
 	// TODO(jake): Remove duplication between this and listfeature. Maybe just assert number of lines?
 	if r.GistsCount > 0 {
 		var buffer bytes.Buffer
-		buffer.WriteString(`List of builtins:
- - ?help
- - ?learn
- - ?list
- - ?unlearn
+		buffer.WriteString("List of builtins:\n - ?help: ")
+		buffer.WriteString(MsgHelpHelp)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?learn: ")
+		buffer.WriteString(MsgHelpLearn)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?list: ")
+		buffer.WriteString(MsgHelpList)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?unlearn: ")
+		buffer.WriteString(MsgHelpUnlearn)
+		buffer.WriteString("\n\n")
 
-List of learned commands:
-`)
+		buffer.WriteString("List of learned commands:\n")
 
 		all, _ := r.CustomMap.GetAll()
 		custom := make([]string, 0, len(all))
@@ -107,6 +114,9 @@ List of learned commands:
 		for _, name := range custom {
 			buffer.WriteString(" - ?")
 			buffer.WriteString(name)
+			if strings.Contains(all[name], "$1") {
+				buffer.WriteString(" <args>")
+			}
 			buffer.WriteString("\n")
 		}
 
@@ -187,7 +197,7 @@ func Test_Integration(t *testing.T) {
 	runner.SendLearnMessage("channel", "?learn args3 $1 $1", NewLearn("args3", "$1 $1"))
 	// Cannot overwrite a learn.
 	runner.SendMessage("channel", "?learn call response", fmt.Sprintf(MsgLearnFail, "call"))
-	// List should now include messages.
+	// List should now include learns.
 	runner.SendListMessage("channel")
 	// Extra whitespace test.
 	runner.SendLearnMessage("channel", "?learn  spaceBeforeCall response", NewLearn("spaceBeforeCall", "response"))

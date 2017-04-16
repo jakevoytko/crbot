@@ -47,7 +47,7 @@ func (p *HelpParser) GetName() string {
 }
 
 const (
-	MsgHelpHelp = "Seems like you figured it out."
+	MsgHelpHelp = "Get help for help."
 )
 
 // GetHelpText returns the help text.
