@@ -163,7 +163,6 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?help", MsgDefaultHelp)
 	runner.SendMessage("channel", "?help abunchofgibberish", MsgDefaultHelp)
 	runner.SendMessage("channel", "?help ??help", MsgDefaultHelp)
-	runner.SendMessage("channel", "?help  help", MsgDefaultHelp)
 
 	// All recognized help commands.
 	runner.SendMessage("channel", "?help help", MsgHelpHelp)
@@ -174,6 +173,7 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?help ?learn", MsgHelpLearn)
 	runner.SendMessage("channel", "?help ?list", MsgHelpList)
 	runner.SendMessage("channel", "?help ?unlearn", MsgHelpUnlearn)
+	runner.SendMessage("channel", "?help  help", MsgHelpHelp)
 
 	// Test ?list. ?list tests will be interspersed through the learn examples
 	// below, since learn and unlearn interact with it.
@@ -186,7 +186,6 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?learn ?call response", MsgHelpLearn)
 	runner.SendMessage("channel", "?learn !call response", MsgHelpLearn)
 	runner.SendMessage("channel", "?learn /call response", MsgHelpLearn)
-	runner.SendMessage("channel", "?learn  call response", MsgHelpLearn)
 	runner.SendMessage("channel", "?learn ", MsgHelpLearn)
 	runner.SendMessage("channel", "?learn multi\nline\ncall response", MsgHelpLearn)
 	// Wrong response format.
@@ -206,6 +205,10 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?learn call response", fmt.Sprintf(MsgLearnFail, "call"))
 	// List should now include messages.
 	runner.SendListMessage("channel")
+	// Extra whitespace test.
+	runner.SendLearnMessage("channel", "?learn  spaceBeforeCall response", NewLearn("spaceBeforeCall", "response"))
+	runner.SendLearnMessage("channel", "?learn spaceBeforeResponse  response", NewLearn("spaceBeforeResponse", "response"))
+	runner.SendLearnMessage("channel", "?learn spaceInResponse response  two  spaces", NewLearn("spaceInResponse", "response  two  spaces"))
 
 	// Test learned commands.
 	runner.SendMessage("channel", "?call", "response")
@@ -217,8 +220,11 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?args1 world", "hello world")
 	runner.SendMessage("channel", "?args2 world", "world")
 	runner.SendMessage("channel", "?args3 world", "world $1")
+	runner.SendMessage("channel", "?args3     leadingspaces", "    leadingspaces $1")
 	runner.SendMessage("channel", "?args1", MsgCustomNeedsArgs)
-	runner.SendMessage("channel", "?args1 ", MsgCustomNeedsArgs)
+	runner.SendMessage("channel", "?spaceBeforeCall", "response")
+	runner.SendMessage("channel", "?spaceBeforeResponse", "response")
+	runner.SendMessage("channel", "?spaceInResponse", "response  two  spaces")
 	// Fallback commands aren't triggered unless they lead a message.
 	runner.SendMessageWithoutResponse("channel", " ?call")
 	runner.SendMessageWithoutResponse("channel", "i just met you, and this is lazy, but here's my number, ?call me maybe")
@@ -230,7 +236,6 @@ func Test_Integration(t *testing.T) {
 	// Wrong format.
 	runner.SendMessage("channel", "?unlearn", MsgHelpUnlearn)
 	runner.SendMessage("channel", "?unlearn ", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?unlearn  bears", MsgHelpUnlearn)
 	// Can't unlearn in a private channel
 	runner.SendMessage("literally anything else", "?unlearn call", MsgUnlearnMustBePublic)
 	// Can't unlearn builtin commands.
@@ -243,6 +248,7 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?unlearn ?list", MsgHelpUnlearn)
 	runner.SendMessage("channel", "?unlearn ?unlearn", MsgHelpUnlearn)
 	// Unrecognized command.
+	runner.SendMessage("channel", "?unlearn  bears", fmt.Sprintf(MsgUnlearnFail, "bears"))
 	runner.SendMessage("channel", "?unlearn somethingIdon'tknow", fmt.Sprintf(MsgUnlearnFail, "somethingIdon'tknow"))
 	// Valid unlearn.
 	runner.SendUnlearnMessage("channel", "?unlearn call", "call")
@@ -254,6 +260,9 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?call", "another response")
 	// List should work after the relearn.
 	runner.SendListMessage("channel")
+	// Unlearn with 2 spaces.
+	runner.SendUnlearnMessage("channel", "?unlearn  call", "call")
+	runner.SendMessageWithoutResponse("channel", "?call")
 }
 
 func assertNumCommands(t *testing.T, customMap StringMap, count int) {

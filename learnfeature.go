@@ -91,6 +91,8 @@ func (f *LearnParser) Parse(splitContent []string) (*Command, error) {
 	if splitContent[0] != f.GetName() {
 		fatal("parseLearn called with non-learn command", errors.New("wat"))
 	}
+	splitContent = CollapseWhitespace(splitContent, 1)
+	splitContent = CollapseWhitespace(splitContent, 2)
 
 	callRegexp := regexp.MustCompile("^[[:alnum:]].*$")
 	responseRegexp := regexp.MustCompile("(?s)^[^/?!].*$")
@@ -161,6 +163,8 @@ func (p *UnlearnParser) Parse(splitContent []string) (*Command, error) {
 	if splitContent[0] != p.GetName() {
 		fatal("parseUnlearn called with non-unlearn command", errors.New("wat"))
 	}
+
+	splitContent = CollapseWhitespace(splitContent, 1)
 
 	callRegexp := regexp.MustCompile("^[[:alnum:]].*$")
 

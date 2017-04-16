@@ -60,6 +60,8 @@ func (p *HelpParser) Parse(splitContent []string) (*Command, error) {
 	if splitContent[0] != p.GetName() {
 		fatal("parseHelp called with non-help command", errors.New("wat"))
 	}
+	splitContent = CollapseWhitespace(splitContent, 1)
+
 	userCommand := ""
 	if len(splitContent) > 1 {
 		if p.featureRegistry.IsInvokable(splitContent[1]) {
