@@ -82,8 +82,8 @@ func (p *LearnParser) GetName() string {
 }
 
 // HelpText explains how to use ?learn.
-func (p *LearnParser) HelpText() string {
-	return MsgHelpLearn
+func (p *LearnParser) HelpText(command string) (string, error) {
+	return MsgHelpLearn, nil
 }
 
 // Parse parses the given learn command.
@@ -154,8 +154,8 @@ func (p *UnlearnParser) GetName() string {
 }
 
 // HelpText returns the help text for ?unlearn.
-func (p *UnlearnParser) HelpText() string {
-	return MsgHelpUnlearn
+func (p *UnlearnParser) HelpText(command string) (string, error) {
+	return MsgHelpUnlearn, nil
 }
 
 // Parse parses the given unlearn command.
@@ -220,9 +220,25 @@ func (p *CustomParser) GetName() string {
 	return ""
 }
 
-// HelpText panics, since it should never be invoked.
-func (p *CustomParser) HelpText() string {
-	panic("CustomParser.HelpText cannot be called")
+// HelpText returns help text for the given custom command.
+func (p *CustomParser) HelpText(command string) (string, error) {
+	ok, err := p.commandMap.Has(command)
+	if err != nil {
+		return "", err
+	}
+	if !ok {
+		return "", nil
+	}
+
+	val, err := p.commandMap.Get(command)
+	if err != nil {
+		return "", err
+	}
+	response := "?" + command
+	if strings.Contains(val, "$1") {
+		response = response + " <args>"
+	}
+	return response, nil
 }
 
 // Parse parses the given custom command.

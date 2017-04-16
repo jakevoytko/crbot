@@ -159,22 +159,6 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessageWithoutResponse("channel", "help")
 	runner.SendMessageWithoutResponse("channel", ".help")
 
-	// Unrecognized help commands.
-	runner.SendMessage("channel", "?help", MsgDefaultHelp)
-	runner.SendMessage("channel", "?help abunchofgibberish", MsgDefaultHelp)
-	runner.SendMessage("channel", "?help ??help", MsgDefaultHelp)
-
-	// All recognized help commands.
-	runner.SendMessage("channel", "?help help", MsgHelpHelp)
-	runner.SendMessage("channel", "?help learn", MsgHelpLearn)
-	runner.SendMessage("channel", "?help list", MsgHelpList)
-	runner.SendMessage("channel", "?help unlearn", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?help ?help", MsgHelpHelp)
-	runner.SendMessage("channel", "?help ?learn", MsgHelpLearn)
-	runner.SendMessage("channel", "?help ?list", MsgHelpList)
-	runner.SendMessage("channel", "?help ?unlearn", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?help  help", MsgHelpHelp)
-
 	// Test ?list. ?list tests will be interspersed through the learn examples
 	// below, since learn and unlearn interact with it.
 	runner.SendListMessage("channel")
@@ -263,6 +247,30 @@ func Test_Integration(t *testing.T) {
 	// Unlearn with 2 spaces.
 	runner.SendUnlearnMessage("channel", "?unlearn  call", "call")
 	runner.SendMessageWithoutResponse("channel", "?call")
+
+	// Unrecognized help commands.
+	runner.SendMessage("channel", "?help", MsgDefaultHelp)
+	runner.SendMessage("channel", "?help abunchofgibberish", MsgDefaultHelp)
+	runner.SendMessage("channel", "?help ??help", MsgDefaultHelp)
+	// All recognized help commands.
+	runner.SendMessage("channel", "?help help", MsgHelpHelp)
+	runner.SendMessage("channel", "?help learn", MsgHelpLearn)
+	runner.SendMessage("channel", "?help list", MsgHelpList)
+	runner.SendMessage("channel", "?help unlearn", MsgHelpUnlearn)
+	runner.SendMessage("channel", "?help ?help", MsgHelpHelp)
+	runner.SendMessage("channel", "?help ?learn", MsgHelpLearn)
+	runner.SendMessage("channel", "?help ?list", MsgHelpList)
+	runner.SendMessage("channel", "?help ?unlearn", MsgHelpUnlearn)
+	runner.SendMessage("channel", "?help  help", MsgHelpHelp)
+	// Help with custom commands.
+	runner.SendLearnMessage("channel", "?learn help-noarg response", NewLearn("help-noarg", "response"))
+	runner.SendLearnMessage("channel", "?learn help-arg response $1", NewLearn("help-arg", "response $1"))
+	runner.SendMessage("channel", "?help help-noarg", "?help-noarg")
+	runner.SendMessage("channel", "?help help-arg", "?help-arg <args>")
+	runner.SendUnlearnMessage("channel", "?unlearn help-noarg", "help-noarg")
+	runner.SendUnlearnMessage("channel", "?unlearn help-arg", "help-arg")
+	runner.SendMessage("channel", "?help help-noarg", MsgDefaultHelp)
+	runner.SendMessage("channel", "?help help-arg", MsgDefaultHelp)
 }
 
 func assertNumCommands(t *testing.T, customMap StringMap, count int) {

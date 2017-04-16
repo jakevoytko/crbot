@@ -51,8 +51,8 @@ const (
 )
 
 // GetHelpText returns the help text.
-func (p *HelpParser) HelpText() string {
-	return MsgHelpHelp
+func (p *HelpParser) HelpText(command string) (string, error) {
+	return MsgHelpHelp, nil
 }
 
 // Parse parses the given help command.
@@ -64,9 +64,7 @@ func (p *HelpParser) Parse(splitContent []string) (*Command, error) {
 
 	userCommand := ""
 	if len(splitContent) > 1 {
-		if p.featureRegistry.IsInvokable(splitContent[1]) {
-			userCommand = splitContent[1]
-		}
+		userCommand = splitContent[1]
 	}
 
 	return &Command{
@@ -104,14 +102,34 @@ func (e *HelpExecutor) Execute(s DiscordSession, channel string, command *Comman
 		fatal("Incorrectly generated help command", errors.New("wat"))
 	}
 
+	// Try to parse custom commands before fallback commands. This matches actual
+	// command invocation order, and will avoid returning help text when there
+	// happens to be a custom command that was overwritten by a new builtin.
 	parser := e.featureRegistry.GetParserByName(command.Help.Command)
 	if parser != nil {
-		if _, err := s.ChannelMessageSend(channel, parser.HelpText()); err != nil {
+		// Use the builtin parsers to generate help text.
+		helpText, err := parser.HelpText(command.Help.Command)
+		if err != nil {
+			info("Failed to generate help text for command "+command.Help.Command, err)
+			return
+		}
+		if _, err := s.ChannelMessageSend(channel, helpText); err != nil {
 			info("Failed to send default help message", err)
 		}
-	} else {
-		if _, err := s.ChannelMessageSend(channel, MsgDefaultHelp); err != nil {
-			info("Failed to send default help message", err)
-		}
+		return
+	}
+
+	// Use the fallback parser to generate help text.
+	fallbackHelpText, err := e.featureRegistry.FallbackParser.HelpText(command.Help.Command)
+	if err != nil {
+		info("Failed to generate backup help text for command "+command.Help.Command, err)
+		return
+	}
+	if fallbackHelpText == "" {
+		fallbackHelpText = MsgDefaultHelp
+	}
+
+	if _, err := s.ChannelMessageSend(channel, fallbackHelpText); err != nil {
+		info("Failed to send fallback or default help message", err)
 	}
 }

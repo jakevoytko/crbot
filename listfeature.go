@@ -58,8 +58,8 @@ const (
 )
 
 // HelpText explains how to use ?list.
-func (p *ListParser) HelpText() string {
-	return MsgHelpList
+func (p *ListParser) HelpText(command string) (string, error) {
+	return MsgHelpList, nil
 }
 
 // Parse parses the given list command.

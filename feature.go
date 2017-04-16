@@ -25,8 +25,9 @@ type Parser interface {
 	GetName() string
 	// Parses the given split command line.
 	Parse([]string) (*Command, error)
-	// The user-facing help text for the given name.
-	HelpText() string
+	// The user-facing help text for the given name. `command` is passed as an arg
+	// so fallback parsers can provide custom help text.
+	HelpText(command string) (string, error)
 }
 
 // Executor actually performs the given action based on the given command.
