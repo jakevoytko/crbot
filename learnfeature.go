@@ -391,7 +391,7 @@ func (e *CustomExecutor) Execute(s DiscordSession, channel string, command *Comm
 		if command.Custom.Args == "" {
 			response = MsgCustomNeedsArgs
 		} else {
-			response = strings.Replace(response, "$1", command.Custom.Args, 1)
+			response = strings.Replace(response, "$1", command.Custom.Args, 4)
 		}
 	}
 	s.ChannelMessageSend(channel, response)
