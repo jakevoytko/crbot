@@ -195,6 +195,7 @@ func Test_Integration(t *testing.T) {
 	runner.SendLearnMessage("channel", "?learn args1 hello $1", NewLearn("args1", "hello $1"))
 	runner.SendLearnMessage("channel", "?learn args2 $1", NewLearn("args2", "$1"))
 	runner.SendLearnMessage("channel", "?learn args3 $1 $1", NewLearn("args3", "$1 $1"))
+	runner.SendLearnMessage("channel", "?learn args4 $1 $1 $1 $1 $1", NewLearn("args4", "$1 $1 $1 $1 $1"))
 	// Cannot overwrite a learn.
 	runner.SendMessage("channel", "?learn call response", fmt.Sprintf(MsgLearnFail, "call"))
 	// List should now include learns.
@@ -213,8 +214,11 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?emoji", "⛄⛄⛄⛄")
 	runner.SendMessage("channel", "?args1 world", "hello world")
 	runner.SendMessage("channel", "?args2 world", "world")
-	runner.SendMessage("channel", "?args3 world", "world $1")
-	runner.SendMessage("channel", "?args3     leadingspaces", "    leadingspaces $1")
+	runner.SendMessage("channel", "?args3 world", "world world")
+	runner.SendMessage("channel", "?args3     leadingspaces", "    leadingspaces     leadingspaces")
+	runner.SendMessage("channel", "?args4 world", "world world world world $1")
+        runner.SendMessage("channel", "?args4     leadingspaces", "    leadingspaces     leadingspaces     leadingspaces     leadingspaces $1")
+
 	runner.SendMessage("channel", "?args1", MsgCustomNeedsArgs)
 	runner.SendMessage("channel", "?spaceBeforeCall", "response")
 	runner.SendMessage("channel", "?spaceBeforeResponse", "response")
@@ -344,7 +348,7 @@ func assertNewMessages(t *testing.T, discordSession *util.InMemoryDiscordSession
 	for i := 0; i < len(newMessages); i++ {
 		actualMessage := discordSession.Messages[len(discordSession.Messages)-len(newMessages)+i]
 		if !reflect.DeepEqual(newMessages[i], actualMessage) {
-			t.Errorf("Expected message %v channel %v, got message %v channel %v",
+			t.Errorf("Expected message \n '%v' \n on channel '%v', got message \n '%v' \n on channel '%v'",
 				newMessages[i].Message,
 				newMessages[i].Channel,
 				actualMessage.Message,
