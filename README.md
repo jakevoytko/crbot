@@ -32,8 +32,7 @@ Prerequisites
 ---------------
 
 * Redis instance, standard port, no password, DB 0
-* `go get github.com/bwmarrin/discordgo`
-* `go get gopkg.in/redis.v5`
+* A bazel build, running at least 0.5.3
 * Add `secret.json` with single key, `bot_token`
 
 Running
@@ -52,11 +51,13 @@ from the Discord developers site.
 Before sending PR
 -------------------
 
-`go test` from working directory.
+`bazel run :go_default_test` from working directory.
 
 If your PR adds features, please add tests in system_test.go that cover your new use cases.
 
 More reading
 -------------
 
-**Blog post**: [Writing a Discord bot, and techniques for writing effective small programs](https://www.bitlog.com/index.php/2017/03/31/techniques-for-effectively-growing-small-programs/)
+**Blog posts**:
+- [Writing a Discord bot, and techniques for writing effective small programs](https://www.bitlog.com/index.php/2017/03/31/techniques-for-effectively-growing-small-programs/)
+- [My friends trolled each other with my Discord bot, and how we fixed it](https://www.bitlog.com/index.php/2017/05/31/my-friends-trolled-each-other-with-my-discord-bot-and-how-we-fixed-it/)
