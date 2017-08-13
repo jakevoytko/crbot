@@ -1,3 +1,4 @@
 secret.json
 *~
 bazel-*
+*.retry
