@@ -20,7 +20,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "@com_github_bwmarrin_discordgo//:go_default_library",
-        "@in_gopkg_redis_v5//:go_default_library",
+        "@com_github_go_redis_redis//:go_default_library",
     ],
 )
 

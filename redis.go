@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 
-	"gopkg.in/redis.v5"
+	"github.com/go-redis/redis"
 )
 
 // RedisStringMap is a StringMap implementation that uses Redis as a backing store.

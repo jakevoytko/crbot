@@ -16,9 +16,9 @@ go_repository(
 )
 
 go_repository(
-    name = "in_gopkg_redis_v5",
-    importpath = "gopkg.in/redis.v5",
-    commit = "a16aeec10ff407b1e7be6dd35797ccf5426ef0f0",
+    name = "com_github_go_redis_redis",
+    importpath = "github.com/go-redis/redis",
+    commit = "89515eebd1b5761486abd32d9e84a8f55dda7740"
 )
 
 go_repository(
