@@ -52,7 +52,9 @@ from the Discord developers site.
 Before sending PR
 -------------------
 
-Run through [test doc](https://docs.google.com/document/d/1-SZ7FtDNo0-GX0zDwD6nX1yY4Bg_eoGifP-_xAChM6c/edit). Tests coming soon!
+`go test` from working directory.
+
+If your PR adds features, please add tests in system_test.go that cover your new use cases.
 
 More reading
 -------------
