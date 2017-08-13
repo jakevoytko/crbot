@@ -47,7 +47,7 @@
 
     - name: Copy secret.json from local to remote
       copy:
-        src: ../secret.json
+        src: ~/etc/crbot_secret.json
         dest: /home/jake/c/crbot/secret.json
         owner: jake
         group: jake
