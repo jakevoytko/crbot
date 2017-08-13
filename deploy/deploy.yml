@@ -1,0 +1,29 @@
+---
+# This playbook deploys crbot, along with the environment for running it
+
+- name: Install bazel
+  hosts: servers
+  remote_user: jake
+
+  tasks:
+    - name: Install jdk 8
+      apt:
+        name: openjdk-8-jdk
+        update_cache: yes
+
+    - name: Add bazel repository
+      become: yes
+      apt_repository:
+        repo: deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8
+        state: present
+        filename: bazel
+
+    - name: Add bazel key
+      apt_key:
+        url: https://bazel.build/bazel-release.pub.gpg
+        state: present
+
+    - name: Install bazel
+      apt:
+        name: bazel
+        update_cache: yes
