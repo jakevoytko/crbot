@@ -3,7 +3,7 @@
 
 - name: Install bazel
   hosts: servers
-  remote_user: jake
+  become: yes
 
   tasks:
     - name: Install jdk 8
@@ -12,7 +12,6 @@
         update_cache: yes
 
     - name: Add bazel repository
-      become: yes
       apt_repository:
         repo: deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8
         state: present
@@ -23,7 +22,53 @@
         url: https://bazel.build/bazel-release.pub.gpg
         state: present
 
-    - name: Install bazel
+    - name: Install or update bazel from the apt repository
       apt:
         name: bazel
         update_cache: yes
+
+- name: Restart crbot
+  hosts: servers
+
+  tasks:
+    - name: Pull the latest version of crbot
+      git:
+        depth: 1
+        dest: /home/jake/c/crbot
+        remote: origin
+        repo: https://github.com/jakevoytko/crbot
+        version: master
+
+    - name: Ensure that the crbot service is stopped
+      become: yes
+      systemd:
+        name: crbot
+        state: stopped
+
+    - name: Copy secret.json from local to remote
+      copy:
+        src: ../secret.json
+        dest: /home/jake/c/crbot/secret.json
+        owner: jake
+        group: jake
+        mode: u+r
+
+    - name: Build the crbot service
+      command: /usr/bin/bazel build :crbot
+      args:
+        chdir: /home/jake/c/crbot
+
+    - name: Install the systemd service file
+      become: yes
+      template:
+        src: crbot.service
+        dest: /etc/systemd/system/crbot.service
+
+    - name: Ensure that the crbot service is restarted and running
+      become: yes
+      systemd:
+        name: crbot
+        daemon-reload: yes
+        enabled: yes
+        masked: no
+        state: restarted

@@ -1,0 +1,11 @@
+[Unit]
+Description=Discord chat bot
+Documentation=https://github.com/jakevoytko/crbot
+
+[Service]
+Type=simple
+ExecStart=/home/jake/c/crbot/run.sh
+WorkingDirectory=/home/jake/c/crbot/
+
+[Install]
+WantedBy=multi-user.target
