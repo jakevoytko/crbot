@@ -82,27 +82,26 @@ func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry, ri
 			return
 		}
 
-		// Check moderation.
-		if channel, err := s.Channel(m.ChannelID); err == nil && channel.IsPrivate {
-			for _, ricked := range rickList {
-				if strconv.FormatInt(ricked, 10) == m.Author.ID {
-					command := &Command{
-						Type: Type_RickList,
-					}
-					executor := featureRegistry.GetExecutorByType(command.Type)
-					if executor != nil {
-						executor.Execute(s, m.ChannelID, command)
-					}
-					return
-				}
-			}
-		}
-
 		// No moderation stuck. Continue normally.
 		command, err := parseCommand(commandMap, featureRegistry, m.Content)
 		if err != nil {
 			info("Error parsing command", err)
 			return
+		}
+
+		// Check moderation.
+		// RickList
+		// - RickListed users can only use ?learn in private channels, without it responding with
+		//   a rickroll.
+		if channel, err := s.Channel(m.ChannelID); err == nil && channel.IsPrivate && command.Type != Type_Learn {
+			for _, ricked := range rickList {
+				if strconv.FormatInt(ricked, 10) == m.Author.ID {
+					command = &Command{
+						Type: Type_RickList,
+					}
+					break
+				}
+			}
 		}
 
 		executor := featureRegistry.GetExecutorByType(command.Type)

@@ -72,6 +72,15 @@ func (r *TestRunner) SendLearnMessage(channel, message string, learn *Learn) {
 	r.AssertState()
 }
 
+func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel, message string, learn *Learn) {
+	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
+	r.Learns[learn.Call] = learn
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgLearnSuccess, learn.Call))})
+	r.AssertState()
+}
+
 func (r *TestRunner) SendUnlearnMessage(channel, message string, call string) {
 	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
@@ -310,6 +319,7 @@ func Test_Integration(t *testing.T) {
 	}
 	runner.SendMessageAs(rickListedUser, "channel", "?help help-arg", MsgDefaultHelp)
 	runner.SendMessageAs(rickListedUser, "literally anything else", "?help help-arg", MsgRickList)
+	runner.SendLearnMessageAs(rickListedUser, "literally anything else", "?learn rick list", NewLearn("rick", "list"))
 }
 
 func assertNumCommands(t *testing.T, customMap StringMap, count int) {
