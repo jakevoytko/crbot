@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -14,6 +15,7 @@ func InitializeRegistry(commandMap StringMap, gist Gist) *FeatureRegistry {
 	featureRegistry.Register(NewHelpFeature(featureRegistry))
 	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
 	featureRegistry.Register(NewListFeature(featureRegistry, commandMap, gist))
+	featureRegistry.Register(NewModerationFeature(featureRegistry))
 	return featureRegistry
 }
 
@@ -27,6 +29,7 @@ const (
 	Type_Learn
 	Type_List
 	Type_None
+	Type_RickList
 	Type_Unlearn
 	Type_Unrecognized
 
@@ -72,13 +75,30 @@ type Gist interface {
 ///////////////////////////////////////////////////////////////////////////////
 
 // getHandleMessage returns the main handler for incoming messages.
-func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry) func(DiscordSession, *discordgo.MessageCreate) {
+func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry, rickList []int64) func(DiscordSession, *discordgo.MessageCreate) {
 	return func(s DiscordSession, m *discordgo.MessageCreate) {
 		// Never reply to a bot.
 		if m.Author.Bot {
 			return
 		}
 
+		// Check moderation.
+		if channel, err := s.Channel(m.ChannelID); err == nil && channel.IsPrivate {
+			for _, ricked := range rickList {
+				if strconv.FormatInt(ricked, 10) == m.Author.ID {
+					command := &Command{
+						Type: Type_RickList,
+					}
+					executor := featureRegistry.GetExecutorByType(command.Type)
+					if executor != nil {
+						executor.Execute(s, m.ChannelID, command)
+					}
+					return
+				}
+			}
+		}
+
+		// No moderation stuck. Continue normally.
 		command, err := parseCommand(commandMap, featureRegistry, m.Content)
 		if err != nil {
 			info("Error parsing command", err)

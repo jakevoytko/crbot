@@ -13,6 +13,7 @@ go_library(
         "helpfeature.go",
         "learnfeature.go",
         "listfeature.go",
+        "moderationfeature.go",
         "redis.go",
         "system.go",
         "util.go",

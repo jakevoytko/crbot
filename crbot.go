@@ -22,9 +22,9 @@ func main() {
 	flag.Parse()
 
 	// Parse config.
-	secret, err := ParseSecret(*filename)
+	config, err := ParseConfig(*filename)
 	if err != nil {
-		fatal("Secret parsing failed", err)
+		fatal("Config parsing failed", err)
 	}
 
 	// Initialize external resources.
@@ -37,13 +37,13 @@ func main() {
 	featureRegistry := InitializeRegistry(commandMap, gist)
 
 	// Set up Discord API.
-	discord, err := discordgo.New("Bot " + secret.BotToken)
+	discord, err := discordgo.New("Bot " + config.BotToken)
 	if err != nil {
 		fatal("Error initializing Discord client library", err)
 	}
 
 	// Open communications with Discord.
-	handler := getHandleMessage(commandMap, featureRegistry)
+	handler := getHandleMessage(commandMap, featureRegistry, config.RickList)
 
 	// Wrapper is needed so the discordgo registry recognizes the input types.
 	wrappedHandler := func(s *discordgo.Session, c *discordgo.MessageCreate) {
@@ -72,17 +72,18 @@ const (
 ///////////////////////////////////////////////////////////////////////////////
 
 // Secret holds the serialized bot token.
-type Secret struct {
-	BotToken string `json:"bot_token"`
+type Config struct {
+	BotToken string  `json:"bot_token"`
+	RickList []int64 `json:"ricklist"`
 }
 
-// ParseSecret reads the config from the given filename.
-func ParseSecret(filename string) (*Secret, error) {
+// ParseConfig reads the config from the given filename.
+func ParseConfig(filename string) (*Config, error) {
 	f, e := ioutil.ReadFile(filename)
 	if e != nil {
 		return nil, e
 	}
-	var config Secret
+	var config Config
 	e = json.Unmarshal(f, &config)
 	return &config, e
 }

@@ -55,6 +55,14 @@ func (r *TestRunner) SendMessage(channel, message, expectedResponse string) {
 	r.AssertState()
 }
 
+func (r *TestRunner) SendMessageAs(author *discordgo.User, channel, message, expectedResponse string) {
+	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel, expectedResponse)})
+	r.AssertState()
+}
+
 func (r *TestRunner) SendLearnMessage(channel, message string, learn *Learn) {
 	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
@@ -144,6 +152,8 @@ func Test_Integration(t *testing.T) {
 		IsPrivate: true,
 	})
 
+	rickList := []int64{2}
+
 	registry := InitializeRegistry(customMap, gist)
 	runner := &TestRunner{
 		T:                    t,
@@ -154,7 +164,7 @@ func Test_Integration(t *testing.T) {
 		Gist:                 gist,
 		DiscordSession:       discordSession,
 		FeatureRegistry:      registry,
-		Handler:              getHandleMessage(customMap, registry),
+		Handler:              getHandleMessage(customMap, registry, rickList),
 	}
 
 	// Assert initial state.
@@ -217,7 +227,7 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessage("channel", "?args3 world", "world world")
 	runner.SendMessage("channel", "?args3     leadingspaces", "    leadingspaces     leadingspaces")
 	runner.SendMessage("channel", "?args4 world", "world world world world $1")
-        runner.SendMessage("channel", "?args4     leadingspaces", "    leadingspaces     leadingspaces     leadingspaces     leadingspaces $1")
+	runner.SendMessage("channel", "?args4     leadingspaces", "    leadingspaces     leadingspaces     leadingspaces     leadingspaces $1")
 
 	runner.SendMessage("channel", "?args1", MsgCustomNeedsArgs)
 	runner.SendMessage("channel", "?spaceBeforeCall", "response")
@@ -285,6 +295,21 @@ func Test_Integration(t *testing.T) {
 	runner.SendUnlearnMessage("channel", "?unlearn help-arg", "help-arg")
 	runner.SendMessage("channel", "?help help-noarg", MsgDefaultHelp)
 	runner.SendMessage("channel", "?help help-arg", MsgDefaultHelp)
+
+	// Moderation
+	rickListedUser := &discordgo.User{
+		ID:            "2",
+		Email:         "email@example.com",
+		Username:      "username",
+		Avatar:        "avatar",
+		Discriminator: "discriminator",
+		Token:         "token",
+		Verified:      true,
+		MFAEnabled:    false,
+		Bot:           false,
+	}
+	runner.SendMessageAs(rickListedUser, "channel", "?help help-arg", MsgDefaultHelp)
+	runner.SendMessageAs(rickListedUser, "literally anything else", "?help help-arg", MsgRickList)
 }
 
 func assertNumCommands(t *testing.T, customMap StringMap, count int) {
@@ -307,7 +332,7 @@ func assertNumDiscordMessages(t *testing.T, discordSession *util.InMemoryDiscord
 
 func sendMessage(t *testing.T, discordSession DiscordSession, handler func(DiscordSession, *discordgo.MessageCreate), channel, message string) {
 	author := &discordgo.User{
-		ID:            "author id",
+		ID:            "1",
 		Email:         "email@example.com",
 		Username:      "username",
 		Avatar:        "avatar",
@@ -318,6 +343,10 @@ func sendMessage(t *testing.T, discordSession DiscordSession, handler func(Disco
 		Bot:           false,
 	}
 
+	sendMessageAs(author, discordSession, handler, channel, message)
+}
+
+func sendMessageAs(author *discordgo.User, discordSession DiscordSession, handler func(DiscordSession, *discordgo.MessageCreate), channel, message string) {
 	messageCreate := &discordgo.MessageCreate{
 		&discordgo.Message{
 			ID:              "messageID",
