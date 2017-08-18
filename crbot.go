@@ -27,14 +27,12 @@ func main() {
 		fatal("Config parsing failed", err)
 	}
 
-	// Initialize external resources.
+	// Initialize Redis.
 	commandMap, err := NewRedisStringMap(Redis_Hash)
 	if err != nil {
 		fatal("Unable to initialize Redis", err)
 	}
 	gist := NewRemoteGist()
-
-	featureRegistry := InitializeRegistry(commandMap, gist)
 
 	// Set up Discord API.
 	discord, err := discordgo.New("Bot " + config.BotToken)
@@ -42,8 +40,10 @@ func main() {
 		fatal("Error initializing Discord client library", err)
 	}
 
+	featureRegistry := InitializeRegistry(commandMap, gist, config)
+
 	// Open communications with Discord.
-	handler := getHandleMessage(commandMap, featureRegistry, config.RickList)
+	handler := getHandleMessage(commandMap, featureRegistry)
 
 	// Wrapper is needed so the discordgo registry recognizes the input types.
 	wrappedHandler := func(s *discordgo.Session, c *discordgo.MessageCreate) {

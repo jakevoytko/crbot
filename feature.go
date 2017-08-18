@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 // Feature encapsulates all of the behavior necessary for a built-in
@@ -13,7 +15,8 @@ type Feature interface {
 	// FallbackParser returns the parser to execute if no other parser is
 	// recognized by name. There can only be one system-wide.
 	FallbackParser() Parser
-
+	// CommandInterceptors returns the command interceptors for this feature.
+	CommandInterceptors() []CommandInterceptor
 	// Returns all executors associated with this feature.
 	Executors() []Executor
 }
@@ -38,6 +41,13 @@ type Executor interface {
 	Execute(DiscordSession, string, *Command)
 }
 
+// CommandInterceptor allows features to examine and replace the parsed
+// command. For instance, moderation and command ACLs can be implemented this
+// way.
+type CommandInterceptor interface {
+	Intercept(*Command, DiscordSession, *discordgo.MessageCreate) (*Command, error)
+}
+
 // FeatureRegistry stores all of the features.
 type FeatureRegistry struct {
 	// FallbackFeature is the feature that should attempt to parse the command
@@ -45,6 +55,7 @@ type FeatureRegistry struct {
 	FallbackParser Parser
 
 	nameToParser          map[string]Parser
+	interceptors          []CommandInterceptor
 	typeToExecutor        map[int]Executor
 	invokableFeatureNames []string
 }
@@ -53,6 +64,7 @@ type FeatureRegistry struct {
 func NewFeatureRegistry() *FeatureRegistry {
 	return &FeatureRegistry{
 		nameToParser:          map[string]Parser{},
+		interceptors:          []CommandInterceptor{},
 		typeToExecutor:        map[int]Executor{},
 		invokableFeatureNames: []string{},
 	}
@@ -71,6 +83,9 @@ func (r *FeatureRegistry) Register(feature Feature) error {
 			r.invokableFeatureNames = append(r.invokableFeatureNames, parser.GetName())
 		}
 	}
+
+	// Register command interceptors.
+	r.interceptors = append(r.interceptors, feature.CommandInterceptors()...)
 
 	// Register fallback parser.
 	if fallback := feature.FallbackParser(); fallback != nil {
@@ -123,4 +138,9 @@ func (r *FeatureRegistry) IsInvokable(name string) bool {
 // Gets the invokable feature names.
 func (r *FeatureRegistry) GetInvokableFeatureNames() []string {
 	return r.invokableFeatureNames
+}
+
+// GetCommandInterceptors gets the execution interceptors.
+func (r *FeatureRegistry) CommandInterceptors() []CommandInterceptor {
+	return r.interceptors
 }

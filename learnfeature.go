@@ -29,6 +29,11 @@ func (f *LearnFeature) Parsers() []Parser {
 	}
 }
 
+// CommandInterceptors returns nothing.
+func (f *LearnFeature) CommandInterceptors() []CommandInterceptor {
+	return []CommandInterceptor{}
+}
+
 // FallbackParser returns the custom parser, to recognize custom ? commands. It
 // should be the only fallback parser in the project.
 func (f *LearnFeature) FallbackParser() Parser {

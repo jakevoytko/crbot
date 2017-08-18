@@ -1,13 +1,12 @@
 package main
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func InitializeRegistry(commandMap StringMap, gist Gist) *FeatureRegistry {
+func InitializeRegistry(commandMap StringMap, gist Gist, config *Config) *FeatureRegistry {
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
 	// a better pattern here.
@@ -15,7 +14,7 @@ func InitializeRegistry(commandMap StringMap, gist Gist) *FeatureRegistry {
 	featureRegistry.Register(NewHelpFeature(featureRegistry))
 	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
 	featureRegistry.Register(NewListFeature(featureRegistry, commandMap, gist))
-	featureRegistry.Register(NewModerationFeature(featureRegistry))
+	featureRegistry.Register(NewModerationFeature(featureRegistry, config))
 	return featureRegistry
 }
 
@@ -75,7 +74,7 @@ type Gist interface {
 ///////////////////////////////////////////////////////////////////////////////
 
 // getHandleMessage returns the main handler for incoming messages.
-func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry, rickList []int64) func(DiscordSession, *discordgo.MessageCreate) {
+func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry) func(DiscordSession, *discordgo.MessageCreate) {
 	return func(s DiscordSession, m *discordgo.MessageCreate) {
 		// Never reply to a bot.
 		if m.Author.Bot {
@@ -89,18 +88,10 @@ func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry, ri
 			return
 		}
 
-		// Check moderation.
-		// RickList
-		// - RickListed users can only use ?learn in private channels, without it responding with
-		//   a rickroll.
-		if channel, err := s.Channel(m.ChannelID); err == nil && channel.IsPrivate && command.Type != Type_Learn {
-			for _, ricked := range rickList {
-				if strconv.FormatInt(ricked, 10) == m.Author.ID {
-					command = &Command{
-						Type: Type_RickList,
-					}
-					break
-				}
+		for _, interceptor := range featureRegistry.CommandInterceptors() {
+			command, err = interceptor.Intercept(command, s, m)
+			if err != nil {
+				panic("Ran into error intercepting commands")
 			}
 		}
 

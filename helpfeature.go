@@ -19,6 +19,11 @@ func (f *HelpFeature) Parsers() []Parser {
 	return []Parser{NewHelpParser(f.featureRegistry)}
 }
 
+// CommandInterceptors returns nothing.
+func (f *HelpFeature) CommandInterceptors() []CommandInterceptor {
+	return []CommandInterceptor{}
+}
+
 // FallbackParser returns nil.
 func (f *HelpFeature) FallbackParser() Parser {
 	return nil

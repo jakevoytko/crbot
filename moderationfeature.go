@@ -1,14 +1,22 @@
 package main
 
+import (
+	"strconv"
+
+	"github.com/bwmarrin/discordgo"
+)
+
 // ModerationFeature is a Feature that executes moderation events.
 type ModerationFeature struct {
 	featureRegistry *FeatureRegistry
+	config          *Config
 }
 
 // NewModerationFeature returns a new ModerationFeature.
-func NewModerationFeature(featureRegistry *FeatureRegistry) *ModerationFeature {
+func NewModerationFeature(featureRegistry *FeatureRegistry, config *Config) *ModerationFeature {
 	return &ModerationFeature{
 		featureRegistry: featureRegistry,
+		config:          config,
 	}
 }
 
@@ -17,9 +25,47 @@ func (f *ModerationFeature) Parsers() []Parser {
 	return []Parser{}
 }
 
+// CommandInterceptors returns command interceptors.
+func (f *ModerationFeature) CommandInterceptors() []CommandInterceptor {
+	return []CommandInterceptor{
+		NewRickListCommandInterceptor(f.config),
+	}
+}
+
 // FallbackParser returns nil.
 func (f *ModerationFeature) FallbackParser() Parser {
 	return nil
+}
+
+// RickListCommandInterceptor asserts that the
+type RickListCommandInterceptor struct {
+	rickList []int64
+}
+
+// NewRickListCommandInterceptor returns a new ricklist command interceptor.
+func NewRickListCommandInterceptor(config *Config) *RickListCommandInterceptor {
+	return &RickListCommandInterceptor{
+		rickList: config.RickList,
+	}
+}
+
+// Intercept checks whether the command is forbidden by the ricklist.
+func (i *RickListCommandInterceptor) Intercept(command *Command, s DiscordSession, m *discordgo.MessageCreate) (*Command, error) {
+	// Check moderation.
+	// RickList
+	// - RickListed users can only use ?learn in private channels, without it responding with
+	//   a rickroll.
+	if channel, err := s.Channel(m.ChannelID); err == nil && channel.IsPrivate && command.Type != Type_Learn {
+		for _, ricked := range i.rickList {
+			if strconv.FormatInt(ricked, 10) == m.Author.ID {
+				return &Command{
+					Type: Type_RickList,
+				}, nil
+			}
+		}
+	}
+
+	return command, nil
 }
 
 // Executors gets the executors.

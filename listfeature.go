@@ -32,6 +32,11 @@ func (f *ListFeature) Parsers() []Parser {
 	return []Parser{NewListParser()}
 }
 
+// CommandInterceptors returns nothing.
+func (f *ListFeature) CommandInterceptors() []CommandInterceptor {
+	return []CommandInterceptor{}
+}
+
 // FallbackParser returns nil.
 func (f *ListFeature) FallbackParser() Parser {
 	return nil

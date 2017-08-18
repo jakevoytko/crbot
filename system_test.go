@@ -163,7 +163,7 @@ func Test_Integration(t *testing.T) {
 
 	rickList := []int64{2}
 
-	registry := InitializeRegistry(customMap, gist)
+	registry := InitializeRegistry(customMap, gist, &Config{RickList: rickList})
 	runner := &TestRunner{
 		T:                    t,
 		Learns:               map[string]*Learn{},
@@ -173,7 +173,7 @@ func Test_Integration(t *testing.T) {
 		Gist:                 gist,
 		DiscordSession:       discordSession,
 		FeatureRegistry:      registry,
-		Handler:              getHandleMessage(customMap, registry, rickList),
+		Handler:              getHandleMessage(customMap, registry),
 	}
 
 	// Assert initial state.
