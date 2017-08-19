@@ -81,7 +81,6 @@ func getHandleMessage(commandMap StringMap, featureRegistry *FeatureRegistry) fu
 			return
 		}
 
-		// No moderation stuck. Continue normally.
 		command, err := parseCommand(commandMap, featureRegistry, m.Content)
 		if err != nil {
 			info("Error parsing command", err)
