@@ -1,46 +1,53 @@
 package main
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/jakevoytko/crbot/api"
+	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/log"
+	"github.com/jakevoytko/crbot/model"
+)
 
 // HelpFeature is a Feature that prints a help prompt for the user.
 type HelpFeature struct {
-	featureRegistry *FeatureRegistry
+	featureRegistry *feature.Registry
 }
 
 // NewHelpFeature returns a new HelpFeature.
-func NewHelpFeature(featureRegistry *FeatureRegistry) *HelpFeature {
+func NewHelpFeature(featureRegistry *feature.Registry) *HelpFeature {
 	return &HelpFeature{
 		featureRegistry: featureRegistry,
 	}
 }
 
 // Parsers returns the parsers.
-func (f *HelpFeature) Parsers() []Parser {
-	return []Parser{NewHelpParser(f.featureRegistry)}
+func (f *HelpFeature) Parsers() []feature.Parser {
+	return []feature.Parser{NewHelpParser(f.featureRegistry)}
 }
 
 // CommandInterceptors returns nothing.
-func (f *HelpFeature) CommandInterceptors() []CommandInterceptor {
-	return []CommandInterceptor{}
+func (f *HelpFeature) CommandInterceptors() []feature.CommandInterceptor {
+	return []feature.CommandInterceptor{}
 }
 
 // FallbackParser returns nil.
-func (f *HelpFeature) FallbackParser() Parser {
+func (f *HelpFeature) FallbackParser() feature.Parser {
 	return nil
 }
 
 // Executors gets the executors.
-func (f *HelpFeature) Executors() []Executor {
-	return []Executor{NewHelpExecutor(f.featureRegistry)}
+func (f *HelpFeature) Executors() []feature.Executor {
+	return []feature.Executor{NewHelpExecutor(f.featureRegistry)}
 }
 
 // HelpParser parses ?help commands.
 type HelpParser struct {
-	featureRegistry *FeatureRegistry
+	featureRegistry *feature.Registry
 }
 
 // NewHelpParser works as advertised.
-func NewHelpParser(featureRegistry *FeatureRegistry) *HelpParser {
+func NewHelpParser(featureRegistry *feature.Registry) *HelpParser {
 	return &HelpParser{
 		featureRegistry: featureRegistry,
 	}
@@ -48,7 +55,7 @@ func NewHelpParser(featureRegistry *FeatureRegistry) *HelpParser {
 
 // GetName returns the named type.
 func (p *HelpParser) GetName() string {
-	return Name_Help
+	return model.Name_Help
 }
 
 const (
@@ -61,9 +68,9 @@ func (p *HelpParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given help command.
-func (p *HelpParser) Parse(splitContent []string) (*Command, error) {
+func (p *HelpParser) Parse(splitContent []string) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
-		fatal("parseHelp called with non-help command", errors.New("wat"))
+		log.Fatal("parseHelp called with non-help command", errors.New("wat"))
 	}
 	splitContent = CollapseWhitespace(splitContent, 1)
 
@@ -72,9 +79,9 @@ func (p *HelpParser) Parse(splitContent []string) (*Command, error) {
 		userCommand = splitContent[1]
 	}
 
-	return &Command{
-		Type: Type_Help,
-		Help: &HelpData{
+	return &model.Command{
+		Type: model.Type_Help,
+		Help: &model.HelpData{
 			Command: userCommand,
 		},
 	}, nil
@@ -86,11 +93,11 @@ const (
 
 // HelpExecutor prints help text for help commands.
 type HelpExecutor struct {
-	featureRegistry *FeatureRegistry
+	featureRegistry *feature.Registry
 }
 
 // NewHelpExecutor works as advertised.
-func NewHelpExecutor(featureRegistry *FeatureRegistry) *HelpExecutor {
+func NewHelpExecutor(featureRegistry *feature.Registry) *HelpExecutor {
 	return &HelpExecutor{
 		featureRegistry: featureRegistry,
 	}
@@ -98,13 +105,13 @@ func NewHelpExecutor(featureRegistry *FeatureRegistry) *HelpExecutor {
 
 // GetType returns the type.
 func (e *HelpExecutor) GetType() int {
-	return Type_Help
+	return model.Type_Help
 }
 
 // Execute replies over the given channel with a help message.
-func (e *HelpExecutor) Execute(s DiscordSession, channel string, command *Command) {
+func (e *HelpExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
 	if command.Help == nil {
-		fatal("Incorrectly generated help command", errors.New("wat"))
+		log.Fatal("Incorrectly generated help command", errors.New("wat"))
 	}
 
 	// Try to parse custom commands before fallback commands. This matches actual
@@ -115,11 +122,11 @@ func (e *HelpExecutor) Execute(s DiscordSession, channel string, command *Comman
 		// Use the builtin parsers to generate help text.
 		helpText, err := parser.HelpText(command.Help.Command)
 		if err != nil {
-			info("Failed to generate help text for command "+command.Help.Command, err)
+			log.Info("Failed to generate help text for command "+command.Help.Command, err)
 			return
 		}
 		if _, err := s.ChannelMessageSend(channel, helpText); err != nil {
-			info("Failed to send default help message", err)
+			log.Info("Failed to send default help message", err)
 		}
 		return
 	}
@@ -127,7 +134,7 @@ func (e *HelpExecutor) Execute(s DiscordSession, channel string, command *Comman
 	// Use the fallback parser to generate help text.
 	fallbackHelpText, err := e.featureRegistry.FallbackParser.HelpText(command.Help.Command)
 	if err != nil {
-		info("Failed to generate backup help text for command "+command.Help.Command, err)
+		log.Info("Failed to generate backup help text for command "+command.Help.Command, err)
 		return
 	}
 	if fallbackHelpText == "" {
@@ -135,6 +142,6 @@ func (e *HelpExecutor) Execute(s DiscordSession, channel string, command *Comman
 	}
 
 	if _, err := s.ChannelMessageSend(channel, fallbackHelpText); err != nil {
-		info("Failed to send fallback or default help message", err)
+		log.Info("Failed to send fallback or default help message", err)
 	}
 }

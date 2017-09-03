@@ -1,12 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"log"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/jakevoytko/crbot/api"
+	"github.com/jakevoytko/crbot/app"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,22 +23,22 @@ func main() {
 	flag.Parse()
 
 	// Parse config.
-	config, err := ParseConfig(*filename)
+	config, err := app.ParseConfig(*filename)
 	if err != nil {
-		fatal("Config parsing failed", err)
+		log.Fatal("Config parsing failed", err)
 	}
 
 	// Initialize Redis.
 	commandMap, err := NewRedisStringMap(Redis_Hash)
 	if err != nil {
-		fatal("Unable to initialize Redis", err)
+		log.Fatal("Unable to initialize Redis", err)
 	}
-	gist := NewRemoteGist()
+	gist := api.NewRemoteGist()
 
 	// Set up Discord API.
 	discord, err := discordgo.New("Bot " + config.BotToken)
 	if err != nil {
-		fatal("Error initializing Discord client library", err)
+		log.Fatal("Error initializing Discord client library", err)
 	}
 
 	featureRegistry := InitializeRegistry(commandMap, gist, config)
@@ -51,7 +52,7 @@ func main() {
 	}
 	discord.AddHandler(wrappedHandler)
 	if err := discord.Open(); err != nil {
-		fatal("Error opening Discord session", err)
+		log.Fatal("Error opening Discord session", err)
 	}
 
 	fmt.Println("CRBot running.")
@@ -66,24 +67,3 @@ func main() {
 const (
 	Redis_Hash = "crbot-custom-commands"
 )
-
-///////////////////////////////////////////////////////////////////////////////
-// Configuration handling
-///////////////////////////////////////////////////////////////////////////////
-
-// Secret holds the serialized bot token.
-type Config struct {
-	BotToken string  `json:"bot_token"`
-	RickList []int64 `json:"ricklist"`
-}
-
-// ParseConfig reads the config from the given filename.
-func ParseConfig(filename string) (*Config, error) {
-	f, e := ioutil.ReadFile(filename)
-	if e != nil {
-		return nil, e
-	}
-	var config Config
-	e = json.Unmarshal(f, &config)
-	return &config, e
-}

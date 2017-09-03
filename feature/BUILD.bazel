@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "commandinterceptor.go",
+        "executor.go",
+        "feature.go",
+        "parser.go",
+        "registry.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//api:go_default_library",
+        "//model:go_default_library",
+        "@com_github_bwmarrin_discordgo//:go_default_library",
+    ],
+)

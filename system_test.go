@@ -9,6 +9,9 @@ import (
 	"testing"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/jakevoytko/crbot/api"
+	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/util"
 )
 
@@ -29,10 +32,10 @@ type TestRunner struct {
 	DiscordSession *util.InMemoryDiscordSession
 
 	// Real objects
-	FeatureRegistry *FeatureRegistry
+	FeatureRegistry *feature.Registry
 
 	// Controllers under test
-	Handler func(DiscordSession, *discordgo.MessageCreate)
+	Handler func(api.DiscordSession, *discordgo.MessageCreate)
 }
 
 func (r *TestRunner) AssertState() {
@@ -163,7 +166,7 @@ func Test_Integration(t *testing.T) {
 
 	rickList := []int64{2}
 
-	registry := InitializeRegistry(customMap, gist, &Config{RickList: rickList})
+	registry := InitializeRegistry(customMap, gist, &app.Config{RickList: rickList})
 	runner := &TestRunner{
 		T:                    t,
 		Learns:               map[string]*Learn{},
@@ -322,7 +325,7 @@ func Test_Integration(t *testing.T) {
 	runner.SendLearnMessageAs(rickListedUser, "literally anything else", "?learn rick list", NewLearn("rick", "list"))
 }
 
-func assertNumCommands(t *testing.T, customMap StringMap, count int) {
+func assertNumCommands(t *testing.T, customMap *util.InMemoryStringMap, count int) {
 	if all, _ := customMap.GetAll(); len(all) != count {
 		t.Errorf(fmt.Sprintf("Should have %v commands", count))
 	}
@@ -340,7 +343,7 @@ func assertNumDiscordMessages(t *testing.T, discordSession *util.InMemoryDiscord
 	}
 }
 
-func sendMessage(t *testing.T, discordSession DiscordSession, handler func(DiscordSession, *discordgo.MessageCreate), channel, message string) {
+func sendMessage(t *testing.T, discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel, message string) {
 	author := &discordgo.User{
 		ID:            "1",
 		Email:         "email@example.com",
@@ -356,7 +359,7 @@ func sendMessage(t *testing.T, discordSession DiscordSession, handler func(Disco
 	sendMessageAs(author, discordSession, handler, channel, message)
 }
 
-func sendMessageAs(author *discordgo.User, discordSession DiscordSession, handler func(DiscordSession, *discordgo.MessageCreate), channel, message string) {
+func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel, message string) {
 	messageCreate := &discordgo.MessageCreate{
 		&discordgo.Message{
 			ID:              "messageID",

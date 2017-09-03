@@ -8,8 +8,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "crbot.go",
-        "feature.go",
-        "gist.go",
         "helpfeature.go",
         "learnfeature.go",
         "listfeature.go",
@@ -20,6 +18,11 @@ go_library(
     ],
     visibility = ["//visibility:private"],
     deps = [
+        "//api:go_default_library",
+        "//app:go_default_library",
+        "//feature:go_default_library",
+        "//log:go_default_library",
+        "//model:go_default_library",
         "@com_github_bwmarrin_discordgo//:go_default_library",
         "@com_github_go_redis_redis//:go_default_library",
     ],
@@ -37,6 +40,8 @@ go_test(
     srcs = ["system_test.go"],
     library = ":go_default_library",
     deps = [
+        "//api:go_default_library",
+        "//app:go_default_library",
         "//util:go_default_library",
         "@com_github_bwmarrin_discordgo//:go_default_library",
     ],

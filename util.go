@@ -1,17 +1,5 @@
 package main
 
-import "fmt"
-
-// fatal handles a non-recoverable error.
-func fatal(msg string, err error) {
-	panic(msg + ": " + err.Error())
-}
-
-// info prints error information to stdout.
-func info(msg string, err error) {
-	fmt.Printf(msg+": %v\n", err.Error())
-}
-
 // CollapseWhitespace returns an array where splitContent entries are removed,
 // starting at the given index. Will return the input if no collapsing is
 // necessary, otherwise will return a new slice with the given indices cut out.

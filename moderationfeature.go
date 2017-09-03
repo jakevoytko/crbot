@@ -4,16 +4,21 @@ import (
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/jakevoytko/crbot/api"
+	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/log"
+	"github.com/jakevoytko/crbot/model"
 )
 
 // ModerationFeature is a Feature that executes moderation events.
 type ModerationFeature struct {
-	featureRegistry *FeatureRegistry
-	config          *Config
+	featureRegistry *feature.Registry
+	config          *app.Config
 }
 
 // NewModerationFeature returns a new ModerationFeature.
-func NewModerationFeature(featureRegistry *FeatureRegistry, config *Config) *ModerationFeature {
+func NewModerationFeature(featureRegistry *feature.Registry, config *app.Config) *ModerationFeature {
 	return &ModerationFeature{
 		featureRegistry: featureRegistry,
 		config:          config,
@@ -21,19 +26,19 @@ func NewModerationFeature(featureRegistry *FeatureRegistry, config *Config) *Mod
 }
 
 // Parsers returns the parsers.
-func (f *ModerationFeature) Parsers() []Parser {
-	return []Parser{}
+func (f *ModerationFeature) Parsers() []feature.Parser {
+	return []feature.Parser{}
 }
 
 // CommandInterceptors returns command interceptors.
-func (f *ModerationFeature) CommandInterceptors() []CommandInterceptor {
-	return []CommandInterceptor{
+func (f *ModerationFeature) CommandInterceptors() []feature.CommandInterceptor {
+	return []feature.CommandInterceptor{
 		NewRickListCommandInterceptor(f.config),
 	}
 }
 
 // FallbackParser returns nil.
-func (f *ModerationFeature) FallbackParser() Parser {
+func (f *ModerationFeature) FallbackParser() feature.Parser {
 	return nil
 }
 
@@ -43,23 +48,23 @@ type RickListCommandInterceptor struct {
 }
 
 // NewRickListCommandInterceptor returns a new ricklist command interceptor.
-func NewRickListCommandInterceptor(config *Config) *RickListCommandInterceptor {
+func NewRickListCommandInterceptor(config *app.Config) *RickListCommandInterceptor {
 	return &RickListCommandInterceptor{
 		rickList: config.RickList,
 	}
 }
 
 // Intercept checks whether the command is forbidden by the ricklist.
-func (i *RickListCommandInterceptor) Intercept(command *Command, s DiscordSession, m *discordgo.MessageCreate) (*Command, error) {
+func (i *RickListCommandInterceptor) Intercept(command *model.Command, s api.DiscordSession, m *discordgo.MessageCreate) (*model.Command, error) {
 	// Check moderation.
 	// RickList
 	// - RickListed users can only use ?learn in private channels, without it responding with
 	//   a rickroll.
-	if channel, err := s.Channel(m.ChannelID); err == nil && channel.IsPrivate && command.Type != Type_Learn {
+	if channel, err := s.Channel(m.ChannelID); err == nil && channel.IsPrivate && command.Type != model.Type_Learn {
 		for _, ricked := range i.rickList {
 			if strconv.FormatInt(ricked, 10) == m.Author.ID {
-				return &Command{
-					Type: Type_RickList,
+				return &model.Command{
+					Type: model.Type_RickList,
 				}, nil
 			}
 		}
@@ -69,8 +74,8 @@ func (i *RickListCommandInterceptor) Intercept(command *Command, s DiscordSessio
 }
 
 // Executors gets the executors.
-func (f *ModerationFeature) Executors() []Executor {
-	return []Executor{NewRickListExecutor(f.featureRegistry)}
+func (f *ModerationFeature) Executors() []feature.Executor {
+	return []feature.Executor{NewRickListExecutor(f.featureRegistry)}
 }
 
 const (
@@ -79,11 +84,11 @@ const (
 
 // RickListExecutor prints a rick roll.
 type RickListExecutor struct {
-	featureRegistry *FeatureRegistry
+	featureRegistry *feature.Registry
 }
 
 // NewRickListExecutor works as advertised.
-func NewRickListExecutor(featureRegistry *FeatureRegistry) *RickListExecutor {
+func NewRickListExecutor(featureRegistry *feature.Registry) *RickListExecutor {
 	return &RickListExecutor{
 		featureRegistry: featureRegistry,
 	}
@@ -91,12 +96,12 @@ func NewRickListExecutor(featureRegistry *FeatureRegistry) *RickListExecutor {
 
 // GetType returns the type.
 func (e *RickListExecutor) GetType() int {
-	return Type_RickList
+	return model.Type_RickList
 }
 
 // Execute replies over the given channel with a rick roll.
-func (e *RickListExecutor) Execute(s DiscordSession, channel string, command *Command) {
+func (e *RickListExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
 	if _, err := s.ChannelMessageSend(channel, MsgRickList); err != nil {
-		info("Failed to send ricklist message", err)
+		log.Info("Failed to send ricklist message", err)
 	}
 }

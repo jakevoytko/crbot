@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"bytes"
@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+
+	"github.com/jakevoytko/crbot/log"
 )
 
 // RemoteGist implements Gist, and interacts with the actual Github Gist API.
@@ -16,27 +18,35 @@ func NewRemoteGist() *RemoteGist {
 	return &RemoteGist{}
 }
 
+const (
+	MsgGistPostFail      = "Unable to connect to Gist service. Give it a few minutes and try again"
+	MsgGistResponseFail  = "Failure reading response from Gist service"
+	MsgGistSerializeFail = "Unable to serialize Gist"
+	MsgGistStatusCode    = "Failed to upload Gist :("
+	MsgGistUrlFail       = "Failed getting url from Gist service"
+)
+
 // Upload sends the contents to the Gist API.
 func (g *RemoteGist) Upload(contents string) (string, error) {
 	gist := simpleGist(contents)
 	serializedGist, err := json.Marshal(gist)
 	if err != nil {
-		info("Error marshalling gist", err)
+		log.Info("Error marshalling gist", err)
 		return "", errors.New(MsgGistSerializeFail)
 	}
 	response, err := http.Post(
 		"https://api.github.com/gists", "application/json", bytes.NewBuffer(serializedGist))
 	if err != nil {
-		info("Error POSTing gist", err)
+		log.Info("Error POSTing gist", err)
 		return "", errors.New(MsgGistPostFail)
 	} else if response.StatusCode != 201 {
-		info("Bad status code", errors.New("Code: "+strconv.Itoa(response.StatusCode)))
+		log.Info("Bad status code", errors.New("Code: "+strconv.Itoa(response.StatusCode)))
 		return "", errors.New(MsgGistStatusCode)
 	}
 
 	responseMap := map[string]interface{}{}
 	if err := json.NewDecoder(response.Body).Decode(&responseMap); err != nil {
-		info("Error reading gist response", err)
+		log.Info("Error reading gist response", err)
 		return "", errors.New(MsgGistResponseFail)
 	}
 

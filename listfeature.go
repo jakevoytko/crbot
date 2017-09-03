@@ -5,20 +5,25 @@ import (
 	"errors"
 	"sort"
 	"strings"
+
+	"github.com/jakevoytko/crbot/api"
+	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/log"
+	"github.com/jakevoytko/crbot/model"
 )
 
 // ListFeature is a Feature that lists commands that are available.
 type ListFeature struct {
-	featureRegistry *FeatureRegistry
-	commandMap      StringMap
-	gist            Gist
+	featureRegistry *feature.Registry
+	commandMap      model.StringMap
+	gist            api.Gist
 }
 
 // NewListFeature returns a new ListFeature.
 func NewListFeature(
-	featureRegistry *FeatureRegistry,
-	commandMap StringMap,
-	gist Gist) *ListFeature {
+	featureRegistry *feature.Registry,
+	commandMap model.StringMap,
+	gist api.Gist) *ListFeature {
 
 	return &ListFeature{
 		featureRegistry: featureRegistry,
@@ -28,22 +33,22 @@ func NewListFeature(
 }
 
 // Parsers returns the parsers.
-func (f *ListFeature) Parsers() []Parser {
-	return []Parser{NewListParser()}
+func (f *ListFeature) Parsers() []feature.Parser {
+	return []feature.Parser{NewListParser()}
 }
 
 // CommandInterceptors returns nothing.
-func (f *ListFeature) CommandInterceptors() []CommandInterceptor {
-	return []CommandInterceptor{}
+func (f *ListFeature) CommandInterceptors() []feature.CommandInterceptor {
+	return []feature.CommandInterceptor{}
 }
 
 // FallbackParser returns nil.
-func (f *ListFeature) FallbackParser() Parser {
+func (f *ListFeature) FallbackParser() feature.Parser {
 	return nil
 }
 
-func (f *ListFeature) Executors() []Executor {
-	return []Executor{NewListExecutor(f.featureRegistry, f.commandMap, f.gist)}
+func (f *ListFeature) Executors() []feature.Executor {
+	return []feature.Executor{NewListExecutor(f.featureRegistry, f.commandMap, f.gist)}
 }
 
 // ListParser parses ?list commands.
@@ -56,7 +61,7 @@ func NewListParser() *ListParser {
 
 // GetName returns the named type of this feature.
 func (p *ListParser) GetName() string {
-	return Name_List
+	return model.Name_List
 }
 
 const (
@@ -69,33 +74,28 @@ func (p *ListParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given list command.
-func (p *ListParser) Parse(splitContent []string) (*Command, error) {
+func (p *ListParser) Parse(splitContent []string) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
-		fatal("parseList called with non-list command", errors.New("wat"))
+		log.Fatal("parseList called with non-list command", errors.New("wat"))
 	}
-	return &Command{
-		Type: Type_List,
+	return &model.Command{
+		Type: model.Type_List,
 	}, nil
 }
 
 const (
-	MsgGistAddress       = "The list of commands is here"
-	MsgGistPostFail      = "Unable to connect to Gist service. Give it a few minutes and try again"
-	MsgGistResponseFail  = "Failure reading response from Gist service"
-	MsgGistSerializeFail = "Unable to serialize Gist"
-	MsgGistStatusCode    = "Failed to upload Gist :("
-	MsgGistUrlFail       = "Failed getting url from Gist service"
-	MsgListBuiltins      = "List of builtins:"
-	MsgListCustom        = "List of learned commands:"
+	MsgGistAddress  = "The list of commands is here"
+	MsgListBuiltins = "List of builtins:"
+	MsgListCustom   = "List of learned commands:"
 )
 
 type ListExecutor struct {
-	featureRegistry *FeatureRegistry
-	commandMap      StringMap
-	gist            Gist
+	featureRegistry *feature.Registry
+	commandMap      model.StringMap
+	gist            api.Gist
 }
 
-func NewListExecutor(featureRegistry *FeatureRegistry, commandMap StringMap, gist Gist) *ListExecutor {
+func NewListExecutor(featureRegistry *feature.Registry, commandMap model.StringMap, gist api.Gist) *ListExecutor {
 	return &ListExecutor{
 		featureRegistry: featureRegistry,
 		commandMap:      commandMap,
@@ -105,15 +105,15 @@ func NewListExecutor(featureRegistry *FeatureRegistry, commandMap StringMap, gis
 
 // GetType returns the type of this feature.
 func (e *ListExecutor) GetType() int {
-	return Type_List
+	return model.Type_List
 }
 
 // Execute uploads the command list to github and pings the gist link in chat.
-func (e *ListExecutor) Execute(s DiscordSession, channel string, command *Command) {
+func (e *ListExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
 	builtins := e.featureRegistry.GetInvokableFeatureNames()
 	all, err := e.commandMap.GetAll()
 	if err != nil {
-		fatal("Error reading all commands", err)
+		log.Fatal("Error reading all commands", err)
 	}
 	custom := make([]string, 0, len(all))
 	for name := range all {
@@ -136,7 +136,7 @@ func (e *ListExecutor) Execute(s DiscordSession, channel string, command *Comman
 			buffer.WriteString(": ")
 			buffer.WriteString(helpText)
 		} else {
-			info("Error getting builtin help text", err)
+			log.Info("Error getting builtin help text", err)
 		}
 
 		buffer.WriteString("\n")
