@@ -7,6 +7,7 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 )
@@ -19,7 +20,7 @@ func InitializeRegistry(commandMap model.StringMap, gist api.Gist, config *app.C
 	featureRegistry.Register(NewHelpFeature(featureRegistry))
 	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
 	featureRegistry.Register(NewListFeature(featureRegistry, commandMap, gist))
-	featureRegistry.Register(NewModerationFeature(featureRegistry, config))
+	featureRegistry.Register(moderation.NewFeature(featureRegistry, config))
 	return featureRegistry
 }
 

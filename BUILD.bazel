@@ -11,7 +11,6 @@ go_library(
         "helpfeature.go",
         "learnfeature.go",
         "listfeature.go",
-        "moderationfeature.go",
         "redis.go",
         "system.go",
         "util.go",
@@ -21,6 +20,7 @@ go_library(
         "//api:go_default_library",
         "//app:go_default_library",
         "//feature:go_default_library",
+        "//feature/moderation:go_default_library",
         "//log:go_default_library",
         "//model:go_default_library",
         "@com_github_bwmarrin_discordgo//:go_default_library",
@@ -42,6 +42,7 @@ go_test(
     deps = [
         "//api:go_default_library",
         "//app:go_default_library",
+        "//feature:go_default_library",
         "//util:go_default_library",
         "@com_github_bwmarrin_discordgo//:go_default_library",
     ],

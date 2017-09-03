@@ -12,6 +12,7 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/util"
 )
 
@@ -321,7 +322,7 @@ func Test_Integration(t *testing.T) {
 		Bot:           false,
 	}
 	runner.SendMessageAs(rickListedUser, "channel", "?help help-arg", MsgDefaultHelp)
-	runner.SendMessageAs(rickListedUser, "literally anything else", "?help help-arg", MsgRickList)
+	runner.SendMessageAs(rickListedUser, "literally anything else", "?help help-arg", moderation.MsgRickList)
 	runner.SendLearnMessageAs(rickListedUser, "literally anything else", "?learn rick list", NewLearn("rick", "list"))
 }
 
