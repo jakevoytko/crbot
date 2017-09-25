@@ -11,13 +11,15 @@ const (
 	Type_List
 	Type_None
 	Type_RickList
+	Type_RickListInfo
 	Type_Unlearn
 	Type_Unrecognized
 
-	Name_Help    = "?help"
-	Name_Learn   = "?learn"
-	Name_List    = "?list"
-	Name_Unlearn = "?unlearn"
+	Name_Help         = "?help"
+	Name_Learn        = "?learn"
+	Name_List         = "?list"
+	Name_Unlearn      = "?unlearn"
+	Name_RickListInfo = "?ricklist"
 )
 
 ///////////////////////////////////////////////////////////////////////////////

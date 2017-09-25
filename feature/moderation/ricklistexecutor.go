@@ -2,7 +2,6 @@ package moderation
 
 import (
 	"github.com/jakevoytko/crbot/api"
-	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 )
@@ -13,14 +12,11 @@ const (
 
 // RickListExecutor prints a rick roll.
 type RickListExecutor struct {
-	featureRegistry *feature.Registry
 }
 
 // NewRickListExecutor works as advertised.
-func NewRickListExecutor(featureRegistry *feature.Registry) *RickListExecutor {
-	return &RickListExecutor{
-		featureRegistry: featureRegistry,
-	}
+func NewRickListExecutor() *RickListExecutor {
+	return &RickListExecutor{}
 }
 
 // GetType returns the type.

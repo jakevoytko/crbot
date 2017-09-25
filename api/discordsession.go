@@ -7,4 +7,5 @@ import "github.com/bwmarrin/discordgo"
 type DiscordSession interface {
 	ChannelMessageSend(channel, message string) (*discordgo.Message, error)
 	Channel(channelID string) (*discordgo.Channel, error)
+	User(userID string) (*discordgo.User, error)
 }

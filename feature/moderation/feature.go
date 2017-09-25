@@ -21,7 +21,9 @@ func NewFeature(featureRegistry *feature.Registry, config *app.Config) *Feature 
 
 // Parsers returns the parsers.
 func (f *Feature) Parsers() []feature.Parser {
-	return []feature.Parser{}
+	return []feature.Parser{
+		NewRickListInfoParser(),
+	}
 }
 
 // CommandInterceptors returns command interceptors.
@@ -38,5 +40,8 @@ func (f *Feature) FallbackParser() feature.Parser {
 
 // Executors gets the executors.
 func (f *Feature) Executors() []feature.Executor {
-	return []feature.Executor{NewRickListExecutor(f.featureRegistry)}
+	return []feature.Executor{
+		NewRickListExecutor(),
+		NewRickListInfoExecutor(f.config),
+	}
 }
