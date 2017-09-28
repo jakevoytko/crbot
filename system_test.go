@@ -16,175 +16,15 @@ import (
 	"github.com/jakevoytko/crbot/util"
 )
 
-// TestRunner is a helper that executes messages incrementally, and asserts that
-// the global state is always what is expected.
-type TestRunner struct {
-	// Test object
-	T *testing.T
-
-	// State
-	GistsCount           int
-	DiscordMessagesCount int
-	Learns               map[string]*Learn
-
-	// Fakes
-	CustomMap      *util.InMemoryStringMap
-	Gist           *util.InMemoryGist
-	DiscordSession *util.InMemoryDiscordSession
-
-	// Real objects
-	FeatureRegistry *feature.Registry
-
-	// Controllers under test
-	Handler func(api.DiscordSession, *discordgo.MessageCreate)
-}
-
-func (r *TestRunner) AssertState() {
-	// Assert counts.
-	assertNumCommands(r.T, r.CustomMap, len(r.Learns))
-	assertNumGists(r.T, r.Gist, r.GistsCount)
-	assertNumDiscordMessages(r.T, r.DiscordSession, r.DiscordMessagesCount)
-
-	// Assert command map state.
-	for _, learn := range r.Learns {
-		assertCommand(r.T, r.CustomMap, learn.Call, learn.Response)
-	}
-}
-
-func (r *TestRunner) SendMessage(channel, message, expectedResponse string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
-	r.DiscordMessagesCount++
-	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, expectedResponse)})
-	r.AssertState()
-}
-
-func (r *TestRunner) SendMessageAs(author *discordgo.User, channel, message, expectedResponse string) {
-	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
-	r.DiscordMessagesCount++
-	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, expectedResponse)})
-	r.AssertState()
-}
-
-func (r *TestRunner) SendLearnMessage(channel, message string, learn *Learn) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
-	r.DiscordMessagesCount++
-	r.Learns[learn.Call] = learn
-	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgLearnSuccess, learn.Call))})
-	r.AssertState()
-}
-
-func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel, message string, learn *Learn) {
-	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
-	r.DiscordMessagesCount++
-	r.Learns[learn.Call] = learn
-	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgLearnSuccess, learn.Call))})
-	r.AssertState()
-}
-
-func (r *TestRunner) SendUnlearnMessage(channel, message string, call string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
-	r.DiscordMessagesCount++
-	delete(r.Learns, call)
-	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgUnlearnSuccess, call))})
-	r.AssertState()
-}
-
-func (r *TestRunner) SendMessageWithoutResponse(channel, message string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
-	assertNewMessages(r.T, r.DiscordSession, []*util.Message{})
-	r.AssertState()
-}
-
-func (r *TestRunner) SendListMessage(channel string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, "?list")
-	r.DiscordMessagesCount++
-	r.GistsCount++
-	assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, "The list of commands is here: https://www.example.com/success")})
-
-	// Assert gist state. Cannot be in AssertState because this would fail at the
-	// next learn or unlearn.
-	// TODO(jake): Remove duplication between this and listfeature. Maybe just assert number of lines?
-	if r.GistsCount > 0 {
-		var buffer bytes.Buffer
-		buffer.WriteString("List of builtins:\n - ?help: ")
-		buffer.WriteString(MsgHelpHelp)
-		buffer.WriteString("\n")
-		buffer.WriteString(" - ?learn: ")
-		buffer.WriteString(MsgHelpLearn)
-		buffer.WriteString("\n")
-		buffer.WriteString(" - ?list: ")
-		buffer.WriteString(MsgHelpList)
-		buffer.WriteString("\n")
-		buffer.WriteString(" - ?ricklist: ")
-		buffer.WriteString(moderation.MsgHelpRickListInfo)
-		buffer.WriteString("\n")
-		buffer.WriteString(" - ?unlearn: ")
-		buffer.WriteString(MsgHelpUnlearn)
-		buffer.WriteString("\n\n")
-
-		buffer.WriteString("List of learned commands:\n")
-
-		all, _ := r.CustomMap.GetAll()
-		custom := make([]string, 0, len(all))
-		for name := range all {
-			custom = append(custom, name)
-		}
-		sort.Strings(custom)
-		for _, name := range custom {
-			buffer.WriteString(" - ?")
-			buffer.WriteString(name)
-			if strings.Contains(all[name], "$1") {
-				buffer.WriteString(" <args>")
-			}
-			buffer.WriteString("\n")
-		}
-
-		generated := buffer.String()
-		actual := r.Gist.Messages[len(r.Gist.Messages)-1]
-		if generated != actual {
-			r.T.Fatalf(fmt.Sprintf("Gist failure, got `%v` expected `%v`", actual, generated))
-		}
-	}
-
-	r.AssertState()
-}
-
-func Test_Integration(t *testing.T) {
-	// Initialize fakes.
-	customMap := util.NewInMemoryStringMap()
-	gist := util.NewInMemoryGist()
-	discordSession := util.NewInMemoryDiscordSession()
-	discordSession.SetChannel(&discordgo.Channel{
-		ID:        "channel",
-		IsPrivate: false,
-	})
-	discordSession.SetChannel(&discordgo.Channel{
-		ID:        "literally anything else",
-		IsPrivate: true,
-	})
-
-	rickList := []int64{2}
-
-	registry := InitializeRegistry(customMap, gist, &app.Config{RickList: rickList})
-	runner := &TestRunner{
-		T:                    t,
-		Learns:               map[string]*Learn{},
-		GistsCount:           0,
-		DiscordMessagesCount: 0,
-		CustomMap:            customMap,
-		Gist:                 gist,
-		DiscordSession:       discordSession,
-		FeatureRegistry:      registry,
-		Handler:              getHandleMessage(customMap, registry),
-	}
+func TestNewServer(t *testing.T) {
+	runner := NewTestRunner(t)
 
 	// Assert initial state.
 	runner.AssertState()
+}
+
+func TestLearn_NoResponse(t *testing.T) {
+	runner := NewTestRunner(t)
 
 	// Commands that should never return a response.
 	runner.SendMessageWithoutResponse("channel", "?")
@@ -198,6 +38,10 @@ func Test_Integration(t *testing.T) {
 	// Test ?list. ?list tests will be interspersed through the learn examples
 	// below, since learn and unlearn interact with it.
 	runner.SendListMessage("channel")
+}
+
+func TestLearn_WrongFormat(t *testing.T) {
+	runner := NewTestRunner(t)
 
 	// Basic learn responses.
 	// Wrong call format
@@ -211,6 +55,14 @@ func Test_Integration(t *testing.T) {
 	// Wrong response format.
 	runner.SendMessage("channel", "?learn call ?response", MsgHelpLearn)
 	runner.SendMessage("channel", "?learn call !response", MsgHelpLearn)
+}
+
+func TestIntegration(t *testing.T) {
+	runner := NewTestRunner(t)
+	// Test ?list. ?list tests will be interspersed through the learn examples
+	// below, since learn and unlearn interact with it.
+	runner.SendListMessage("channel")
+
 	// Valid learns.
 	runner.SendLearnMessage("channel", "?learn call response", NewLearn("call", "response"))
 	runner.SendLearnMessage("channel", "?learn call2 multi word response", NewLearn("call2", "multi word response"))
@@ -327,6 +179,177 @@ func Test_Integration(t *testing.T) {
 	runner.SendMessageAs(rickListedUser, "channel", "?help help-arg", MsgDefaultHelp)
 	runner.SendMessageAs(rickListedUser, "literally anything else", "?help help-arg", moderation.MsgRickList)
 	runner.SendLearnMessageAs(rickListedUser, "literally anything else", "?learn rick list", NewLearn("rick", "list"))
+}
+
+// TestRunner is a helper that executes messages incrementally, and asserts that
+// the global state is always what is expected.
+type TestRunner struct {
+	// Test object
+	T *testing.T
+
+	// State
+	GistsCount           int
+	DiscordMessagesCount int
+	Learns               map[string]*Learn
+
+	// Fakes
+	CustomMap      *util.InMemoryStringMap
+	Gist           *util.InMemoryGist
+	DiscordSession *util.InMemoryDiscordSession
+
+	// Real objects
+	FeatureRegistry *feature.Registry
+
+	// Controllers under test
+	Handler func(api.DiscordSession, *discordgo.MessageCreate)
+}
+
+func NewTestRunner(t *testing.T) *TestRunner {
+	// Initialize fakes.
+	customMap := util.NewInMemoryStringMap()
+	gist := util.NewInMemoryGist()
+	discordSession := util.NewInMemoryDiscordSession()
+	discordSession.SetChannel(&discordgo.Channel{
+		ID:        "channel",
+		IsPrivate: false,
+	})
+	discordSession.SetChannel(&discordgo.Channel{
+		ID:        "literally anything else",
+		IsPrivate: true,
+	})
+
+	rickList := []int64{2}
+
+	registry := InitializeRegistry(customMap, gist, &app.Config{RickList: rickList})
+	return &TestRunner{
+		T:                    t,
+		Learns:               map[string]*Learn{},
+		GistsCount:           0,
+		DiscordMessagesCount: 0,
+		CustomMap:            customMap,
+		Gist:                 gist,
+		DiscordSession:       discordSession,
+		FeatureRegistry:      registry,
+		Handler:              getHandleMessage(customMap, registry),
+	}
+}
+
+func (r *TestRunner) AssertState() {
+	// Assert counts.
+	assertNumCommands(r.T, r.CustomMap, len(r.Learns))
+	assertNumGists(r.T, r.Gist, r.GistsCount)
+	assertNumDiscordMessages(r.T, r.DiscordSession, r.DiscordMessagesCount)
+
+	// Assert command map state.
+	for _, learn := range r.Learns {
+		assertCommand(r.T, r.CustomMap, learn.Call, learn.Response)
+	}
+}
+
+func (r *TestRunner) SendMessage(channel, message, expectedResponse string) {
+	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel, expectedResponse)})
+	r.AssertState()
+}
+
+func (r *TestRunner) SendMessageAs(author *discordgo.User, channel, message, expectedResponse string) {
+	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel, expectedResponse)})
+	r.AssertState()
+}
+
+func (r *TestRunner) SendLearnMessage(channel, message string, learn *Learn) {
+	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
+	r.Learns[learn.Call] = learn
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgLearnSuccess, learn.Call))})
+	r.AssertState()
+	r.SendListMessage(channel)
+}
+
+func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel, message string, learn *Learn) {
+	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
+	r.Learns[learn.Call] = learn
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgLearnSuccess, learn.Call))})
+	r.AssertState()
+	r.SendListMessage(channel)
+}
+
+func (r *TestRunner) SendUnlearnMessage(channel, message string, call string) {
+	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
+	delete(r.Learns, call)
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgUnlearnSuccess, call))})
+	r.AssertState()
+	r.SendListMessage(channel)
+}
+
+func (r *TestRunner) SendMessageWithoutResponse(channel, message string) {
+	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
+	assertNewMessages(r.T, r.DiscordSession, []*util.Message{})
+	r.AssertState()
+}
+
+func (r *TestRunner) SendListMessage(channel string) {
+	sendMessage(r.T, r.DiscordSession, r.Handler, channel, "?list")
+	r.DiscordMessagesCount++
+	r.GistsCount++
+	assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, "The list of commands is here: https://www.example.com/success")})
+
+	// Assert gist state. Cannot be in AssertState because this would fail at the
+	// next learn or unlearn.
+	// TODO(jake): Remove duplication between this and listfeature. Maybe just assert number of lines?
+	if r.GistsCount > 0 {
+		var buffer bytes.Buffer
+		buffer.WriteString("List of builtins:\n - ?help: ")
+		buffer.WriteString(MsgHelpHelp)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?learn: ")
+		buffer.WriteString(MsgHelpLearn)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?list: ")
+		buffer.WriteString(MsgHelpList)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?ricklist: ")
+		buffer.WriteString(moderation.MsgHelpRickListInfo)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?unlearn: ")
+		buffer.WriteString(MsgHelpUnlearn)
+		buffer.WriteString("\n\n")
+
+		buffer.WriteString("List of learned commands:\n")
+
+		all, _ := r.CustomMap.GetAll()
+		custom := make([]string, 0, len(all))
+		for name := range all {
+			custom = append(custom, name)
+		}
+		sort.Strings(custom)
+		for _, name := range custom {
+			buffer.WriteString(" - ?")
+			buffer.WriteString(name)
+			if strings.Contains(all[name], "$1") {
+				buffer.WriteString(" <args>")
+			}
+			buffer.WriteString("\n")
+		}
+
+		generated := buffer.String()
+		actual := r.Gist.Messages[len(r.Gist.Messages)-1]
+		if generated != actual {
+			r.T.Fatalf(fmt.Sprintf("Gist failure, got `%v` expected `%v`", actual, generated))
+		}
+	}
+
+	r.AssertState()
 }
 
 func assertNumCommands(t *testing.T, customMap *util.InMemoryStringMap, count int) {
