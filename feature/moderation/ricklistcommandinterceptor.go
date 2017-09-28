@@ -27,7 +27,7 @@ func (i *RickListCommandInterceptor) Intercept(command *model.Command, s api.Dis
 	// RickList
 	// - RickListed users can only use ?learn in private channels, without it responding with
 	//   a rickroll.
-	if channel, err := s.Channel(m.ChannelID); err == nil && channel.IsPrivate && command.Type != model.Type_Learn {
+	if channel, err := s.Channel(m.ChannelID); err == nil && (channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM) && command.Type != model.Type_Learn {
 		for _, ricked := range i.rickList {
 			if strconv.FormatInt(ricked, 10) == m.Author.ID {
 				return &model.Command{

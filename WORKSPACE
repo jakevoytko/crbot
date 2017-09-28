@@ -12,19 +12,19 @@ go_repositories()
 go_repository(
     name = "com_github_bwmarrin_discordgo",
     importpath = "github.com/bwmarrin/discordgo",
-    commit = "0993a94b4e1c3291bed2047f583f34792269355c",
+    tag = "v0.17.0",
 )
 
 go_repository(
     name = "com_github_go_redis_redis",
     importpath = "github.com/go-redis/redis",
-    commit = "89515eebd1b5761486abd32d9e84a8f55dda7740"
+    tag = "v6.7.0"
 )
 
 go_repository(
     name = "org_golang_x_crypto",
     importpath = "golang.org/x/crypto",
-    commit = "88d0005bf4c3ec17306ecaca4281a8d8efd73e91",
+    commit = "c84b36c635ad003a10f0c755dff5685ceef18c71",
 )
 
 go_repository(

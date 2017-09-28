@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/log"
@@ -340,7 +341,7 @@ func (e *UnlearnExecutor) Execute(s api.DiscordSession, channel string, command 
 	if err != nil {
 		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
 	}
-	if discordChannel.IsPrivate {
+	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
 		s.ChannelMessageSend(channel, MsgUnlearnMustBePublic)
 		return
 	}
