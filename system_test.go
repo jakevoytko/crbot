@@ -210,12 +210,12 @@ func NewTestRunner(t *testing.T) *TestRunner {
 	gist := util.NewInMemoryGist()
 	discordSession := util.NewInMemoryDiscordSession()
 	discordSession.SetChannel(&discordgo.Channel{
-		ID:        "channel",
-		IsPrivate: false,
+		ID:   "channel",
+		Type: discordgo.ChannelTypeGuildText,
 	})
 	discordSession.SetChannel(&discordgo.Channel{
-		ID:        "literally anything else",
-		IsPrivate: true,
+		ID:   "literally anything else",
+		Type: discordgo.ChannelTypeDM,
 	})
 
 	rickList := []int64{2}

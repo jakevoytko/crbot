@@ -9,15 +9,24 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-// ModelHelper adds helper functions for using votes with a stringmap.
+// ModelHelper adds helper functions for using votes with a
+// stringmap. Currently, it handles a majority of business logic. However, if
+// functionality is ever added to allow a moderator to edit a vote after it has
+// happened, the business logic will need to be pulled of here and leave this to
+// be strictly a data structure that only validates its own sanity. The only
+// logic that seems like it should be handled but isn't is the logic for when a
+// vote outcome is recorded, because that is handled in an evented manner
+// (i.e. when a timer ends).
 type ModelHelper struct {
 	StringMap model.StringMap
+	UTCClock  model.UTCClock
 }
 
 // NewModelHelper works as advertised.
-func NewModelHelper(stringMap model.StringMap) *ModelHelper {
+func NewModelHelper(stringMap model.StringMap, utcClock model.UTCClock) *ModelHelper {
 	return &ModelHelper{
 		StringMap: stringMap,
+		UTCClock:  utcClock,
 	}
 }
 
@@ -43,10 +52,11 @@ func (h *ModelHelper) IsVoteActive() (bool, error) {
 		return false, nil
 	}
 
-	currentTime := time.Now().UTC()
+	currentTime := h.UTCClock.Now()
 
 	// Bail if the current time is not within the vote's range.
-	return currentTime.Sub(vote.TimestampStart) > 0 && vote.TimestampEnd.Sub(currentTime) > 0, nil
+	return vote.VoteOutcome == VoteOutcomeNotDone &&
+		currentTime.Sub(vote.TimestampStart) >= 0 && vote.TimestampEnd.Sub(currentTime) > 0, nil
 }
 
 // MostRecentVote returns the active vote, or nil if none present. Returns an error
@@ -111,7 +121,7 @@ func (h *ModelHelper) StartNewVote(userID int64) (*Vote, error) {
 	if mostRecentVote != nil {
 		nextVoteID = mostRecentVote.VoteID + 1
 	}
-	voteStart := time.Now().UTC()
+	voteStart := h.UTCClock.Now()
 	voteEnd := voteStart.Add(VoteDuration)
 	vote := NewVote(
 		nextVoteID, userID, voteStart, voteEnd, []int64{}, []int64{}, VoteOutcomeNotDone)

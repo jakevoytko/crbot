@@ -6,6 +6,7 @@ go_library(
         "command.go",
         "redisstringmap.go",
         "stringmap.go",
+        "utcclock.go",
     ],
     deps = [
         "@com_github_go_redis_redis//:go_default_library",
