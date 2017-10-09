@@ -33,3 +33,17 @@ func NewVote(voteID int, userID int64, timestampStart, timestampEnd time.Time, v
 		VoteOutcome:    voteOutcome,
 	}
 }
+
+// IsActive returns whether there are enough votes to claim confidence.
+func (v *Vote) HasEnoughVotes() bool {
+	return len(v.VotesFor) >= 5 || len(v.VotesAgainst) >= 5
+}
+
+// CalculateActiveStatus compares the vote totals and returns what the outcome
+// would be. This ignores the recorded outcome, and the number of votes.
+func (v *Vote) CalculateActiveStatus() int {
+	if len(v.VotesFor) > len(v.VotesAgainst) {
+		return VoteOutcomePassed
+	}
+	return VoteOutcomeFailed
+}

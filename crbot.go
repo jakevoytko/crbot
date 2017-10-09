@@ -30,10 +30,15 @@ func main() {
 	}
 
 	// Initialize Redis.
-	commandMap, err := model.NewRedisStringMap(Redis_Hash)
+	commandMap, err := model.NewRedisStringMap(RedisCommandHash)
 	if err != nil {
 		log.Fatal("Unable to initialize Redis", err)
 	}
+	voteMap, err := model.NewRedisStringMap(RedisVoteHash)
+	if err != nil {
+		log.Fatal("Unable to initialize Redis", err)
+	}
+
 	gist := api.NewRemoteGist()
 
 	// Set up Discord API.
@@ -42,7 +47,9 @@ func main() {
 		log.Fatal("Error initializing Discord client library", err)
 	}
 
-	featureRegistry := InitializeRegistry(commandMap, gist, config)
+	clock := model.NewSystemUTCClock()
+
+	featureRegistry := InitializeRegistry(commandMap, voteMap, gist, config, clock)
 
 	// Open communications with Discord.
 	handler := getHandleMessage(commandMap, featureRegistry)
@@ -65,6 +72,8 @@ func main() {
 // Constants
 ///////////////////////////////////////////////////////////////////////////////
 
+// NOTE: These cannot change without a migration, since they are mapped to storage.
 const (
-	Redis_Hash = "crbot-custom-commands"
+	RedisCommandHash = "crbot-custom-commands"
+	RedisVoteHash    = "crbot-feature-vote"
 )

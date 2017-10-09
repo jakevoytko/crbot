@@ -14,12 +14,14 @@ const (
 	Type_RickListInfo
 	Type_Unlearn
 	Type_Unrecognized
+	Type_VoteStatus
 
 	Name_Help         = "?help"
 	Name_Learn        = "?learn"
 	Name_List         = "?list"
 	Name_Unlearn      = "?unlearn"
 	Name_RickListInfo = "?ricklist"
+	Name_VoteStatus   = "?votestatus"
 )
 
 ///////////////////////////////////////////////////////////////////////////////

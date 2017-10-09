@@ -1,22 +1,29 @@
 package vote
 
-import "github.com/jakevoytko/crbot/feature"
+import (
+	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/model"
+)
 
 // Feature registers feature-specific things for moderation.
 type Feature struct {
 	featureRegistry *feature.Registry
+	modelHelper     *ModelHelper
 }
 
 // NewFeature returns a new Feature.
-func NewFeature(featureRegistry *feature.Registry) *Feature {
+func NewFeature(featureRegistry *feature.Registry, voteMap model.StringMap, clock model.UTCClock) *Feature {
 	return &Feature{
 		featureRegistry: featureRegistry,
+		modelHelper:     NewModelHelper(voteMap, clock),
 	}
 }
 
 // Parsers returns the parsers.
 func (f *Feature) Parsers() []feature.Parser {
-	return []feature.Parser{}
+	return []feature.Parser{
+		NewStatusParser(),
+	}
 }
 
 // CommandInterceptors returns command interceptors.
@@ -31,5 +38,7 @@ func (f *Feature) FallbackParser() feature.Parser {
 
 // Executors gets the executors.
 func (f *Feature) Executors() []feature.Executor {
-	return []feature.Executor{}
+	return []feature.Executor{
+		NewStatusExecutor(f.modelHelper),
+	}
 }

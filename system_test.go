@@ -13,6 +13,7 @@ import (
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/feature/moderation"
+	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/util"
 )
 
@@ -181,6 +182,11 @@ func TestIntegration(t *testing.T) {
 	runner.SendLearnMessageAs(rickListedUser, "literally anything else", "?learn rick list", NewLearn("rick", "list"))
 }
 
+func TestVote(t *testing.T) {
+	runner := NewTestRunner(t)
+	runner.SendMessage("channel", "?votestatus", vote.MsgNoActiveVote)
+}
+
 // TestRunner is a helper that executes messages incrementally, and asserts that
 // the global state is always what is expected.
 type TestRunner struct {
@@ -194,8 +200,10 @@ type TestRunner struct {
 
 	// Fakes
 	CustomMap      *util.InMemoryStringMap
+	VoteMap        *util.InMemoryStringMap
 	Gist           *util.InMemoryGist
 	DiscordSession *util.InMemoryDiscordSession
+	UTCClock       *util.FakeUTCClock
 
 	// Real objects
 	FeatureRegistry *feature.Registry
@@ -207,6 +215,7 @@ type TestRunner struct {
 func NewTestRunner(t *testing.T) *TestRunner {
 	// Initialize fakes.
 	customMap := util.NewInMemoryStringMap()
+	voteMap := util.NewInMemoryStringMap()
 	gist := util.NewInMemoryGist()
 	discordSession := util.NewInMemoryDiscordSession()
 	discordSession.SetChannel(&discordgo.Channel{
@@ -220,15 +229,19 @@ func NewTestRunner(t *testing.T) *TestRunner {
 
 	rickList := []int64{2}
 
-	registry := InitializeRegistry(customMap, gist, &app.Config{RickList: rickList})
+	utcClock := util.NewFakeUTCClock()
+
+	registry := InitializeRegistry(customMap, voteMap, gist, &app.Config{RickList: rickList}, utcClock)
 	return &TestRunner{
 		T:                    t,
 		Learns:               map[string]*Learn{},
 		GistsCount:           0,
 		DiscordMessagesCount: 0,
 		CustomMap:            customMap,
+		VoteMap:              voteMap,
 		Gist:                 gist,
 		DiscordSession:       discordSession,
+		UTCClock:             utcClock,
 		FeatureRegistry:      registry,
 		Handler:              getHandleMessage(customMap, registry),
 	}
@@ -323,6 +336,9 @@ func (r *TestRunner) SendListMessage(channel string) {
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?unlearn: ")
 		buffer.WriteString(MsgHelpUnlearn)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?votestatus: ")
+		buffer.WriteString(vote.MsgHelpStatus)
 		buffer.WriteString("\n\n")
 
 		buffer.WriteString("List of learned commands:\n")

@@ -5,10 +5,13 @@ go_library(
     srcs = [
         "feature.go",
         "modelhelper.go",
+        "statusexecutor.go",
+        "statusparser.go",
         "vote.go",
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "//api:go_default_library",
         "//feature:go_default_library",
         "//model:go_default_library",
     ],
