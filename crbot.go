@@ -8,6 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/model"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,7 +30,7 @@ func main() {
 	}
 
 	// Initialize Redis.
-	commandMap, err := NewRedisStringMap(Redis_Hash)
+	commandMap, err := model.NewRedisStringMap(Redis_Hash)
 	if err != nil {
 		log.Fatal("Unable to initialize Redis", err)
 	}

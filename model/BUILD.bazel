@@ -4,7 +4,11 @@ go_library(
     name = "go_default_library",
     srcs = [
         "command.go",
+        "redisstringmap.go",
         "stringmap.go",
+    ],
+    deps = [
+        "@com_github_go_redis_redis//:go_default_library",
     ],
     visibility = ["//visibility:public"],
 )
