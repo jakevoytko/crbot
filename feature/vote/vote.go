@@ -14,6 +14,7 @@ const (
 type Vote struct {
 	VoteID         int
 	UserID         int64
+	Message        string
 	TimestampStart time.Time
 	TimestampEnd   time.Time
 	VotesFor       []int64
@@ -22,10 +23,11 @@ type Vote struct {
 }
 
 // NewVote works as advertised.
-func NewVote(voteID int, userID int64, timestampStart, timestampEnd time.Time, votesFor, votesAgainst []int64, voteOutcome int) *Vote {
+func NewVote(voteID int, userID int64, message string, timestampStart, timestampEnd time.Time, votesFor, votesAgainst []int64, voteOutcome int) *Vote {
 	return &Vote{
 		VoteID:         voteID,
 		UserID:         userID,
+		Message:        message,
 		TimestampStart: timestampStart,
 		TimestampEnd:   timestampEnd,
 		VotesFor:       votesFor,

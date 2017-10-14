@@ -272,14 +272,14 @@ func assertMostRecentVoteID(t *testing.T, modelHelper *ModelHelper, voteID int) 
 }
 
 func assertStartNewVoteFails(t *testing.T, modelHelper *ModelHelper, userID int64) {
-	_, err := modelHelper.StartNewVote(userID)
+	_, err := modelHelper.StartNewVote(userID, "hug Jake")
 	if err != ErrorOnlyOneVote {
 		t.Errorf("Should have failed to add vote with ID %v", userID)
 	}
 }
 
 func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, userID int64) *Vote {
-	vote, err := modelHelper.StartNewVote(userID)
+	vote, err := modelHelper.StartNewVote(userID, "hug Jake")
 	if err != nil {
 		t.Errorf("Should have started a vote with ID %v", userID)
 	}
