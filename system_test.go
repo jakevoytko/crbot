@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/feature/vote"
+	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/util"
 )
 
@@ -184,7 +186,17 @@ func TestIntegration(t *testing.T) {
 
 func TestVote(t *testing.T) {
 	runner := NewTestRunner(t)
-	runner.SendMessage("channel", "?votestatus", vote.MsgNoActiveVote)
+	runner.SendVoteStatusMessage("channel")
+
+	// Calls vote with no args, and then actually starts a vote.
+	author := newUser("author", 0, false /* bot */)
+	runner.AddUser(author)
+	runner.SendMessageAs(author, "channel", "?vote", vote.MsgHelpVote)
+	runner.SendVoteMessageAs(author, "channel")
+	runner.SendVoteStatusMessage("channel")
+
+	// Assert that a second vote can't be started.
+	runner.SendMessageAs(author, "channel", "?vote another vote", vote.MsgActiveVote)
 }
 
 // TestRunner is a helper that executes messages incrementally, and asserts that
@@ -197,6 +209,7 @@ type TestRunner struct {
 	GistsCount           int
 	DiscordMessagesCount int
 	Learns               map[string]*Learn
+	Vote                 *Vote // may be nil
 
 	// Fakes
 	CustomMap      *util.InMemoryStringMap
@@ -235,6 +248,7 @@ func NewTestRunner(t *testing.T) *TestRunner {
 	return &TestRunner{
 		T:                    t,
 		Learns:               map[string]*Learn{},
+		Vote:                 nil,
 		GistsCount:           0,
 		DiscordMessagesCount: 0,
 		CustomMap:            customMap,
@@ -252,6 +266,7 @@ func (r *TestRunner) AssertState() {
 	assertNumCommands(r.T, r.CustomMap, len(r.Learns))
 	assertNumGists(r.T, r.Gist, r.GistsCount)
 	assertNumDiscordMessages(r.T, r.DiscordSession, r.DiscordMessagesCount)
+	assertVote(r.T, r.UTCClock, r.VoteMap, r.Vote)
 
 	// Assert command map state.
 	for _, learn := range r.Learns {
@@ -283,6 +298,15 @@ func (r *TestRunner) SendLearnMessage(channel, message string, learn *Learn) {
 		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgLearnSuccess, learn.Call))})
 	r.AssertState()
 	r.SendListMessage(channel)
+}
+
+func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel string) {
+	sendMessageAs(author, r.DiscordSession, r.Handler, channel, "?vote a vote has been called")
+	r.DiscordMessagesCount++
+	r.Vote = newVote(author, "a vote has been called")
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(vote.MsgBroadcastNewVote, author.Mention(), "a vote has been called"))})
+	r.AssertState()
 }
 
 func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel, message string, learn *Learn) {
@@ -337,6 +361,9 @@ func (r *TestRunner) SendListMessage(channel string) {
 		buffer.WriteString(" - ?unlearn: ")
 		buffer.WriteString(MsgHelpUnlearn)
 		buffer.WriteString("\n")
+		buffer.WriteString(" - ?vote: ")
+		buffer.WriteString(vote.MsgHelpVote)
+		buffer.WriteString("\n")
 		buffer.WriteString(" - ?votestatus: ")
 		buffer.WriteString(vote.MsgHelpStatus)
 		buffer.WriteString("\n\n")
@@ -368,6 +395,34 @@ func (r *TestRunner) SendListMessage(channel string) {
 	r.AssertState()
 }
 
+func (r *TestRunner) SendVoteStatusMessage(channel string) {
+	sendMessage(r.T, r.DiscordSession, r.Handler, channel, "?votestatus")
+	r.DiscordMessagesCount++
+
+	if r.Vote == nil {
+		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, vote.MsgNoActiveVote)})
+	} else {
+		var buffer bytes.Buffer
+		buffer.WriteString(fmt.Sprintf(vote.MsgVoteOwner, r.Vote.Author.Username))
+		buffer.WriteString(r.Vote.Message)
+		buffer.WriteString("\n")
+		buffer.WriteString(vote.MsgSpacer)
+		buffer.WriteString("\n")
+		buffer.WriteString(vote.MsgStatusVotesNeeded)
+		buffer.WriteString(". ")
+		buffer.WriteString("0 votes for")
+		buffer.WriteString(", ")
+		buffer.WriteString("0 votes against")
+		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, buffer.String())})
+	}
+
+	r.AssertState()
+}
+
+func (r *TestRunner) AddUser(user *discordgo.User) {
+	r.DiscordSession.Users[user.ID] = user
+}
+
 func assertNumCommands(t *testing.T, customMap *util.InMemoryStringMap, count int) {
 	if all, _ := customMap.GetAll(); len(all) != count {
 		t.Errorf(fmt.Sprintf("Should have %v commands", count))
@@ -383,6 +438,17 @@ func assertNumGists(t *testing.T, gist *util.InMemoryGist, count int) {
 func assertNumDiscordMessages(t *testing.T, discordSession *util.InMemoryDiscordSession, count int) {
 	if len(discordSession.Messages) != count {
 		t.Errorf(fmt.Sprintf("Should have %v discord messages", count))
+	}
+}
+
+func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *util.InMemoryStringMap, newVote *Vote) {
+	modelHelper := vote.NewModelHelper(voteMap, utcClock)
+	ok, _ := modelHelper.IsVoteActive()
+	if newVote != nil && !ok {
+		t.Errorf("Expected a vote to be active, but was not")
+	}
+	if newVote == nil && ok {
+		t.Errorf("Expected a vote to not be active, but one was")
 	}
 }
 
@@ -461,5 +527,32 @@ func NewLearn(call, response string) *Learn {
 	return &Learn{
 		Call:     call,
 		Response: response,
+	}
+}
+
+func newUser(name string, id int64, bot bool) *discordgo.User {
+	idStr := strconv.FormatInt(id, 10)
+	return &discordgo.User{
+		ID:            idStr,
+		Email:         "email@example.com",
+		Username:      name,
+		Avatar:        "avatar",
+		Discriminator: idStr,
+		Token:         "token",
+		Verified:      true,
+		MFAEnabled:    false,
+		Bot:           bot,
+	}
+}
+
+type Vote struct {
+	Author  *discordgo.User
+	Message string
+}
+
+func newVote(author *discordgo.User, message string) *Vote {
+	return &Vote{
+		Author:  author,
+		Message: message,
 	}
 }

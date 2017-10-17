@@ -9,6 +9,7 @@ go_library(
         "utcclock.go",
     ],
     deps = [
+        "@com_github_bwmarrin_discordgo//:go_default_library",
         "@com_github_go_redis_redis//:go_default_library",
     ],
     visibility = ["//visibility:public"],

@@ -7,6 +7,7 @@ import (
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	"github.com/jakevoytko/crbot/util"
 )
 
 // HelpFeature is a Feature that prints a help prompt for the user.
@@ -72,7 +73,7 @@ func (p *HelpParser) Parse(splitContent []string) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("parseHelp called with non-help command", errors.New("wat"))
 	}
-	splitContent = CollapseWhitespace(splitContent, 1)
+	splitContent = util.CollapseWhitespace(splitContent, 1)
 
 	userCommand := ""
 	if len(splitContent) > 1 {

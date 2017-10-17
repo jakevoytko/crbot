@@ -8,12 +8,16 @@ go_library(
         "statusexecutor.go",
         "statusparser.go",
         "vote.go",
+        "voteexecutor.go",
+        "voteparser.go",
     ],
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",
         "//feature:go_default_library",
+        "//log:go_default_library",
         "//model:go_default_library",
+        "//util:go_default_library",
     ],
 )
 

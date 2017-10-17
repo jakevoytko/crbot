@@ -3,11 +3,11 @@ package vote
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
 	"github.com/jakevoytko/crbot/api"
+	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 )
 
@@ -41,14 +41,16 @@ const (
 	MsgVotesFor          = "%d votes for"
 )
 
-// Execute uploads the command list to github and pings the gist link in chat.
+// Execute prints the status of the current vote.
 func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
 	ok, err := e.modelHelper.IsVoteActive()
 	if err != nil {
 		log.Fatal("Error reading vote status", err)
 	}
 	if !ok {
-		s.ChannelMessageSend(channel, MsgNoActiveVote)
+		if _, err := s.ChannelMessageSend(channel, MsgNoActiveVote); err != nil {
+			log.Fatal("Unable to send no-active-vote message to user", err)
+		}
 		return
 	}
 
@@ -62,7 +64,7 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 
 	// The below creates a string like this:
 	//
-	// Vote started by @vamp: Votekick @Jake?
+	// Vote started by @SomeoneElse: Votekick @Jake?
 	// -----
 	// 12 minutes remaining
 	// 5 votes needed to pass. 3 votes for, 1 vote against
@@ -74,10 +76,11 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 	if err != nil {
 		log.Fatal("Error fetching the owner when rendering a vote response", err)
 	}
-	messages = append(messages, fmt.Sprintf(MsgVoteOwner, owner.Username))
+	// Status line and message.
+	messages = append(messages, fmt.Sprintf(MsgVoteOwner, owner.Username)+vote.Message)
 
-	// Add a TODO message and the spacer.
-	messages = append(messages, "hug Jake", MsgSpacer)
+	// Spacer
+	messages = append(messages, MsgSpacer)
 
 	// Add the vote totals.
 	statusStr := statusString(vote)
@@ -94,7 +97,9 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 	messages = append(messages, statusStr+". "+votesForStr+", "+votesAgainstStr)
 
 	finalMessage := strings.Join(messages, "\n")
-	s.ChannelMessageSend(channel, finalMessage)
+	if _, err := s.ChannelMessageSend(channel, finalMessage); err != nil {
+		log.Info("Failed to send vote message", err)
+	}
 }
 
 func statusString(vote *Vote) string {

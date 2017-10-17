@@ -43,6 +43,7 @@ func getHandleMessage(commandMap model.StringMap, featureRegistry *feature.Regis
 			log.Info("Error parsing command", err)
 			return
 		}
+		command.Author = m.Author
 
 		for _, interceptor := range featureRegistry.CommandInterceptors() {
 			command, err = interceptor.Intercept(command, s, m)

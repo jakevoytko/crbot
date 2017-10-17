@@ -7,6 +7,7 @@ go_library(
         "fakeutcclock.go",
         "gist.go",
         "inmemorystringmap.go",
+        "util.go",
     ],
     visibility = ["//visibility:public"],
     deps = ["@com_github_bwmarrin_discordgo//:go_default_library"],

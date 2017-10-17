@@ -23,6 +23,7 @@ func NewFeature(featureRegistry *feature.Registry, voteMap model.StringMap, cloc
 func (f *Feature) Parsers() []feature.Parser {
 	return []feature.Parser{
 		NewStatusParser(),
+		NewVoteParser(),
 	}
 }
 
@@ -40,5 +41,6 @@ func (f *Feature) FallbackParser() feature.Parser {
 func (f *Feature) Executors() []feature.Executor {
 	return []feature.Executor{
 		NewStatusExecutor(f.modelHelper),
+		NewVoteExecutor(f.modelHelper),
 	}
 }
