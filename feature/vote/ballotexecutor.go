@@ -1,9 +1,11 @@
 package vote
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
@@ -25,9 +27,10 @@ func (e *BallotExecutor) GetType() int {
 }
 
 const (
-	MsgAlreadyVoted = "You already voted"
-	MsgVotedAgainst = "You voted no"
-	MsgVotedInFavor = "You voted yes"
+	MsgAlreadyVoted       = "You already voted"
+	MsgVotedAgainst       = "You voted no"
+	MsgVotedInFavor       = "You voted yes"
+	MsgBallotMustBePublic = "Ballots can only be cast in public channels"
 )
 
 func (e *BallotExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
@@ -35,6 +38,16 @@ func (e *BallotExecutor) Execute(s api.DiscordSession, channel string, command *
 	if err != nil {
 		log.Fatal("Error parsing discord user ID", err)
 	}
+
+	discordChannel, err := s.Channel(channel)
+	if err != nil {
+		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
+	}
+	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
+		s.ChannelMessageSend(channel, MsgBallotMustBePublic)
+		return
+	}
+
 	vote, err := e.modelHelper.CastBallot(userID, command.Ballot.InFavor)
 	switch err {
 	case ErrorNoVoteActive:

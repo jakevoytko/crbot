@@ -35,7 +35,7 @@ const (
 	MsgSpacer            = "-----"
 	MsgStatusVoteFailing = "Vote is failing"
 	MsgStatusVotePassing = "Vote is passing"
-	MsgStatusVotesNeeded = "5 votes for/against needed"
+	MsgStatusVotesNeeded = "5 votes for or 5 votes against needed"
 	MsgVoteOwner         = "Vote started by %s: "
 	MsgVotesAgainst      = "%d votes against"
 	MsgVotesFor          = "%d votes for"

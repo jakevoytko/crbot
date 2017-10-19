@@ -1,9 +1,11 @@
 package vote
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
@@ -26,11 +28,21 @@ func (e *VoteExecutor) GetType() int {
 
 const (
 	MsgActiveVote       = "Cannot start a vote while another is in progress. Type `?votestatus` for more info"
-	MsgBroadcastNewVote = "@here %s started a new vote: %s"
+	MsgBroadcastNewVote = "@here -- %s started a new vote: %s"
+	MsgVoteMustBePublic = "Votes can only be started in public channels"
 )
 
 // Execute uploads the command list to github and pings the gist link in chat.
 func (e *VoteExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
+	discordChannel, err := s.Channel(channel)
+	if err != nil {
+		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
+	}
+	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
+		s.ChannelMessageSend(channel, MsgVoteMustBePublic)
+		return
+	}
+
 	ok, err := e.modelHelper.IsVoteActive()
 	if err != nil {
 		log.Fatal("Error occurred while calling for active vote", err)
