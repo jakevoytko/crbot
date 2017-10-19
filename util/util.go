@@ -1,4 +1,4 @@
-package main
+package util
 
 // CollapseWhitespace returns an array where splitContent entries are removed,
 // starting at the given index. Will return the input if no collapsing is

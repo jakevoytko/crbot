@@ -11,6 +11,7 @@ import (
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	"github.com/jakevoytko/crbot/util"
 )
 
 // LearnFeature allows crbot to learn new calls and responses
@@ -102,8 +103,8 @@ func (f *LearnParser) Parse(splitContent []string) (*model.Command, error) {
 	if splitContent[0] != f.GetName() {
 		log.Fatal("parseLearn called with non-learn command", errors.New("wat"))
 	}
-	splitContent = CollapseWhitespace(splitContent, 1)
-	splitContent = CollapseWhitespace(splitContent, 2)
+	splitContent = util.CollapseWhitespace(splitContent, 1)
+	splitContent = util.CollapseWhitespace(splitContent, 2)
 
 	callRegexp := regexp.MustCompile("^[[:alnum:]].*$")
 	responseRegexp := regexp.MustCompile("(?s)^[^/?!].*$")
@@ -175,7 +176,7 @@ func (p *UnlearnParser) Parse(splitContent []string) (*model.Command, error) {
 		log.Fatal("parseUnlearn called with non-unlearn command", errors.New("wat"))
 	}
 
-	splitContent = CollapseWhitespace(splitContent, 1)
+	splitContent = util.CollapseWhitespace(splitContent, 1)
 
 	callRegexp := regexp.MustCompile("^[[:alnum:]].*$")
 

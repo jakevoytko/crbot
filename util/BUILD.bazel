@@ -4,8 +4,10 @@ go_library(
     name = "go_default_library",
     srcs = [
         "discordsession.go",
+        "fakeutcclock.go",
         "gist.go",
         "inmemorystringmap.go",
+        "util.go",
     ],
     visibility = ["//visibility:public"],
     deps = ["@com_github_bwmarrin_discordgo//:go_default_library"],

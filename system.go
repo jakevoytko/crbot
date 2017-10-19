@@ -8,11 +8,12 @@ import (
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/feature/moderation"
+	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 )
 
-func InitializeRegistry(commandMap model.StringMap, gist api.Gist, config *app.Config) *feature.Registry {
+func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gist api.Gist, config *app.Config, clock model.UTCClock) *feature.Registry {
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
 	// a better pattern here.
@@ -21,6 +22,7 @@ func InitializeRegistry(commandMap model.StringMap, gist api.Gist, config *app.C
 	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
 	featureRegistry.Register(NewListFeature(featureRegistry, commandMap, gist))
 	featureRegistry.Register(moderation.NewFeature(featureRegistry, config))
+	featureRegistry.Register(vote.NewFeature(featureRegistry, voteMap, clock))
 	return featureRegistry
 }
 
@@ -41,6 +43,7 @@ func getHandleMessage(commandMap model.StringMap, featureRegistry *feature.Regis
 			log.Info("Error parsing command", err)
 			return
 		}
+		command.Author = m.Author
 
 		for _, interceptor := range featureRegistry.CommandInterceptors() {
 			command, err = interceptor.Intercept(command, s, m)
