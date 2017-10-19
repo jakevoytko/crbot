@@ -24,6 +24,10 @@ func (f *Feature) Parsers() []feature.Parser {
 	return []feature.Parser{
 		NewStatusParser(),
 		NewVoteParser(),
+		NewBallotParser(model.Name_VoteInFavorF1, true /* inFavor */),
+		NewBallotParser(model.Name_VoteInFavorYes, true /* inFavor */),
+		NewBallotParser(model.Name_VoteAgainstF2, false /* inFavor */),
+		NewBallotParser(model.Name_VoteAgainstNo, false /* inFavor */),
 	}
 }
 
@@ -42,5 +46,6 @@ func (f *Feature) Executors() []feature.Executor {
 	return []feature.Executor{
 		NewStatusExecutor(f.modelHelper),
 		NewVoteExecutor(f.modelHelper),
+		NewBallotExecutor(f.modelHelper),
 	}
 }

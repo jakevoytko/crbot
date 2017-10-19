@@ -82,6 +82,16 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 	// Spacer
 	messages = append(messages, MsgSpacer)
 
+	messages = append(messages, StatusLine(vote))
+
+	finalMessage := strings.Join(messages, "\n")
+	if _, err := s.ChannelMessageSend(channel, finalMessage); err != nil {
+		log.Info("Failed to send vote message", err)
+	}
+}
+
+// Returns the full status line. To be reused in the ballot executor.
+func StatusLine(vote *Vote) string {
 	// Add the vote totals.
 	statusStr := statusString(vote)
 	votesFor := len(vote.VotesFor)
@@ -94,12 +104,8 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 	if votesAgainst != 1 {
 		votesAgainstStr = fmt.Sprintf(MsgVotesAgainst, votesAgainst)
 	}
-	messages = append(messages, statusStr+". "+votesForStr+", "+votesAgainstStr)
 
-	finalMessage := strings.Join(messages, "\n")
-	if _, err := s.ChannelMessageSend(channel, finalMessage); err != nil {
-		log.Info("Failed to send vote message", err)
-	}
+	return statusStr + ". " + votesForStr + ", " + votesAgainstStr
 }
 
 func statusString(vote *Vote) string {

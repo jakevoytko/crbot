@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
@@ -189,7 +190,7 @@ func TestVote(t *testing.T) {
 	runner.SendVoteStatusMessage("channel")
 
 	// Calls vote with no args, and then actually starts a vote.
-	author := newUser("author", 0, false /* bot */)
+	author := newUser("author", 0 /* id */, false /* bot */)
 	runner.AddUser(author)
 	runner.SendMessageAs(author, "channel", "?vote", vote.MsgHelpVote)
 	runner.SendVoteMessageAs(author, "channel")
@@ -197,6 +198,148 @@ func TestVote(t *testing.T) {
 
 	// Assert that a second vote can't be started.
 	runner.SendMessageAs(author, "channel", "?vote another vote", vote.MsgActiveVote)
+
+	// Time the vote out.
+	runner.ExpireVote()
+	runner.SendVoteStatusMessage("channel")
+
+	// A second vote can be started once it is expired.
+	runner.SendVoteMessageAs(author, "channel")
+	runner.SendVoteStatusMessage("channel")
+}
+
+func TestVote_Pass(t *testing.T) {
+	runner := NewTestRunner(t)
+
+	// Initialize users.
+	users := []*discordgo.User{
+		newUser("user0", 0 /* id */, false /* bot */),
+		newUser("user1", 1 /* id */, false /* bot */),
+		newUser("user2", 2 /* id */, false /* bot */),
+		newUser("user3", 3 /* id */, false /* bot */),
+		newUser("user4", 4 /* id */, false /* bot */),
+	}
+	for _, user := range users {
+		runner.AddUser(user)
+	}
+
+	// Start the vote.
+	runner.SendVoteMessageAs(users[0], "channel")
+	runner.SendVoteStatusMessage("channel")
+
+	// Cast votes
+	for _, user := range users {
+		runner.CastBallotAs(user, "channel", true /* inFavor */)
+		runner.SendVoteStatusMessage("channel")
+	}
+
+	runner.ExpireVote()
+	runner.SendVoteStatusMessage("channel")
+}
+
+func TestVote_Fail(t *testing.T) {
+	runner := NewTestRunner(t)
+
+	// Initialize users.
+	users := []*discordgo.User{
+		newUser("user0", 0 /* id */, false /* bot */),
+		newUser("user1", 1 /* id */, false /* bot */),
+		newUser("user2", 2 /* id */, false /* bot */),
+		newUser("user3", 3 /* id */, false /* bot */),
+		newUser("user4", 4 /* id */, false /* bot */),
+	}
+	for _, user := range users {
+		runner.AddUser(user)
+	}
+
+	// Start the vote.
+	runner.SendVoteMessageAs(users[0], "channel")
+	runner.SendVoteStatusMessage("channel")
+
+	// Cast votes
+	for _, user := range users {
+		runner.CastBallotAs(user, "channel", false /* inFavor */)
+		runner.SendVoteStatusMessage("channel")
+	}
+
+	runner.ExpireVote()
+	runner.SendVoteStatusMessage("channel")
+}
+
+func TestVote_Tie(t *testing.T) {
+	runner := NewTestRunner(t)
+
+	// Initialize users.
+	users := []*discordgo.User{
+		newUser("user0", 0 /* id */, false /* bot */),
+		newUser("user1", 1 /* id */, false /* bot */),
+		newUser("user2", 2 /* id */, false /* bot */),
+		newUser("user3", 3 /* id */, false /* bot */),
+		newUser("user4", 4 /* id */, false /* bot */),
+		newUser("user5", 5 /* id */, false /* bot */),
+		newUser("user6", 6 /* id */, false /* bot */),
+		newUser("user7", 7 /* id */, false /* bot */),
+		newUser("user8", 8 /* id */, false /* bot */),
+		newUser("user9", 9 /* id */, false /* bot */),
+	}
+	for _, user := range users {
+		runner.AddUser(user)
+	}
+
+	// Start the vote.
+	runner.SendVoteMessageAs(users[0], "channel")
+	runner.SendVoteStatusMessage("channel")
+
+	// Cast votes
+	for _, user := range users {
+		runner.CastBallotAs(user, "channel", false /* inFavor */)
+		runner.SendVoteStatusMessage("channel")
+	}
+
+	runner.ExpireVote()
+	runner.SendVoteStatusMessage("channel")
+}
+
+func TestVote_TwoVotes(t *testing.T) {
+	runner := NewTestRunner(t)
+
+	// Initialize users.
+	users := []*discordgo.User{
+		newUser("user0", 0 /* id */, false /* bot */),
+		newUser("user1", 1 /* id */, false /* bot */),
+		newUser("user2", 2 /* id */, false /* bot */),
+		newUser("user3", 3 /* id */, false /* bot */),
+		newUser("user4", 4 /* id */, false /* bot */),
+	}
+	for _, user := range users {
+		runner.AddUser(user)
+	}
+
+	// Start the vote.
+	runner.SendVoteMessageAs(users[0], "channel")
+	runner.SendVoteStatusMessage("channel")
+
+	// Cast votes
+	for _, user := range users {
+		runner.CastBallotAs(user, "channel", true /* inFavor */)
+		runner.SendVoteStatusMessage("channel")
+	}
+
+	runner.ExpireVote()
+	runner.SendVoteStatusMessage("channel")
+
+	// Start the vote again.
+	runner.SendVoteMessageAs(users[0], "channel")
+	runner.SendVoteStatusMessage("channel")
+
+	// Cast votes again.
+	for _, user := range users {
+		runner.CastBallotAs(user, "channel", false /* inFavor */)
+		runner.SendVoteStatusMessage("channel")
+	}
+
+	runner.ExpireVote()
+	runner.SendVoteStatusMessage("channel")
 }
 
 // TestRunner is a helper that executes messages incrementally, and asserts that
@@ -309,6 +452,46 @@ func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel string) {
 	r.AssertState()
 }
 
+func (r *TestRunner) CastBallotAs(author *discordgo.User, channel string, inFavor bool) {
+	voteString := "?no"
+	expectedMessage := vote.MsgVotedAgainst
+	toAppend := &(r.Vote.VotesAgainst)
+	if inFavor {
+		voteString = "?yes"
+		expectedMessage = vote.MsgVotedInFavor
+		toAppend = &(r.Vote.VotesFor)
+	}
+
+	sendMessageAs(author, r.DiscordSession, r.Handler, channel, voteString)
+
+	// Update internal state.
+	r.DiscordMessagesCount++
+	id, _ := strconv.ParseInt(author.ID, 10 /* base */, 64 /* bits */)
+	*toAppend = append(*toAppend, id)
+
+	// Reconstruct the status string and assert internal state.
+	reconstructedVote := vote.NewVote(
+		0, /* voteID */
+		id,
+		r.Vote.Message,
+		time.Time{},
+		time.Time{},
+		r.Vote.VotesFor,
+		r.Vote.VotesAgainst,
+		vote.VoteOutcomeNotDone)
+
+	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
+		util.NewMessage(channel, expectedMessage+"\n"+vote.StatusLine(reconstructedVote)),
+	})
+	r.AssertState()
+}
+
+// Advances the clock enough that the vote expires.
+func (r *TestRunner) ExpireVote() {
+	r.UTCClock.Advance(vote.VoteDuration)
+	r.Vote = nil
+}
+
 func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel, message string, learn *Learn) {
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
@@ -346,7 +529,15 @@ func (r *TestRunner) SendListMessage(channel string) {
 	// TODO(jake): Remove duplication between this and listfeature. Maybe just assert number of lines?
 	if r.GistsCount > 0 {
 		var buffer bytes.Buffer
-		buffer.WriteString("List of builtins:\n - ?help: ")
+		buffer.WriteString("List of builtins:")
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?f1: ")
+		buffer.WriteString(vote.MsgHelpBallotInFavor)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?f2: ")
+		buffer.WriteString(vote.MsgHelpBallotAgainst)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?help: ")
 		buffer.WriteString(MsgHelpHelp)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?learn: ")
@@ -354,6 +545,9 @@ func (r *TestRunner) SendListMessage(channel string) {
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?list: ")
 		buffer.WriteString(MsgHelpList)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?no: ")
+		buffer.WriteString(vote.MsgHelpBallotAgainst)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?ricklist: ")
 		buffer.WriteString(moderation.MsgHelpRickListInfo)
@@ -366,6 +560,9 @@ func (r *TestRunner) SendListMessage(channel string) {
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?votestatus: ")
 		buffer.WriteString(vote.MsgHelpStatus)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?yes: ")
+		buffer.WriteString(vote.MsgHelpBallotInFavor)
 		buffer.WriteString("\n\n")
 
 		buffer.WriteString("List of learned commands:\n")
@@ -402,17 +599,36 @@ func (r *TestRunner) SendVoteStatusMessage(channel string) {
 	if r.Vote == nil {
 		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, vote.MsgNoActiveVote)})
 	} else {
+		// Calculate the expected status messages.
+		forMessage := vote.MsgOneVoteFor
+		if len(r.Vote.VotesFor) != 1 {
+			forMessage = fmt.Sprintf(vote.MsgVotesFor, len(r.Vote.VotesFor))
+		}
+		againstMessage := vote.MsgOneVoteAgainst
+		if len(r.Vote.VotesAgainst) != 1 {
+			againstMessage = fmt.Sprintf(vote.MsgVotesAgainst, len(r.Vote.VotesAgainst))
+		}
+		statusMessage := vote.MsgStatusVotesNeeded
+		if len(r.Vote.VotesAgainst) >= 5 || len(r.Vote.VotesFor) >= 5 {
+			if len(r.Vote.VotesFor) > len(r.Vote.VotesAgainst) {
+				statusMessage = vote.MsgStatusVotePassing
+			} else {
+				statusMessage = vote.MsgStatusVoteFailing
+			}
+		}
+
+		// Build the expected string and assert that it's in the message buffer.
 		var buffer bytes.Buffer
 		buffer.WriteString(fmt.Sprintf(vote.MsgVoteOwner, r.Vote.Author.Username))
 		buffer.WriteString(r.Vote.Message)
 		buffer.WriteString("\n")
 		buffer.WriteString(vote.MsgSpacer)
 		buffer.WriteString("\n")
-		buffer.WriteString(vote.MsgStatusVotesNeeded)
+		buffer.WriteString(statusMessage)
 		buffer.WriteString(". ")
-		buffer.WriteString("0 votes for")
+		buffer.WriteString(forMessage)
 		buffer.WriteString(", ")
-		buffer.WriteString("0 votes against")
+		buffer.WriteString(againstMessage)
 		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, buffer.String())})
 	}
 
@@ -545,14 +761,19 @@ func newUser(name string, id int64, bot bool) *discordgo.User {
 	}
 }
 
+// Enough information to reconstruct the status message.
 type Vote struct {
-	Author  *discordgo.User
-	Message string
+	Author       *discordgo.User
+	Message      string
+	VotesFor     []int64
+	VotesAgainst []int64
 }
 
 func newVote(author *discordgo.User, message string) *Vote {
 	return &Vote{
-		Author:  author,
-		Message: message,
+		Author:       author,
+		Message:      message,
+		VotesFor:     []int64{},
+		VotesAgainst: []int64{},
 	}
 }
