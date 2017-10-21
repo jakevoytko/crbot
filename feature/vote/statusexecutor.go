@@ -27,11 +27,9 @@ func (e *StatusExecutor) GetType() int {
 }
 
 const (
-	MsgMinutesRemaining  = "%d minutes remaining"
 	MsgNoActiveVote      = "No active vote"
 	MsgOneVoteAgainst    = "1 vote against"
 	MsgOneVoteFor        = "1 vote for"
-	MsgSecondsRemaining  = "%d seconds remaining"
 	MsgSpacer            = "-----"
 	MsgStatusVoteFailing = "Vote is failing"
 	MsgStatusVotePassing = "Vote is passing"
@@ -82,41 +80,10 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 	// Spacer
 	messages = append(messages, MsgSpacer)
 
-	messages = append(messages, StatusLine(vote))
+	messages = append(messages, StatusLine(e.modelHelper.UTCClock, vote))
 
 	finalMessage := strings.Join(messages, "\n")
 	if _, err := s.ChannelMessageSend(channel, finalMessage); err != nil {
 		log.Info("Failed to send vote message", err)
 	}
-}
-
-// Returns the full status line. To be reused in the ballot executor.
-func StatusLine(vote *Vote) string {
-	// Add the vote totals.
-	statusStr := statusString(vote)
-	votesFor := len(vote.VotesFor)
-	votesAgainst := len(vote.VotesAgainst)
-	votesForStr := MsgOneVoteFor
-	if votesFor != 1 {
-		votesForStr = fmt.Sprintf(MsgVotesFor, votesFor)
-	}
-	votesAgainstStr := MsgOneVoteAgainst
-	if votesAgainst != 1 {
-		votesAgainstStr = fmt.Sprintf(MsgVotesAgainst, votesAgainst)
-	}
-
-	return statusStr + ". " + votesForStr + ", " + votesAgainstStr
-}
-
-func statusString(vote *Vote) string {
-	if vote.HasEnoughVotes() {
-		switch vote.CalculateActiveStatus() {
-		case VoteOutcomePassed:
-			return MsgStatusVotePassing
-
-		default:
-			return MsgStatusVoteFailing
-		}
-	}
-	return MsgStatusVotesNeeded
 }

@@ -68,7 +68,7 @@ func (e *BallotExecutor) Execute(s api.DiscordSession, channel string, command *
 		voteMessage = MsgVotedInFavor
 	}
 
-	messages := []string{voteMessage, StatusLine(vote)}
+	messages := []string{voteMessage, StatusLine(e.modelHelper.UTCClock, vote)}
 	message := strings.Join(messages, "\n")
 	if _, err := s.ChannelMessageSend(channel, message); err != nil {
 		log.Info("Failed to send ballot status message", err)

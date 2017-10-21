@@ -456,7 +456,7 @@ func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel string) {
 
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, "?vote a vote has been called")
 	r.DiscordMessagesCount++
-	r.Vote = newVote(author, "a vote has been called")
+	r.Vote = newVote(author, "a vote has been called", r.UTCClock.Now().Add(vote.VoteDuration))
 	assertNewMessages(r.T, r.DiscordSession,
 		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(vote.MsgBroadcastNewVote, author.Mention(), "a vote has been called"))})
 	r.AssertState()
@@ -487,13 +487,13 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel string, inFavo
 		id,
 		r.Vote.Message,
 		time.Time{},
-		time.Time{},
+		r.Vote.TimestampEnd,
 		r.Vote.VotesFor,
 		r.Vote.VotesAgainst,
 		vote.VoteOutcomeNotDone)
 
 	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
-		util.NewMessage(channel, expectedMessage+"\n"+vote.StatusLine(reconstructedVote)),
+		util.NewMessage(channel, expectedMessage+"\n"+vote.StatusLine(r.UTCClock, reconstructedVote)),
 	})
 	r.AssertState()
 }
@@ -639,6 +639,9 @@ func (r *TestRunner) SendVoteStatusMessage(channel string) {
 			}
 		}
 
+		// The time remaining is independently tested, so just assert its presence.
+		timeMessage := vote.TimeString(r.UTCClock, r.Vote.TimestampEnd)
+
 		// Build the expected string and assert that it's in the message buffer.
 		var buffer bytes.Buffer
 		buffer.WriteString(fmt.Sprintf(vote.MsgVoteOwner, r.Vote.Author.Username))
@@ -651,6 +654,8 @@ func (r *TestRunner) SendVoteStatusMessage(channel string) {
 		buffer.WriteString(forMessage)
 		buffer.WriteString(", ")
 		buffer.WriteString(againstMessage)
+		buffer.WriteString(". ")
+		buffer.WriteString(timeMessage)
 		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, buffer.String())})
 	}
 
@@ -801,13 +806,15 @@ type Vote struct {
 	Message      string
 	VotesFor     []int64
 	VotesAgainst []int64
+	TimestampEnd time.Time
 }
 
-func newVote(author *discordgo.User, message string) *Vote {
+func newVote(author *discordgo.User, message string, timestampEnd time.Time) *Vote {
 	return &Vote{
 		Author:       author,
 		Message:      message,
 		VotesFor:     []int64{},
 		VotesAgainst: []int64{},
+		TimestampEnd: timestampEnd,
 	}
 }
