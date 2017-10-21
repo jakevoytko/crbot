@@ -242,6 +242,8 @@ func initializeTests() (*ModelHelper, *util.FakeUTCClock) {
 }
 
 func assertIsVoteActive(t *testing.T, modelHelper *ModelHelper, active bool) {
+	t.Helper()
+
 	ok, err := modelHelper.IsVoteActive()
 	if err != nil {
 		t.Errorf("Should not have errored")
@@ -252,6 +254,8 @@ func assertIsVoteActive(t *testing.T, modelHelper *ModelHelper, active bool) {
 }
 
 func assertMostRecentVote(t *testing.T, modelHelper *ModelHelper, vote *Vote) {
+	t.Helper()
+
 	mostRecentVote, err := modelHelper.MostRecentVote()
 	if err != nil {
 		t.Errorf("Should not have errored pulling most-recent vote: %v", err)
@@ -262,6 +266,8 @@ func assertMostRecentVote(t *testing.T, modelHelper *ModelHelper, vote *Vote) {
 }
 
 func assertMostRecentVoteID(t *testing.T, modelHelper *ModelHelper, voteID int) {
+	t.Helper()
+
 	mostRecentVoteID, err := modelHelper.MostRecentVoteID()
 	if err != nil {
 		t.Errorf("Should not have errored pulling most-recent vote ID: %v", err)
@@ -272,6 +278,8 @@ func assertMostRecentVoteID(t *testing.T, modelHelper *ModelHelper, voteID int) 
 }
 
 func assertStartNewVoteFails(t *testing.T, modelHelper *ModelHelper, userID int64) {
+	t.Helper()
+
 	_, err := modelHelper.StartNewVote(userID, "hug Jake")
 	if err != ErrorOnlyOneVote {
 		t.Errorf("Should have failed to add vote with ID %v", userID)
@@ -279,6 +287,8 @@ func assertStartNewVoteFails(t *testing.T, modelHelper *ModelHelper, userID int6
 }
 
 func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, userID int64) *Vote {
+	t.Helper()
+
 	vote, err := modelHelper.StartNewVote(userID, "hug Jake")
 	if err != nil {
 		t.Errorf("Should have started a vote with ID %v", userID)
@@ -287,6 +297,8 @@ func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, userID int64) *V
 }
 
 func assertEarlyBallotFails(t *testing.T, modelHelper *ModelHelper, userID int64, inFavor bool) {
+	t.Helper()
+
 	_, err := modelHelper.CastBallot(userID, inFavor)
 	if err != ErrorNoVoteActive {
 		t.Errorf("Should have failed due to no active vote")
@@ -294,6 +306,8 @@ func assertEarlyBallotFails(t *testing.T, modelHelper *ModelHelper, userID int64
 }
 
 func assertCastBallot(t *testing.T, modelHelper *ModelHelper, userID int64, inFavor bool) {
+	t.Helper()
+
 	vote, err := modelHelper.CastBallot(userID, inFavor)
 	if err != nil {
 		t.Errorf("Unexpected ballot failure")
@@ -320,6 +334,8 @@ func assertCastBallot(t *testing.T, modelHelper *ModelHelper, userID int64, inFa
 }
 
 func assertCannotVoteAgain(t *testing.T, modelHelper *ModelHelper, userID int64, inFavor bool) {
+	t.Helper()
+
 	_, err := modelHelper.CastBallot(userID, inFavor)
 	if err != ErrorAlreadyVoted {
 		t.Errorf("Expected ballot to fail: %v", err)
@@ -327,6 +343,8 @@ func assertCannotVoteAgain(t *testing.T, modelHelper *ModelHelper, userID int64,
 }
 
 func assertCannotVoteWhenExpired(t *testing.T, modelHelper *ModelHelper, userID int64, inFavor bool) {
+	t.Helper()
+
 	_, err := modelHelper.CastBallot(userID, inFavor)
 	if err != ErrorNoVoteActive {
 		t.Errorf("Expected ballot to fail: %v", err)
@@ -334,6 +352,8 @@ func assertCannotVoteWhenExpired(t *testing.T, modelHelper *ModelHelper, userID 
 }
 
 func assertEarlySetVoteOutcomeFails(t *testing.T, modelHelper *ModelHelper, voteOutcome int) {
+	t.Helper()
+
 	err := modelHelper.SetVoteOutcome(voteOutcome)
 	if err != ErrorNoVoteActive {
 		t.Errorf("Expected vote to already have an outcome")
@@ -341,6 +361,8 @@ func assertEarlySetVoteOutcomeFails(t *testing.T, modelHelper *ModelHelper, vote
 }
 
 func assertSetVoteOutcome(t *testing.T, modelHelper *ModelHelper, voteOutcome int) {
+	t.Helper()
+
 	err := modelHelper.SetVoteOutcome(voteOutcome)
 	if err != nil {
 		t.Errorf("Unexpected ballot failure")
@@ -357,6 +379,8 @@ func assertSetVoteOutcome(t *testing.T, modelHelper *ModelHelper, voteOutcome in
 }
 
 func assertSetVoteOutcomeFails(t *testing.T, modelHelper *ModelHelper, voteOutcome int) {
+	t.Helper()
+
 	err := modelHelper.SetVoteOutcome(voteOutcome)
 	if err != ErrorVoteHasOutcome {
 		t.Errorf("Expected failure due to existing outcome: %v", err)
