@@ -28,7 +28,7 @@ func (e *VoteExecutor) GetType() int {
 
 const (
 	MsgActiveVote       = "Cannot start a vote while another is in progress. Type `?votestatus` for more info"
-	MsgBroadcastNewVote = "@here -- %s started a new vote: %s.\n\nType `?yes or `?no to vote."
+	MsgBroadcastNewVote = "@everyone -- %s started a new vote: %s.\n\nType `?yes or `?no to vote."
 	MsgVoteMustBePublic = "Votes can only be started in public channels"
 )
 
