@@ -405,6 +405,8 @@ func NewTestRunner(t *testing.T) *TestRunner {
 }
 
 func (r *TestRunner) AssertState() {
+	r.T.Helper()
+
 	// Assert counts.
 	assertNumCommands(r.T, r.CustomMap, len(r.Learns))
 	assertNumGists(r.T, r.Gist, r.GistsCount)
@@ -418,7 +420,9 @@ func (r *TestRunner) AssertState() {
 }
 
 func (r *TestRunner) SendMessage(channel, message, expectedResponse string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
+	r.T.Helper()
+
+	sendMessage(r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	assertNewMessages(r.T, r.DiscordSession,
 		[]*util.Message{util.NewMessage(channel, expectedResponse)})
@@ -426,6 +430,8 @@ func (r *TestRunner) SendMessage(channel, message, expectedResponse string) {
 }
 
 func (r *TestRunner) SendMessageAs(author *discordgo.User, channel, message, expectedResponse string) {
+	r.T.Helper()
+
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	assertNewMessages(r.T, r.DiscordSession,
@@ -434,7 +440,9 @@ func (r *TestRunner) SendMessageAs(author *discordgo.User, channel, message, exp
 }
 
 func (r *TestRunner) SendLearnMessage(channel, message string, learn *Learn) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
+	r.T.Helper()
+
+	sendMessage(r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	r.Learns[learn.Call] = learn
 	assertNewMessages(r.T, r.DiscordSession,
@@ -444,6 +452,8 @@ func (r *TestRunner) SendLearnMessage(channel, message string, learn *Learn) {
 }
 
 func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel string) {
+	r.T.Helper()
+
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, "?vote a vote has been called")
 	r.DiscordMessagesCount++
 	r.Vote = newVote(author, "a vote has been called")
@@ -453,6 +463,8 @@ func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel string) {
 }
 
 func (r *TestRunner) CastBallotAs(author *discordgo.User, channel string, inFavor bool) {
+	r.T.Helper()
+
 	voteString := "?no"
 	expectedMessage := vote.MsgVotedAgainst
 	toAppend := &(r.Vote.VotesAgainst)
@@ -493,6 +505,8 @@ func (r *TestRunner) ExpireVote() {
 }
 
 func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel, message string, learn *Learn) {
+	r.T.Helper()
+
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	r.Learns[learn.Call] = learn
@@ -503,7 +517,9 @@ func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel, message
 }
 
 func (r *TestRunner) SendUnlearnMessage(channel, message string, call string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
+	r.T.Helper()
+
+	sendMessage(r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	delete(r.Learns, call)
 	assertNewMessages(r.T, r.DiscordSession,
@@ -513,13 +529,17 @@ func (r *TestRunner) SendUnlearnMessage(channel, message string, call string) {
 }
 
 func (r *TestRunner) SendMessageWithoutResponse(channel, message string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, message)
+	r.T.Helper()
+
+	sendMessage(r.DiscordSession, r.Handler, channel, message)
 	assertNewMessages(r.T, r.DiscordSession, []*util.Message{})
 	r.AssertState()
 }
 
 func (r *TestRunner) SendListMessage(channel string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, "?list")
+	r.T.Helper()
+
+	sendMessage(r.DiscordSession, r.Handler, channel, "?list")
 	r.DiscordMessagesCount++
 	r.GistsCount++
 	assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, "The list of commands is here: https://www.example.com/success")})
@@ -593,7 +613,9 @@ func (r *TestRunner) SendListMessage(channel string) {
 }
 
 func (r *TestRunner) SendVoteStatusMessage(channel string) {
-	sendMessage(r.T, r.DiscordSession, r.Handler, channel, "?votestatus")
+	r.T.Helper()
+
+	sendMessage(r.DiscordSession, r.Handler, channel, "?votestatus")
 	r.DiscordMessagesCount++
 
 	if r.Vote == nil {
@@ -640,24 +662,32 @@ func (r *TestRunner) AddUser(user *discordgo.User) {
 }
 
 func assertNumCommands(t *testing.T, customMap *util.InMemoryStringMap, count int) {
+	t.Helper()
+
 	if all, _ := customMap.GetAll(); len(all) != count {
 		t.Errorf(fmt.Sprintf("Should have %v commands", count))
 	}
 }
 
 func assertNumGists(t *testing.T, gist *util.InMemoryGist, count int) {
+	t.Helper()
+
 	if len(gist.Messages) != count {
 		t.Errorf(fmt.Sprintf("Should have %v gists", count))
 	}
 }
 
 func assertNumDiscordMessages(t *testing.T, discordSession *util.InMemoryDiscordSession, count int) {
+	t.Helper()
+
 	if len(discordSession.Messages) != count {
 		t.Errorf(fmt.Sprintf("Should have %v discord messages", count))
 	}
 }
 
 func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *util.InMemoryStringMap, newVote *Vote) {
+	t.Helper()
+
 	modelHelper := vote.NewModelHelper(voteMap, utcClock)
 	ok, _ := modelHelper.IsVoteActive()
 	if newVote != nil && !ok {
@@ -668,7 +698,7 @@ func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *util.InMemoryStr
 	}
 }
 
-func sendMessage(t *testing.T, discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel, message string) {
+func sendMessage(discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel, message string) {
 	author := &discordgo.User{
 		ID:            "1",
 		Email:         "email@example.com",
@@ -706,6 +736,8 @@ func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, ha
 }
 
 func assertNewMessages(t *testing.T, discordSession *util.InMemoryDiscordSession, newMessages []*util.Message) {
+	t.Helper()
+
 	if len(discordSession.Messages) < len(newMessages) {
 		t.Errorf(fmt.Sprintf(
 			"Needed at least %v messages, had %v", len(newMessages), len(discordSession.Messages)))
@@ -725,6 +757,8 @@ func assertNewMessages(t *testing.T, discordSession *util.InMemoryDiscordSession
 }
 
 func assertCommand(t *testing.T, commandMap *util.InMemoryStringMap, call, response string) {
+	t.Helper()
+
 	if _, err := commandMap.Get(call); err != nil {
 		t.Errorf("Response should be present for call " + call)
 		return
