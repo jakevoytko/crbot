@@ -466,11 +466,11 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel string, inFavo
 	r.T.Helper()
 
 	voteString := "?no"
-	expectedMessage := vote.MsgVotedAgainst
+	expectedMessage := fmt.Sprintf(vote.MsgVotedAgainst, author.Mention())
 	toAppend := &(r.Vote.VotesAgainst)
 	if inFavor {
 		voteString = "?yes"
-		expectedMessage = vote.MsgVotedInFavor
+		expectedMessage = fmt.Sprintf(vote.MsgVotedInFavor, author.Mention())
 		toAppend = &(r.Vote.VotesFor)
 	}
 

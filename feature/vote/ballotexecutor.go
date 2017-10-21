@@ -2,6 +2,7 @@ package vote
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -28,8 +29,8 @@ func (e *BallotExecutor) GetType() int {
 
 const (
 	MsgAlreadyVoted       = "You already voted"
-	MsgVotedAgainst       = "You voted no"
-	MsgVotedInFavor       = "You voted yes"
+	MsgVotedAgainst       = "%v voted no"
+	MsgVotedInFavor       = "%v voted yes"
 	MsgBallotMustBePublic = "Ballots can only be cast in public channels"
 )
 
@@ -63,9 +64,9 @@ func (e *BallotExecutor) Execute(s api.DiscordSession, channel string, command *
 		return
 	}
 
-	voteMessage := MsgVotedAgainst
+	voteMessage := fmt.Sprintf(MsgVotedAgainst, command.Author.Mention())
 	if command.Ballot.InFavor {
-		voteMessage = MsgVotedInFavor
+		voteMessage = fmt.Sprintf(MsgVotedInFavor, command.Author.Mention())
 	}
 
 	messages := []string{voteMessage, StatusLine(e.modelHelper.UTCClock, vote)}
