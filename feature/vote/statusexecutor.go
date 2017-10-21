@@ -33,7 +33,7 @@ const (
 	MsgSpacer            = "-----"
 	MsgStatusVoteFailing = "Vote is failing"
 	MsgStatusVotePassing = "Vote is passing"
-	MsgStatusVotesNeeded = "Need 5 votes in favor, or 5 votes against"
+	MsgStatusVotesNeeded = "5 votes must be cast before vote can pass"
 	MsgVoteOwner         = "Vote started by %s: "
 	MsgVotesAgainst      = "%d votes against"
 	MsgVotesFor          = "%d votes for"
@@ -65,7 +65,7 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 	// Vote started by @SomeoneElse: Votekick @Jake?
 	// -----
 	// 12 minutes remaining
-	// 5 votes needed to pass. 3 votes for, 1 vote against
+	// 5 votes must be cast before vote can pass. 3 votes for, 1 vote against. 30 minutes remaining.
 
 	messages := []string{}
 

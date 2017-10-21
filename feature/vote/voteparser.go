@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	MsgHelpVote = "Type `?vote <message>` to call a yes/no vote on the given message. Needs 5 yes votes to pass. The first character of the message must be alphanumeric.\n\nExample: `?vote are pirates better than ninjas?`"
+	MsgHelpVote = "Type `?vote <message>` to call a yes/no vote on the given message. 5 votes must be cast before the vote can pass. The first character of the message must be alphanumeric.\n\nExample: `?vote are pirates better than ninjas?`"
 )
 
 // VoteParser parses ?vote commands.

@@ -38,7 +38,7 @@ func NewVote(voteID int, userID int64, message string, timestampStart, timestamp
 
 // IsActive returns whether there are enough votes to claim confidence.
 func (v *Vote) HasEnoughVotes() bool {
-	return len(v.VotesFor) >= 5 || len(v.VotesAgainst) >= 5
+	return len(v.VotesFor)+len(v.VotesAgainst) >= 5
 }
 
 // CalculateActiveStatus compares the vote totals and returns what the outcome

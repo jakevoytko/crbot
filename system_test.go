@@ -631,7 +631,7 @@ func (r *TestRunner) SendVoteStatusMessage(channel string) {
 			againstMessage = fmt.Sprintf(vote.MsgVotesAgainst, len(r.Vote.VotesAgainst))
 		}
 		statusMessage := vote.MsgStatusVotesNeeded
-		if len(r.Vote.VotesAgainst) >= 5 || len(r.Vote.VotesFor) >= 5 {
+		if len(r.Vote.VotesAgainst)+len(r.Vote.VotesFor) >= 5 {
 			if len(r.Vote.VotesFor) > len(r.Vote.VotesAgainst) {
 				statusMessage = vote.MsgStatusVotePassing
 			} else {
