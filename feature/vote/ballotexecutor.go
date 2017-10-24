@@ -3,7 +3,6 @@ package vote
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -34,31 +33,31 @@ const (
 	MsgBallotMustBePublic = "Ballots can only be cast in public channels"
 )
 
-func (e *BallotExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
-	userID, err := strconv.ParseInt(command.Author.ID, 10, 64)
+func (e *BallotExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
+	userID, err := model.ParseSnowflake(command.Author.ID)
 	if err != nil {
 		log.Fatal("Error parsing discord user ID", err)
 	}
 
-	discordChannel, err := s.Channel(channel)
+	discordChannel, err := s.Channel(channel.Format())
 	if err != nil {
 		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
 	}
 	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
-		s.ChannelMessageSend(channel, MsgBallotMustBePublic)
+		s.ChannelMessageSend(channel.Format(), MsgBallotMustBePublic)
 		return
 	}
 
 	vote, err := e.modelHelper.CastBallot(userID, command.Ballot.InFavor)
 	switch err {
 	case ErrorNoVoteActive:
-		if _, err := s.ChannelMessageSend(channel, MsgNoActiveVote); err != nil {
+		if _, err := s.ChannelMessageSend(channel.Format(), MsgNoActiveVote); err != nil {
 			log.Fatal("Unable to send no-active-vote message to user", err)
 		}
 		return
 
 	case ErrorAlreadyVoted:
-		if _, err := s.ChannelMessageSend(channel, MsgAlreadyVoted); err != nil {
+		if _, err := s.ChannelMessageSend(channel.Format(), MsgAlreadyVoted); err != nil {
 			log.Fatal("Unable to send already voted message to user", err)
 		}
 		return
@@ -71,7 +70,7 @@ func (e *BallotExecutor) Execute(s api.DiscordSession, channel string, command *
 
 	messages := []string{voteMessage, StatusLine(e.modelHelper.UTCClock, vote)}
 	message := strings.Join(messages, "\n")
-	if _, err := s.ChannelMessageSend(channel, message); err != nil {
+	if _, err := s.ChannelMessageSend(channel.Format(), message); err != nil {
 		log.Info("Failed to send ballot status message", err)
 	}
 }

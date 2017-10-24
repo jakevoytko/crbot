@@ -1,8 +1,6 @@
 package moderation
 
 import (
-	"strconv"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
@@ -11,7 +9,7 @@ import (
 
 // RickListCommandInterceptor asserts that the
 type RickListCommandInterceptor struct {
-	rickList []int64
+	rickList []model.Snowflake
 }
 
 // NewRickListCommandInterceptor returns a new ricklist command interceptor.
@@ -29,7 +27,7 @@ func (i *RickListCommandInterceptor) Intercept(command *model.Command, s api.Dis
 	//   a rickroll.
 	if channel, err := s.Channel(m.ChannelID); err == nil && (channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM) && command.Type != model.Type_Learn {
 		for _, ricked := range i.rickList {
-			if strconv.FormatInt(ricked, 10) == m.Author.ID {
+			if ricked.Format() == m.Author.ID {
 				return &model.Command{
 					Type: model.Type_RickList,
 				}, nil

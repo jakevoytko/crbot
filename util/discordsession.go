@@ -13,7 +13,7 @@ type Message struct {
 }
 
 // NewMessage works as advertised.
-func NewMessage(channel, message string) *Message {
+func NewMessage(channel string, message string) *Message {
 	return &Message{
 		Channel: channel,
 		Message: message,

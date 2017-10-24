@@ -10,5 +10,7 @@ go_library(
         "util.go",
     ],
     visibility = ["//visibility:public"],
-    deps = ["@com_github_bwmarrin_discordgo//:go_default_library"],
+    deps = [
+        "@com_github_bwmarrin_discordgo//:go_default_library",
+    ],
 )

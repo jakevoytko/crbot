@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/util"
 )
 
@@ -159,7 +160,7 @@ func TestCastBallot_LotsOfVotes(t *testing.T) {
 	assertStartNewVote(t, modelHelper, 1 /* userID */)
 	for userID := 0; userID < 10; userID++ {
 		inFavor := userID%2 == 0
-		assertCastBallot(t, modelHelper, int64(userID), inFavor)
+		assertCastBallot(t, modelHelper, model.Snowflake(userID), inFavor)
 	}
 }
 
@@ -277,7 +278,7 @@ func assertMostRecentVoteID(t *testing.T, modelHelper *ModelHelper, voteID int) 
 	}
 }
 
-func assertStartNewVoteFails(t *testing.T, modelHelper *ModelHelper, userID int64) {
+func assertStartNewVoteFails(t *testing.T, modelHelper *ModelHelper, userID model.Snowflake) {
 	t.Helper()
 
 	_, err := modelHelper.StartNewVote(userID, "hug Jake")
@@ -286,7 +287,7 @@ func assertStartNewVoteFails(t *testing.T, modelHelper *ModelHelper, userID int6
 	}
 }
 
-func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, userID int64) *Vote {
+func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, userID model.Snowflake) *Vote {
 	t.Helper()
 
 	vote, err := modelHelper.StartNewVote(userID, "hug Jake")
@@ -296,7 +297,7 @@ func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, userID int64) *V
 	return vote
 }
 
-func assertEarlyBallotFails(t *testing.T, modelHelper *ModelHelper, userID int64, inFavor bool) {
+func assertEarlyBallotFails(t *testing.T, modelHelper *ModelHelper, userID model.Snowflake, inFavor bool) {
 	t.Helper()
 
 	_, err := modelHelper.CastBallot(userID, inFavor)
@@ -305,7 +306,7 @@ func assertEarlyBallotFails(t *testing.T, modelHelper *ModelHelper, userID int64
 	}
 }
 
-func assertCastBallot(t *testing.T, modelHelper *ModelHelper, userID int64, inFavor bool) {
+func assertCastBallot(t *testing.T, modelHelper *ModelHelper, userID model.Snowflake, inFavor bool) {
 	t.Helper()
 
 	vote, err := modelHelper.CastBallot(userID, inFavor)
@@ -333,7 +334,7 @@ func assertCastBallot(t *testing.T, modelHelper *ModelHelper, userID int64, inFa
 	assertMostRecentVote(t, modelHelper, vote)
 }
 
-func assertCannotVoteAgain(t *testing.T, modelHelper *ModelHelper, userID int64, inFavor bool) {
+func assertCannotVoteAgain(t *testing.T, modelHelper *ModelHelper, userID model.Snowflake, inFavor bool) {
 	t.Helper()
 
 	_, err := modelHelper.CastBallot(userID, inFavor)
@@ -342,7 +343,7 @@ func assertCannotVoteAgain(t *testing.T, modelHelper *ModelHelper, userID int64,
 	}
 }
 
-func assertCannotVoteWhenExpired(t *testing.T, modelHelper *ModelHelper, userID int64, inFavor bool) {
+func assertCannotVoteWhenExpired(t *testing.T, modelHelper *ModelHelper, userID model.Snowflake, inFavor bool) {
 	t.Helper()
 
 	_, err := modelHelper.CastBallot(userID, inFavor)

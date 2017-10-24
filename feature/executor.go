@@ -10,5 +10,5 @@ type Executor interface {
 	// The command type to execute.
 	GetType() int
 	// Execute the given command, for the session and channel name provided.
-	Execute(api.DiscordSession, string, *model.Command)
+	Execute(api.DiscordSession, model.Snowflake, *model.Command)
 }

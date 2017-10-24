@@ -292,12 +292,12 @@ func (f *LearnExecutor) GetType() int {
 }
 
 // Execute replies over the given channel with a help message.
-func (f *LearnExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
+func (f *LearnExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Learn == nil {
 		log.Fatal("Incorrectly generated learn command", errors.New("wat"))
 	}
 	if !command.Learn.CallOpen {
-		s.ChannelMessageSend(channel, fmt.Sprintf(MsgLearnFail, command.Learn.Call))
+		s.ChannelMessageSend(channel.Format(), fmt.Sprintf(MsgLearnFail, command.Learn.Call))
 		return
 	}
 
@@ -313,7 +313,7 @@ func (f *LearnExecutor) Execute(s api.DiscordSession, channel string, command *m
 	}
 
 	// Send ack.
-	s.ChannelMessageSend(channel, fmt.Sprintf(MsgLearnSuccess, command.Learn.Call))
+	s.ChannelMessageSend(channel.Format(), fmt.Sprintf(MsgLearnSuccess, command.Learn.Call))
 }
 
 type UnlearnExecutor struct {
@@ -331,24 +331,24 @@ func (f *UnlearnExecutor) GetType() int {
 
 // Execute replies over the given channel indicating successful unlearning, or
 // failure to unlearn.
-func (e *UnlearnExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
+func (e *UnlearnExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Unlearn == nil {
 		log.Fatal("Incorrectly generated unlearn command", errors.New("wat"))
 	}
 
 	// Get the current channel and check if we're being asked to unlearn in a
 	// private message.
-	discordChannel, err := s.Channel(channel)
+	discordChannel, err := s.Channel(channel.Format())
 	if err != nil {
 		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
 	}
 	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
-		s.ChannelMessageSend(channel, MsgUnlearnMustBePublic)
+		s.ChannelMessageSend(channel.Format(), MsgUnlearnMustBePublic)
 		return
 	}
 
 	if !command.Unlearn.CallOpen {
-		s.ChannelMessageSend(channel, fmt.Sprintf(MsgUnlearnFail, command.Unlearn.Call))
+		s.ChannelMessageSend(channel.Format(), fmt.Sprintf(MsgUnlearnFail, command.Unlearn.Call))
 		return
 	}
 
@@ -364,7 +364,7 @@ func (e *UnlearnExecutor) Execute(s api.DiscordSession, channel string, command 
 	}
 
 	// Send ack.
-	s.ChannelMessageSend(channel, fmt.Sprintf(MsgUnlearnSuccess, command.Unlearn.Call))
+	s.ChannelMessageSend(channel.Format(), fmt.Sprintf(MsgUnlearnSuccess, command.Unlearn.Call))
 }
 
 type CustomExecutor struct {
@@ -381,7 +381,7 @@ func (e *CustomExecutor) GetType() int {
 }
 
 // Execute returns the response if possible.
-func (e *CustomExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
+func (e *CustomExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Custom == nil {
 		log.Fatal("Incorrectly generated learn command", errors.New("wat"))
 	}
@@ -406,5 +406,5 @@ func (e *CustomExecutor) Execute(s api.DiscordSession, channel string, command *
 			response = strings.Replace(response, "$1", command.Custom.Args, 4)
 		}
 	}
-	s.ChannelMessageSend(channel, response)
+	s.ChannelMessageSend(channel.Format(), response)
 }

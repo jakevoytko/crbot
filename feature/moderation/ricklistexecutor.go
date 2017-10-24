@@ -25,8 +25,8 @@ func (e *RickListExecutor) GetType() int {
 }
 
 // Execute replies over the given channel with a rick roll.
-func (e *RickListExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
-	if _, err := s.ChannelMessageSend(channel, MsgRickList); err != nil {
+func (e *RickListExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
+	if _, err := s.ChannelMessageSend(channel.Format(), MsgRickList); err != nil {
 		log.Info("Failed to send ricklist message", err)
 	}
 }

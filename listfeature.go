@@ -109,7 +109,7 @@ func (e *ListExecutor) GetType() int {
 }
 
 // Execute uploads the command list to github and pings the gist link in chat.
-func (e *ListExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
+func (e *ListExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	builtins := e.featureRegistry.GetInvokableFeatureNames()
 	all, err := e.commandMap.GetAll()
 	if err != nil {
@@ -157,8 +157,8 @@ func (e *ListExecutor) Execute(s api.DiscordSession, channel string, command *mo
 
 	url, err := e.gist.Upload(buffer.String())
 	if err != nil {
-		s.ChannelMessageSend(channel, err.Error())
+		s.ChannelMessageSend(channel.Format(), err.Error())
 		return
 	}
-	s.ChannelMessageSend(channel, MsgGistAddress+": "+url)
+	s.ChannelMessageSend(channel.Format(), MsgGistAddress+": "+url)
 }

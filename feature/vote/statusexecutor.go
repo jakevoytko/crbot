@@ -3,7 +3,6 @@ package vote
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/jakevoytko/crbot/api"
@@ -40,13 +39,13 @@ const (
 )
 
 // Execute prints the status of the current vote.
-func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
+func (e *StatusExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	ok, err := e.modelHelper.IsVoteActive()
 	if err != nil {
 		log.Fatal("Error reading vote status", err)
 	}
 	if !ok {
-		if _, err := s.ChannelMessageSend(channel, MsgNoActiveVote); err != nil {
+		if _, err := s.ChannelMessageSend(channel.Format(), MsgNoActiveVote); err != nil {
 			log.Fatal("Unable to send no-active-vote message to user", err)
 		}
 		return
@@ -70,7 +69,7 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 	messages := []string{}
 
 	// Add the owner string.
-	owner, err := s.User(strconv.FormatInt(vote.UserID, 10))
+	owner, err := s.User(vote.UserID.Format())
 	if err != nil {
 		log.Fatal("Error fetching the owner when rendering a vote response", err)
 	}
@@ -83,7 +82,7 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel string, command *
 	messages = append(messages, StatusLine(e.modelHelper.UTCClock, vote))
 
 	finalMessage := strings.Join(messages, "\n")
-	if _, err := s.ChannelMessageSend(channel, finalMessage); err != nil {
+	if _, err := s.ChannelMessageSend(channel.Format(), finalMessage); err != nil {
 		log.Info("Failed to send vote message", err)
 	}
 }

@@ -54,7 +54,11 @@ func getHandleMessage(commandMap model.StringMap, featureRegistry *feature.Regis
 
 		executor := featureRegistry.GetExecutorByType(command.Type)
 		if executor != nil {
-			executor.Execute(s, m.ChannelID, command)
+			snowflake, err := model.ParseSnowflake(m.ChannelID)
+			if err != nil {
+				log.Fatal("Error parsing snowflake", err)
+			}
+			executor.Execute(s, snowflake, command)
 		}
 	}
 }

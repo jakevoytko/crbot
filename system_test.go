@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -20,6 +19,11 @@ import (
 	"github.com/jakevoytko/crbot/util"
 )
 
+const (
+	MainChannelID   = model.Snowflake(8675309)
+	DirectMessageID = model.Snowflake(1)
+)
+
 func TestNewServer(t *testing.T) {
 	runner := NewTestRunner(t)
 
@@ -31,17 +35,17 @@ func TestLearn_NoResponse(t *testing.T) {
 	runner := NewTestRunner(t)
 
 	// Commands that should never return a response.
-	runner.SendMessageWithoutResponse("channel", "?")
-	runner.SendMessageWithoutResponse("channel", "!")
-	runner.SendMessageWithoutResponse("channel", ".")
-	runner.SendMessageWithoutResponse("channel", "")
-	runner.SendMessageWithoutResponse("channel", "!help")
-	runner.SendMessageWithoutResponse("channel", "help")
-	runner.SendMessageWithoutResponse("channel", ".help")
+	runner.SendMessageWithoutResponse(MainChannelID, "?")
+	runner.SendMessageWithoutResponse(MainChannelID, "!")
+	runner.SendMessageWithoutResponse(MainChannelID, ".")
+	runner.SendMessageWithoutResponse(MainChannelID, "")
+	runner.SendMessageWithoutResponse(MainChannelID, "!help")
+	runner.SendMessageWithoutResponse(MainChannelID, "help")
+	runner.SendMessageWithoutResponse(MainChannelID, ".help")
 
 	// Test ?list. ?list tests will be interspersed through the learn examples
 	// below, since learn and unlearn interact with it.
-	runner.SendListMessage("channel")
+	runner.SendListMessage(MainChannelID)
 }
 
 func TestLearn_WrongFormat(t *testing.T) {
@@ -49,124 +53,124 @@ func TestLearn_WrongFormat(t *testing.T) {
 
 	// Basic learn responses.
 	// Wrong call format
-	runner.SendMessage("channel", "?learn", MsgHelpLearn)
-	runner.SendMessage("channel", "?learn test", MsgHelpLearn)
-	runner.SendMessage("channel", "?learn ?call response", MsgHelpLearn)
-	runner.SendMessage("channel", "?learn !call response", MsgHelpLearn)
-	runner.SendMessage("channel", "?learn /call response", MsgHelpLearn)
-	runner.SendMessage("channel", "?learn ", MsgHelpLearn)
-	runner.SendMessage("channel", "?learn multi\nline\ncall response", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn test", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn ?call response", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn !call response", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn /call response", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn ", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn multi\nline\ncall response", MsgHelpLearn)
 	// Wrong response format.
-	runner.SendMessage("channel", "?learn call ?response", MsgHelpLearn)
-	runner.SendMessage("channel", "?learn call !response", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn call ?response", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?learn call !response", MsgHelpLearn)
 }
 
 func TestIntegration(t *testing.T) {
 	runner := NewTestRunner(t)
 	// Test ?list. ?list tests will be interspersed through the learn examples
 	// below, since learn and unlearn interact with it.
-	runner.SendListMessage("channel")
+	runner.SendListMessage(MainChannelID)
 
 	// Valid learns.
-	runner.SendLearnMessage("channel", "?learn call response", NewLearn("call", "response"))
-	runner.SendLearnMessage("channel", "?learn call2 multi word response", NewLearn("call2", "multi word response"))
-	runner.SendLearnMessage("channel", "?learn call3 multi\nline\nresponse\n", NewLearn("call3", "multi\nline\nresponse\n"))
-	runner.SendLearnMessage("channel", "?learn call4 \\/leave", NewLearn("call4", "\\/leave"))
-	runner.SendLearnMessage("channel", "?learn bearshrug ʅʕ•ᴥ•ʔʃ", NewLearn("bearshrug", "ʅʕ•ᴥ•ʔʃ"))
-	runner.SendLearnMessage("channel", "?learn emoji ⛄⛄⛄⛄", NewLearn("emoji", "⛄⛄⛄⛄")) // Emoji is "snowman without snow", in case this isn't showing up in your editor.
-	runner.SendLearnMessage("channel", "?learn args1 hello $1", NewLearn("args1", "hello $1"))
-	runner.SendLearnMessage("channel", "?learn args2 $1", NewLearn("args2", "$1"))
-	runner.SendLearnMessage("channel", "?learn args3 $1 $1", NewLearn("args3", "$1 $1"))
-	runner.SendLearnMessage("channel", "?learn args4 $1 $1 $1 $1 $1", NewLearn("args4", "$1 $1 $1 $1 $1"))
+	runner.SendLearnMessage(MainChannelID, "?learn call response", NewLearn("call", "response"))
+	runner.SendLearnMessage(MainChannelID, "?learn call2 multi word response", NewLearn("call2", "multi word response"))
+	runner.SendLearnMessage(MainChannelID, "?learn call3 multi\nline\nresponse\n", NewLearn("call3", "multi\nline\nresponse\n"))
+	runner.SendLearnMessage(MainChannelID, "?learn call4 \\/leave", NewLearn("call4", "\\/leave"))
+	runner.SendLearnMessage(MainChannelID, "?learn bearshrug ʅʕ•ᴥ•ʔʃ", NewLearn("bearshrug", "ʅʕ•ᴥ•ʔʃ"))
+	runner.SendLearnMessage(MainChannelID, "?learn emoji ⛄⛄⛄⛄", NewLearn("emoji", "⛄⛄⛄⛄")) // Emoji is "snowman without snow", in case this isn't showing up in your editor.
+	runner.SendLearnMessage(MainChannelID, "?learn args1 hello $1", NewLearn("args1", "hello $1"))
+	runner.SendLearnMessage(MainChannelID, "?learn args2 $1", NewLearn("args2", "$1"))
+	runner.SendLearnMessage(MainChannelID, "?learn args3 $1 $1", NewLearn("args3", "$1 $1"))
+	runner.SendLearnMessage(MainChannelID, "?learn args4 $1 $1 $1 $1 $1", NewLearn("args4", "$1 $1 $1 $1 $1"))
 	// Cannot overwrite a learn.
-	runner.SendMessage("channel", "?learn call response", fmt.Sprintf(MsgLearnFail, "call"))
+	runner.SendMessage(MainChannelID, "?learn call response", fmt.Sprintf(MsgLearnFail, "call"))
 	// List should now include learns.
-	runner.SendListMessage("channel")
+	runner.SendListMessage(MainChannelID)
 	// Extra whitespace test.
-	runner.SendLearnMessage("channel", "?learn  spaceBeforeCall response", NewLearn("spaceBeforeCall", "response"))
-	runner.SendLearnMessage("channel", "?learn spaceBeforeResponse  response", NewLearn("spaceBeforeResponse", "response"))
-	runner.SendLearnMessage("channel", "?learn spaceInResponse response  two  spaces", NewLearn("spaceInResponse", "response  two  spaces"))
+	runner.SendLearnMessage(MainChannelID, "?learn  spaceBeforeCall response", NewLearn("spaceBeforeCall", "response"))
+	runner.SendLearnMessage(MainChannelID, "?learn spaceBeforeResponse  response", NewLearn("spaceBeforeResponse", "response"))
+	runner.SendLearnMessage(MainChannelID, "?learn spaceInResponse response  two  spaces", NewLearn("spaceInResponse", "response  two  spaces"))
 
 	// Test learned commands.
-	runner.SendMessage("channel", "?call", "response")
-	runner.SendMessage("channel", "?call2", "multi word response")
-	runner.SendMessage("channel", "?call3", "multi\nline\nresponse\n")
-	runner.SendMessage("channel", "?call4", "\\/leave")
-	runner.SendMessage("channel", "?bearshrug", "ʅʕ•ᴥ•ʔʃ")
-	runner.SendMessage("channel", "?emoji", "⛄⛄⛄⛄")
-	runner.SendMessage("channel", "?args1 world", "hello world")
-	runner.SendMessage("channel", "?args2 world", "world")
-	runner.SendMessage("channel", "?args3 world", "world world")
-	runner.SendMessage("channel", "?args3     leadingspaces", "    leadingspaces     leadingspaces")
-	runner.SendMessage("channel", "?args4 world", "world world world world $1")
-	runner.SendMessage("channel", "?args4     leadingspaces", "    leadingspaces     leadingspaces     leadingspaces     leadingspaces $1")
+	runner.SendMessage(MainChannelID, "?call", "response")
+	runner.SendMessage(MainChannelID, "?call2", "multi word response")
+	runner.SendMessage(MainChannelID, "?call3", "multi\nline\nresponse\n")
+	runner.SendMessage(MainChannelID, "?call4", "\\/leave")
+	runner.SendMessage(MainChannelID, "?bearshrug", "ʅʕ•ᴥ•ʔʃ")
+	runner.SendMessage(MainChannelID, "?emoji", "⛄⛄⛄⛄")
+	runner.SendMessage(MainChannelID, "?args1 world", "hello world")
+	runner.SendMessage(MainChannelID, "?args2 world", "world")
+	runner.SendMessage(MainChannelID, "?args3 world", "world world")
+	runner.SendMessage(MainChannelID, "?args3     leadingspaces", "    leadingspaces     leadingspaces")
+	runner.SendMessage(MainChannelID, "?args4 world", "world world world world $1")
+	runner.SendMessage(MainChannelID, "?args4     leadingspaces", "    leadingspaces     leadingspaces     leadingspaces     leadingspaces $1")
 
-	runner.SendMessage("channel", "?args1", MsgCustomNeedsArgs)
-	runner.SendMessage("channel", "?spaceBeforeCall", "response")
-	runner.SendMessage("channel", "?spaceBeforeResponse", "response")
-	runner.SendMessage("channel", "?spaceInResponse", "response  two  spaces")
+	runner.SendMessage(MainChannelID, "?args1", MsgCustomNeedsArgs)
+	runner.SendMessage(MainChannelID, "?spaceBeforeCall", "response")
+	runner.SendMessage(MainChannelID, "?spaceBeforeResponse", "response")
+	runner.SendMessage(MainChannelID, "?spaceInResponse", "response  two  spaces")
 	// Fallback commands aren't triggered unless they lead a message.
-	runner.SendMessageWithoutResponse("channel", " ?call")
-	runner.SendMessageWithoutResponse("channel", "i just met you, and this is lazy, but here's my number, ?call me maybe")
-	runner.SendMessageWithoutResponse("channel", "\n?call")
+	runner.SendMessageWithoutResponse(MainChannelID, " ?call")
+	runner.SendMessageWithoutResponse(MainChannelID, "i just met you, and this is lazy, but here's my number, ?call me maybe")
+	runner.SendMessageWithoutResponse(MainChannelID, "\n?call")
 	// List should still have the messages.
-	runner.SendListMessage("channel")
+	runner.SendListMessage(MainChannelID)
 
 	// Test unlearn.
 	// Wrong format.
-	runner.SendMessage("channel", "?unlearn", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?unlearn ", MsgHelpUnlearn)
+	runner.SendMessage(MainChannelID, "?unlearn", MsgHelpUnlearn)
+	runner.SendMessage(MainChannelID, "?unlearn ", MsgHelpUnlearn)
 	// Can't unlearn in a private channel
-	runner.SendMessage("literally anything else", "?unlearn call", MsgUnlearnMustBePublic)
+	runner.SendMessage(DirectMessageID, "?unlearn call", MsgUnlearnMustBePublic)
 	// Can't unlearn builtin commands.
-	runner.SendMessage("channel", "?unlearn help", fmt.Sprintf(MsgUnlearnFail, "help"))
-	runner.SendMessage("channel", "?unlearn learn", fmt.Sprintf(MsgUnlearnFail, "learn"))
-	runner.SendMessage("channel", "?unlearn list", fmt.Sprintf(MsgUnlearnFail, "list"))
-	runner.SendMessage("channel", "?unlearn unlearn", fmt.Sprintf(MsgUnlearnFail, "unlearn"))
-	runner.SendMessage("channel", "?unlearn ?help", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?unlearn ?learn", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?unlearn ?list", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?unlearn ?unlearn", MsgHelpUnlearn)
+	runner.SendMessage(MainChannelID, "?unlearn help", fmt.Sprintf(MsgUnlearnFail, "help"))
+	runner.SendMessage(MainChannelID, "?unlearn learn", fmt.Sprintf(MsgUnlearnFail, "learn"))
+	runner.SendMessage(MainChannelID, "?unlearn list", fmt.Sprintf(MsgUnlearnFail, "list"))
+	runner.SendMessage(MainChannelID, "?unlearn unlearn", fmt.Sprintf(MsgUnlearnFail, "unlearn"))
+	runner.SendMessage(MainChannelID, "?unlearn ?help", MsgHelpUnlearn)
+	runner.SendMessage(MainChannelID, "?unlearn ?learn", MsgHelpUnlearn)
+	runner.SendMessage(MainChannelID, "?unlearn ?list", MsgHelpUnlearn)
+	runner.SendMessage(MainChannelID, "?unlearn ?unlearn", MsgHelpUnlearn)
 	// Unrecognized command.
-	runner.SendMessage("channel", "?unlearn  bears", fmt.Sprintf(MsgUnlearnFail, "bears"))
-	runner.SendMessage("channel", "?unlearn somethingIdon'tknow", fmt.Sprintf(MsgUnlearnFail, "somethingIdon'tknow"))
+	runner.SendMessage(MainChannelID, "?unlearn  bears", fmt.Sprintf(MsgUnlearnFail, "bears"))
+	runner.SendMessage(MainChannelID, "?unlearn somethingIdon'tknow", fmt.Sprintf(MsgUnlearnFail, "somethingIdon'tknow"))
 	// Valid unlearn.
-	runner.SendUnlearnMessage("channel", "?unlearn call", "call")
-	runner.SendMessageWithoutResponse("channel", "?call")
+	runner.SendUnlearnMessage(MainChannelID, "?unlearn call", "call")
+	runner.SendMessageWithoutResponse(MainChannelID, "?call")
 	// List should work after the unlearn.
-	runner.SendListMessage("channel")
+	runner.SendListMessage(MainChannelID)
 	// Can then relearn.
-	runner.SendLearnMessage("channel", "?learn call another response", NewLearn("call", "another response"))
-	runner.SendMessage("channel", "?call", "another response")
+	runner.SendLearnMessage(MainChannelID, "?learn call another response", NewLearn("call", "another response"))
+	runner.SendMessage(MainChannelID, "?call", "another response")
 	// List should work after the relearn.
-	runner.SendListMessage("channel")
+	runner.SendListMessage(MainChannelID)
 	// Unlearn with 2 spaces.
-	runner.SendUnlearnMessage("channel", "?unlearn  call", "call")
-	runner.SendMessageWithoutResponse("channel", "?call")
+	runner.SendUnlearnMessage(MainChannelID, "?unlearn  call", "call")
+	runner.SendMessageWithoutResponse(MainChannelID, "?call")
 
 	// Unrecognized help commands.
-	runner.SendMessage("channel", "?help", MsgDefaultHelp)
-	runner.SendMessage("channel", "?help abunchofgibberish", MsgDefaultHelp)
-	runner.SendMessage("channel", "?help ??help", MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help", MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help abunchofgibberish", MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help ??help", MsgDefaultHelp)
 	// All recognized help commands.
-	runner.SendMessage("channel", "?help help", MsgHelpHelp)
-	runner.SendMessage("channel", "?help learn", MsgHelpLearn)
-	runner.SendMessage("channel", "?help list", MsgHelpList)
-	runner.SendMessage("channel", "?help unlearn", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?help ?help", MsgHelpHelp)
-	runner.SendMessage("channel", "?help ?learn", MsgHelpLearn)
-	runner.SendMessage("channel", "?help ?list", MsgHelpList)
-	runner.SendMessage("channel", "?help ?unlearn", MsgHelpUnlearn)
-	runner.SendMessage("channel", "?help  help", MsgHelpHelp)
+	runner.SendMessage(MainChannelID, "?help help", MsgHelpHelp)
+	runner.SendMessage(MainChannelID, "?help learn", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?help list", MsgHelpList)
+	runner.SendMessage(MainChannelID, "?help unlearn", MsgHelpUnlearn)
+	runner.SendMessage(MainChannelID, "?help ?help", MsgHelpHelp)
+	runner.SendMessage(MainChannelID, "?help ?learn", MsgHelpLearn)
+	runner.SendMessage(MainChannelID, "?help ?list", MsgHelpList)
+	runner.SendMessage(MainChannelID, "?help ?unlearn", MsgHelpUnlearn)
+	runner.SendMessage(MainChannelID, "?help  help", MsgHelpHelp)
 	// Help with custom commands.
-	runner.SendLearnMessage("channel", "?learn help-noarg response", NewLearn("help-noarg", "response"))
-	runner.SendLearnMessage("channel", "?learn help-arg response $1", NewLearn("help-arg", "response $1"))
-	runner.SendMessage("channel", "?help help-noarg", "?help-noarg")
-	runner.SendMessage("channel", "?help help-arg", "?help-arg <args>")
-	runner.SendUnlearnMessage("channel", "?unlearn help-noarg", "help-noarg")
-	runner.SendUnlearnMessage("channel", "?unlearn help-arg", "help-arg")
-	runner.SendMessage("channel", "?help help-noarg", MsgDefaultHelp)
-	runner.SendMessage("channel", "?help help-arg", MsgDefaultHelp)
+	runner.SendLearnMessage(MainChannelID, "?learn help-noarg response", NewLearn("help-noarg", "response"))
+	runner.SendLearnMessage(MainChannelID, "?learn help-arg response $1", NewLearn("help-arg", "response $1"))
+	runner.SendMessage(MainChannelID, "?help help-noarg", "?help-noarg")
+	runner.SendMessage(MainChannelID, "?help help-arg", "?help-arg <args>")
+	runner.SendUnlearnMessage(MainChannelID, "?unlearn help-noarg", "help-noarg")
+	runner.SendUnlearnMessage(MainChannelID, "?unlearn help-arg", "help-arg")
+	runner.SendMessage(MainChannelID, "?help help-noarg", MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help help-arg", MsgDefaultHelp)
 
 	// Moderation
 	rickListedUser := &discordgo.User{
@@ -180,32 +184,32 @@ func TestIntegration(t *testing.T) {
 		MFAEnabled:    false,
 		Bot:           false,
 	}
-	runner.SendMessageAs(rickListedUser, "channel", "?help help-arg", MsgDefaultHelp)
-	runner.SendMessageAs(rickListedUser, "literally anything else", "?help help-arg", moderation.MsgRickList)
-	runner.SendLearnMessageAs(rickListedUser, "literally anything else", "?learn rick list", NewLearn("rick", "list"))
+	runner.SendMessageAs(rickListedUser, MainChannelID, "?help help-arg", MsgDefaultHelp)
+	runner.SendMessageAs(rickListedUser, DirectMessageID, "?help help-arg", moderation.MsgRickList)
+	runner.SendLearnMessageAs(rickListedUser, DirectMessageID, "?learn rick list", NewLearn("rick", "list"))
 }
 
 func TestVote(t *testing.T) {
 	runner := NewTestRunner(t)
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Calls vote with no args, and then actually starts a vote.
 	author := newUser("author", 0 /* id */, false /* bot */)
 	runner.AddUser(author)
-	runner.SendMessageAs(author, "channel", "?vote", vote.MsgHelpVote)
-	runner.SendVoteMessageAs(author, "channel")
-	runner.SendVoteStatusMessage("channel")
+	runner.SendMessageAs(author, MainChannelID, "?vote", vote.MsgHelpVote)
+	runner.SendVoteMessageAs(author, MainChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Assert that a second vote can't be started.
-	runner.SendMessageAs(author, "channel", "?vote another vote", vote.MsgActiveVote)
+	runner.SendMessageAs(author, MainChannelID, "?vote another vote", vote.MsgActiveVote)
 
 	// Time the vote out.
 	runner.ExpireVote()
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// A second vote can be started once it is expired.
-	runner.SendVoteMessageAs(author, "channel")
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteMessageAs(author, MainChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
 }
 
 func TestVote_Pass(t *testing.T) {
@@ -224,17 +228,17 @@ func TestVote_Pass(t *testing.T) {
 	}
 
 	// Start the vote.
-	runner.SendVoteMessageAs(users[0], "channel")
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteMessageAs(users[0], MainChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Cast votes
 	for _, user := range users {
-		runner.CastBallotAs(user, "channel", true /* inFavor */)
-		runner.SendVoteStatusMessage("channel")
+		runner.CastBallotAs(user, MainChannelID, true /* inFavor */)
+		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
 	runner.ExpireVote()
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteStatusMessage(MainChannelID)
 }
 
 func TestVote_Fail(t *testing.T) {
@@ -253,17 +257,17 @@ func TestVote_Fail(t *testing.T) {
 	}
 
 	// Start the vote.
-	runner.SendVoteMessageAs(users[0], "channel")
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteMessageAs(users[0], MainChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Cast votes
 	for _, user := range users {
-		runner.CastBallotAs(user, "channel", false /* inFavor */)
-		runner.SendVoteStatusMessage("channel")
+		runner.CastBallotAs(user, MainChannelID, false /* inFavor */)
+		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
 	runner.ExpireVote()
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteStatusMessage(MainChannelID)
 }
 
 func TestVote_Tie(t *testing.T) {
@@ -287,17 +291,17 @@ func TestVote_Tie(t *testing.T) {
 	}
 
 	// Start the vote.
-	runner.SendVoteMessageAs(users[0], "channel")
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteMessageAs(users[0], MainChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Cast votes
 	for _, user := range users {
-		runner.CastBallotAs(user, "channel", false /* inFavor */)
-		runner.SendVoteStatusMessage("channel")
+		runner.CastBallotAs(user, MainChannelID, false /* inFavor */)
+		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
 	runner.ExpireVote()
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteStatusMessage(MainChannelID)
 }
 
 func TestVote_TwoVotes(t *testing.T) {
@@ -316,30 +320,30 @@ func TestVote_TwoVotes(t *testing.T) {
 	}
 
 	// Start the vote.
-	runner.SendVoteMessageAs(users[0], "channel")
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteMessageAs(users[0], MainChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Cast votes
 	for _, user := range users {
-		runner.CastBallotAs(user, "channel", true /* inFavor */)
-		runner.SendVoteStatusMessage("channel")
+		runner.CastBallotAs(user, MainChannelID, true /* inFavor */)
+		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
 	runner.ExpireVote()
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Start the vote again.
-	runner.SendVoteMessageAs(users[0], "channel")
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteMessageAs(users[0], MainChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Cast votes again.
 	for _, user := range users {
-		runner.CastBallotAs(user, "channel", false /* inFavor */)
-		runner.SendVoteStatusMessage("channel")
+		runner.CastBallotAs(user, MainChannelID, false /* inFavor */)
+		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
 	runner.ExpireVote()
-	runner.SendVoteStatusMessage("channel")
+	runner.SendVoteStatusMessage(MainChannelID)
 }
 
 // TestRunner is a helper that executes messages incrementally, and asserts that
@@ -375,15 +379,15 @@ func NewTestRunner(t *testing.T) *TestRunner {
 	gist := util.NewInMemoryGist()
 	discordSession := util.NewInMemoryDiscordSession()
 	discordSession.SetChannel(&discordgo.Channel{
-		ID:   "channel",
+		ID:   MainChannelID.Format(),
 		Type: discordgo.ChannelTypeGuildText,
 	})
 	discordSession.SetChannel(&discordgo.Channel{
-		ID:   "literally anything else",
+		ID:   DirectMessageID.Format(),
 		Type: discordgo.ChannelTypeDM,
 	})
 
-	rickList := []int64{2}
+	rickList := []model.Snowflake{model.Snowflake(2)}
 
 	utcClock := util.NewFakeUTCClock()
 
@@ -419,50 +423,50 @@ func (r *TestRunner) AssertState() {
 	}
 }
 
-func (r *TestRunner) SendMessage(channel, message, expectedResponse string) {
+func (r *TestRunner) SendMessage(channel model.Snowflake, message, expectedResponse string) {
 	r.T.Helper()
 
 	sendMessage(r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, expectedResponse)})
+		[]*util.Message{util.NewMessage(channel.Format(), expectedResponse)})
 	r.AssertState()
 }
 
-func (r *TestRunner) SendMessageAs(author *discordgo.User, channel, message, expectedResponse string) {
+func (r *TestRunner) SendMessageAs(author *discordgo.User, channel model.Snowflake, message, expectedResponse string) {
 	r.T.Helper()
 
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, expectedResponse)})
+		[]*util.Message{util.NewMessage(channel.Format(), expectedResponse)})
 	r.AssertState()
 }
 
-func (r *TestRunner) SendLearnMessage(channel, message string, learn *Learn) {
+func (r *TestRunner) SendLearnMessage(channel model.Snowflake, message string, learn *Learn) {
 	r.T.Helper()
 
 	sendMessage(r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	r.Learns[learn.Call] = learn
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgLearnSuccess, learn.Call))})
+		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(MsgLearnSuccess, learn.Call))})
 	r.AssertState()
 	r.SendListMessage(channel)
 }
 
-func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel string) {
+func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel model.Snowflake) {
 	r.T.Helper()
 
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, "?vote a vote has been called")
 	r.DiscordMessagesCount++
 	r.Vote = newVote(author, "a vote has been called", r.UTCClock.Now().Add(vote.VoteDuration))
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(vote.MsgBroadcastNewVote, author.Mention(), "a vote has been called"))})
+		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(vote.MsgBroadcastNewVote, author.Mention(), "a vote has been called"))})
 	r.AssertState()
 }
 
-func (r *TestRunner) CastBallotAs(author *discordgo.User, channel string, inFavor bool) {
+func (r *TestRunner) CastBallotAs(author *discordgo.User, channel model.Snowflake, inFavor bool) {
 	r.T.Helper()
 
 	voteString := "?no"
@@ -478,7 +482,7 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel string, inFavo
 
 	// Update internal state.
 	r.DiscordMessagesCount++
-	id, _ := strconv.ParseInt(author.ID, 10 /* base */, 64 /* bits */)
+	id, _ := model.ParseSnowflake(author.ID)
 	*toAppend = append(*toAppend, id)
 
 	// Reconstruct the status string and assert internal state.
@@ -493,7 +497,7 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel string, inFavo
 		vote.VoteOutcomeNotDone)
 
 	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
-		util.NewMessage(channel, expectedMessage+"\n"+vote.StatusLine(r.UTCClock, reconstructedVote)),
+		util.NewMessage(channel.Format(), expectedMessage+"\n"+vote.StatusLine(r.UTCClock, reconstructedVote)),
 	})
 	r.AssertState()
 }
@@ -504,31 +508,31 @@ func (r *TestRunner) ExpireVote() {
 	r.Vote = nil
 }
 
-func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel, message string, learn *Learn) {
+func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel model.Snowflake, message string, learn *Learn) {
 	r.T.Helper()
 
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	r.Learns[learn.Call] = learn
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgLearnSuccess, learn.Call))})
+		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(MsgLearnSuccess, learn.Call))})
 	r.AssertState()
 	r.SendListMessage(channel)
 }
 
-func (r *TestRunner) SendUnlearnMessage(channel, message string, call string) {
+func (r *TestRunner) SendUnlearnMessage(channel model.Snowflake, message string, call string) {
 	r.T.Helper()
 
 	sendMessage(r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	delete(r.Learns, call)
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel, fmt.Sprintf(MsgUnlearnSuccess, call))})
+		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(MsgUnlearnSuccess, call))})
 	r.AssertState()
 	r.SendListMessage(channel)
 }
 
-func (r *TestRunner) SendMessageWithoutResponse(channel, message string) {
+func (r *TestRunner) SendMessageWithoutResponse(channel model.Snowflake, message string) {
 	r.T.Helper()
 
 	sendMessage(r.DiscordSession, r.Handler, channel, message)
@@ -536,13 +540,13 @@ func (r *TestRunner) SendMessageWithoutResponse(channel, message string) {
 	r.AssertState()
 }
 
-func (r *TestRunner) SendListMessage(channel string) {
+func (r *TestRunner) SendListMessage(channel model.Snowflake) {
 	r.T.Helper()
 
 	sendMessage(r.DiscordSession, r.Handler, channel, "?list")
 	r.DiscordMessagesCount++
 	r.GistsCount++
-	assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, "The list of commands is here: https://www.example.com/success")})
+	assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel.Format(), "The list of commands is here: https://www.example.com/success")})
 
 	// Assert gist state. Cannot be in AssertState because this would fail at the
 	// next learn or unlearn.
@@ -612,14 +616,14 @@ func (r *TestRunner) SendListMessage(channel string) {
 	r.AssertState()
 }
 
-func (r *TestRunner) SendVoteStatusMessage(channel string) {
+func (r *TestRunner) SendVoteStatusMessage(channel model.Snowflake) {
 	r.T.Helper()
 
 	sendMessage(r.DiscordSession, r.Handler, channel, "?votestatus")
 	r.DiscordMessagesCount++
 
 	if r.Vote == nil {
-		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, vote.MsgNoActiveVote)})
+		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel.Format(), vote.MsgNoActiveVote)})
 	} else {
 		// Calculate the expected status messages.
 		forMessage := vote.MsgOneVoteFor
@@ -656,7 +660,7 @@ func (r *TestRunner) SendVoteStatusMessage(channel string) {
 		buffer.WriteString(againstMessage)
 		buffer.WriteString(". ")
 		buffer.WriteString(timeMessage)
-		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel, buffer.String())})
+		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel.Format(), buffer.String())})
 	}
 
 	r.AssertState()
@@ -703,7 +707,7 @@ func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *util.InMemoryStr
 	}
 }
 
-func sendMessage(discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel, message string) {
+func sendMessage(discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel model.Snowflake, message string) {
 	author := &discordgo.User{
 		ID:            "1",
 		Email:         "email@example.com",
@@ -719,11 +723,11 @@ func sendMessage(discordSession api.DiscordSession, handler func(api.DiscordSess
 	sendMessageAs(author, discordSession, handler, channel, message)
 }
 
-func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel, message string) {
+func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel model.Snowflake, message string) {
 	messageCreate := &discordgo.MessageCreate{
 		&discordgo.Message{
 			ID:              "messageID",
-			ChannelID:       channel,
+			ChannelID:       channel.Format(),
 			Content:         message,
 			Timestamp:       "timestamp",
 			EditedTimestamp: "edited timestamp",
@@ -785,8 +789,8 @@ func NewLearn(call, response string) *Learn {
 	}
 }
 
-func newUser(name string, id int64, bot bool) *discordgo.User {
-	idStr := strconv.FormatInt(id, 10)
+func newUser(name string, id model.Snowflake, bot bool) *discordgo.User {
+	idStr := id.Format()
 	return &discordgo.User{
 		ID:            idStr,
 		Email:         "email@example.com",
@@ -804,8 +808,8 @@ func newUser(name string, id int64, bot bool) *discordgo.User {
 type Vote struct {
 	Author       *discordgo.User
 	Message      string
-	VotesFor     []int64
-	VotesAgainst []int64
+	VotesFor     []model.Snowflake
+	VotesAgainst []model.Snowflake
 	TimestampEnd time.Time
 }
 
@@ -813,8 +817,8 @@ func newVote(author *discordgo.User, message string, timestampEnd time.Time) *Vo
 	return &Vote{
 		Author:       author,
 		Message:      message,
-		VotesFor:     []int64{},
-		VotesAgainst: []int64{},
+		VotesFor:     []model.Snowflake{},
+		VotesAgainst: []model.Snowflake{},
 		TimestampEnd: timestampEnd,
 	}
 }

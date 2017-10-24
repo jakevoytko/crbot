@@ -103,7 +103,7 @@ func (h *ModelHelper) MostRecentVoteID() (int, error) {
 
 // StartNewVote starts and returns a new vote. Returns ErrorOnlyOneVote if
 // another vote was active when trying to start this one.
-func (h *ModelHelper) StartNewVote(userID int64, message string) (*Vote, error) {
+func (h *ModelHelper) StartNewVote(userID model.Snowflake, message string) (*Vote, error) {
 	// Don't overwrite an existing vote.
 	if ok, err := h.IsVoteActive(); ok || err != nil {
 		if err != nil {
@@ -124,7 +124,7 @@ func (h *ModelHelper) StartNewVote(userID int64, message string) (*Vote, error) 
 	voteStart := h.UTCClock.Now()
 	voteEnd := voteStart.Add(VoteDuration)
 	vote := NewVote(
-		nextVoteID, userID, message, voteStart, voteEnd, []int64{}, []int64{}, VoteOutcomeNotDone)
+		nextVoteID, userID, message, voteStart, voteEnd, []model.Snowflake{}, []model.Snowflake{}, VoteOutcomeNotDone)
 
 	err = h.writeVote(vote)
 	if err != nil {
@@ -139,7 +139,7 @@ func (h *ModelHelper) StartNewVote(userID int64, message string) (*Vote, error) 
 // ErrorNoVoteActive if there is no active poll, or the inner error if a
 // component errored. Returns ErrorAlreadyVoted if the user is present in either
 // list.
-func (h *ModelHelper) CastBallot(userID int64, inFavor bool) (*Vote, error) {
+func (h *ModelHelper) CastBallot(userID model.Snowflake, inFavor bool) (*Vote, error) {
 	ok, err := h.IsVoteActive()
 	if err != nil {
 		return nil, err

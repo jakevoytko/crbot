@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "command.go",
+        "datatypes.go",
         "redisstringmap.go",
         "stringmap.go",
         "utcclock.go",

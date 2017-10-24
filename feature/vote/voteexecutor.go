@@ -3,7 +3,6 @@ package vote
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
@@ -33,13 +32,13 @@ const (
 )
 
 // Execute uploads the command list to github and pings the gist link in chat.
-func (e *VoteExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
-	discordChannel, err := s.Channel(channel)
+func (e *VoteExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
+	discordChannel, err := s.Channel(channel.Format())
 	if err != nil {
 		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
 	}
 	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
-		s.ChannelMessageSend(channel, MsgVoteMustBePublic)
+		s.ChannelMessageSend(channel.Format(), MsgVoteMustBePublic)
 		return
 	}
 
@@ -48,14 +47,14 @@ func (e *VoteExecutor) Execute(s api.DiscordSession, channel string, command *mo
 		log.Fatal("Error occurred while calling for active vote", err)
 	}
 	if ok {
-		_, err := s.ChannelMessageSend(channel, MsgActiveVote)
+		_, err := s.ChannelMessageSend(channel.Format(), MsgActiveVote)
 		if err != nil {
 			log.Fatal("Unable to send vote-already-active message to user", err)
 		}
 		return
 	}
 
-	userID, err := strconv.ParseInt(command.Author.ID, 10 /* base */, 64 /* bitSize */)
+	userID, err := model.ParseSnowflake(command.Author.ID)
 	if err != nil {
 		log.Info("Error parsing command user ID", err)
 		return
@@ -66,7 +65,7 @@ func (e *VoteExecutor) Execute(s api.DiscordSession, channel string, command *mo
 	}
 
 	broadcastMessage := fmt.Sprintf(MsgBroadcastNewVote, command.Author.Mention(), command.Vote.Message)
-	_, err = s.ChannelMessageSend(channel, broadcastMessage)
+	_, err = s.ChannelMessageSend(channel.Format(), broadcastMessage)
 	if err != nil {
 		log.Fatal("Unable to broadcast new message across the channel", err)
 	}

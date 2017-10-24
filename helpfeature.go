@@ -110,7 +110,7 @@ func (e *HelpExecutor) GetType() int {
 }
 
 // Execute replies over the given channel with a help message.
-func (e *HelpExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
+func (e *HelpExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Help == nil {
 		log.Fatal("Incorrectly generated help command", errors.New("wat"))
 	}
@@ -126,7 +126,7 @@ func (e *HelpExecutor) Execute(s api.DiscordSession, channel string, command *mo
 			log.Info("Failed to generate help text for command "+command.Help.Command, err)
 			return
 		}
-		if _, err := s.ChannelMessageSend(channel, helpText); err != nil {
+		if _, err := s.ChannelMessageSend(channel.Format(), helpText); err != nil {
 			log.Info("Failed to send default help message", err)
 		}
 		return
@@ -142,7 +142,7 @@ func (e *HelpExecutor) Execute(s api.DiscordSession, channel string, command *mo
 		fallbackHelpText = MsgDefaultHelp
 	}
 
-	if _, err := s.ChannelMessageSend(channel, fallbackHelpText); err != nil {
+	if _, err := s.ChannelMessageSend(channel.Format(), fallbackHelpText); err != nil {
 		log.Info("Failed to send fallback or default help message", err)
 	}
 }

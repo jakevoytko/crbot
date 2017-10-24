@@ -2,7 +2,6 @@ package moderation
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/jakevoytko/crbot/api"
@@ -34,9 +33,9 @@ const (
 )
 
 // Execute replies over the given channel with a rick roll.
-func (e *RickListInfoExecutor) Execute(s api.DiscordSession, channel string, command *model.Command) {
+func (e *RickListInfoExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if len(e.config.RickList) == 0 {
-		if _, err := s.ChannelMessageSend(channel, MsgRickListEmpty); err != nil {
+		if _, err := s.ChannelMessageSend(channel.Format(), MsgRickListEmpty); err != nil {
 			log.Info("Failed to send ricklist message", err)
 		}
 		return
@@ -44,7 +43,7 @@ func (e *RickListInfoExecutor) Execute(s api.DiscordSession, channel string, com
 
 	users := make([]string, 0, len(e.config.RickList))
 	for _, ricklisted := range e.config.RickList {
-		ricklistedFormat := strconv.FormatInt(ricklisted, 10)
+		ricklistedFormat := ricklisted.Format()
 		user, err := s.User(ricklistedFormat)
 		if err != nil {
 			log.Info(fmt.Sprintf("Unable to get info for user %s", ricklisted), err)
@@ -56,7 +55,7 @@ func (e *RickListInfoExecutor) Execute(s api.DiscordSession, channel string, com
 
 	finalString := MsgRickListUsers + "[" + strings.Join(users, ", ") + "]"
 
-	if _, err := s.ChannelMessageSend(channel, finalString); err != nil {
+	if _, err := s.ChannelMessageSend(channel.Format(), finalString); err != nil {
 		log.Info("Failed to send ricklist message", err)
 	}
 }

@@ -3,6 +3,8 @@ package app
 import (
 	"encoding/json"
 	"io/ioutil"
+
+	"github.com/jakevoytko/crbot/model"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11,8 +13,8 @@ import (
 
 // Secret holds the serialized bot token.
 type Config struct {
-	BotToken string  `json:"bot_token"`
-	RickList []int64 `json:"ricklist"`
+	BotToken string            `json:"bot_token"`
+	RickList []model.Snowflake `json:"ricklist"`
 }
 
 // ParseConfig reads the config from the given filename.
