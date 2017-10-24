@@ -3,9 +3,10 @@ git_repository(
     remote = "https://github.com/bazelbuild/rules_go.git",
     tag = "0.6.0",
 )
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories", "go_repository")
+load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains", "go_repository")
 
-go_repositories()
+go_rules_dependencies()
+go_register_toolchains()
 
 # Import Go dependencies.
 
