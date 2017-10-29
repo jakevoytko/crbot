@@ -17,6 +17,7 @@ const (
 // Vote is the JSON-serialized and -deserialized implementation of a single vote.
 type Vote struct {
 	VoteID         int
+	ChannelID      model.Snowflake
 	UserID         model.Snowflake
 	Message        string
 	TimestampStart time.Time
@@ -27,9 +28,10 @@ type Vote struct {
 }
 
 // NewVote works as advertised.
-func NewVote(voteID int, userID model.Snowflake, message string, timestampStart, timestampEnd time.Time, votesFor, votesAgainst []model.Snowflake, voteOutcome int) *Vote {
+func NewVote(voteID int, channelID, userID model.Snowflake, message string, timestampStart, timestampEnd time.Time, votesFor, votesAgainst []model.Snowflake, voteOutcome int) *Vote {
 	return &Vote{
 		VoteID:         voteID,
+		ChannelID:      channelID,
 		UserID:         userID,
 		Message:        message,
 		TimestampStart: timestampStart,

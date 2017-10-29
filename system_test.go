@@ -204,7 +204,7 @@ func TestVote(t *testing.T) {
 	runner.SendMessageAs(author, MainChannelID, "?vote another vote", vote.MsgActiveVote)
 
 	// Time the vote out.
-	runner.ExpireVote()
+	runner.ExpireVote(MainChannelID)
 	runner.SendVoteStatusMessage(MainChannelID)
 
 	// A second vote can be started once it is expired.
@@ -237,7 +237,7 @@ func TestVote_Pass(t *testing.T) {
 		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
-	runner.ExpireVote()
+	runner.ExpireVote(MainChannelID)
 	runner.SendVoteStatusMessage(MainChannelID)
 }
 
@@ -266,7 +266,7 @@ func TestVote_Fail(t *testing.T) {
 		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
-	runner.ExpireVote()
+	runner.ExpireVote(MainChannelID)
 	runner.SendVoteStatusMessage(MainChannelID)
 }
 
@@ -300,7 +300,7 @@ func TestVote_Tie(t *testing.T) {
 		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
-	runner.ExpireVote()
+	runner.ExpireVote(MainChannelID)
 	runner.SendVoteStatusMessage(MainChannelID)
 }
 
@@ -329,7 +329,7 @@ func TestVote_TwoVotes(t *testing.T) {
 		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
-	runner.ExpireVote()
+	runner.ExpireVote(MainChannelID)
 	runner.SendVoteStatusMessage(MainChannelID)
 
 	// Start the vote again.
@@ -342,7 +342,7 @@ func TestVote_TwoVotes(t *testing.T) {
 		runner.SendVoteStatusMessage(MainChannelID)
 	}
 
-	runner.ExpireVote()
+	runner.ExpireVote(MainChannelID)
 	runner.SendVoteStatusMessage(MainChannelID)
 }
 
@@ -356,7 +356,7 @@ type TestRunner struct {
 	GistsCount           int
 	DiscordMessagesCount int
 	Learns               map[string]*Learn
-	Vote                 *Vote // may be nil
+	ActiveVoteMap        map[model.Snowflake]*Vote // channel->vote. May be nil
 
 	// Fakes
 	CustomMap      *util.InMemoryStringMap
@@ -395,7 +395,7 @@ func NewTestRunner(t *testing.T) *TestRunner {
 	return &TestRunner{
 		T:                    t,
 		Learns:               map[string]*Learn{},
-		Vote:                 nil,
+		ActiveVoteMap:        map[model.Snowflake]*Vote{},
 		GistsCount:           0,
 		DiscordMessagesCount: 0,
 		CustomMap:            customMap,
@@ -415,7 +415,7 @@ func (r *TestRunner) AssertState() {
 	assertNumCommands(r.T, r.CustomMap, len(r.Learns))
 	assertNumGists(r.T, r.Gist, r.GistsCount)
 	assertNumDiscordMessages(r.T, r.DiscordSession, r.DiscordMessagesCount)
-	assertVote(r.T, r.UTCClock, r.VoteMap, r.Vote)
+	assertVote(r.T, r.UTCClock, r.VoteMap, r.ActiveVoteMap)
 
 	// Assert command map state.
 	for _, learn := range r.Learns {
@@ -460,7 +460,7 @@ func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel model.Sno
 
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, "?vote a vote has been called")
 	r.DiscordMessagesCount++
-	r.Vote = newVote(author, "a vote has been called", r.UTCClock.Now().Add(vote.VoteDuration))
+	r.ActiveVoteMap[channel] = newVote(channel, author, "a vote has been called", r.UTCClock.Now().Add(vote.VoteDuration))
 	assertNewMessages(r.T, r.DiscordSession,
 		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(vote.MsgBroadcastNewVote, author.Mention(), "a vote has been called"))})
 	r.AssertState()
@@ -471,11 +471,11 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel model.Snowflak
 
 	voteString := "?no"
 	expectedMessage := fmt.Sprintf(vote.MsgVotedAgainst, author.Mention())
-	toAppend := &(r.Vote.VotesAgainst)
+	toAppend := &(r.ActiveVoteMap[channel].VotesAgainst)
 	if inFavor {
 		voteString = "?yes"
 		expectedMessage = fmt.Sprintf(vote.MsgVotedInFavor, author.Mention())
-		toAppend = &(r.Vote.VotesFor)
+		toAppend = &(r.ActiveVoteMap[channel].VotesFor)
 	}
 
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, voteString)
@@ -486,14 +486,16 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel model.Snowflak
 	*toAppend = append(*toAppend, id)
 
 	// Reconstruct the status string and assert internal state.
+	activeVote := r.ActiveVoteMap[channel]
 	reconstructedVote := vote.NewVote(
 		0, /* voteID */
+		channel,
 		id,
-		r.Vote.Message,
+		activeVote.Message,
 		time.Time{},
-		r.Vote.TimestampEnd,
-		r.Vote.VotesFor,
-		r.Vote.VotesAgainst,
+		activeVote.TimestampEnd,
+		activeVote.VotesFor,
+		activeVote.VotesAgainst,
 		vote.VoteOutcomeNotDone)
 
 	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
@@ -503,9 +505,9 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel model.Snowflak
 }
 
 // Advances the clock enough that the vote expires.
-func (r *TestRunner) ExpireVote() {
+func (r *TestRunner) ExpireVote(channel model.Snowflake) {
 	r.UTCClock.Advance(vote.VoteDuration)
-	r.Vote = nil
+	r.ActiveVoteMap[channel] = nil
 }
 
 func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel model.Snowflake, message string, learn *Learn) {
@@ -622,21 +624,23 @@ func (r *TestRunner) SendVoteStatusMessage(channel model.Snowflake) {
 	sendMessage(r.DiscordSession, r.Handler, channel, "?votestatus")
 	r.DiscordMessagesCount++
 
-	if r.Vote == nil {
+	activeVote, _ := r.ActiveVoteMap[channel]
+
+	if activeVote == nil {
 		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel.Format(), vote.MsgNoActiveVote)})
 	} else {
 		// Calculate the expected status messages.
 		forMessage := vote.MsgOneVoteFor
-		if len(r.Vote.VotesFor) != 1 {
-			forMessage = fmt.Sprintf(vote.MsgVotesFor, len(r.Vote.VotesFor))
+		if len(activeVote.VotesFor) != 1 {
+			forMessage = fmt.Sprintf(vote.MsgVotesFor, len(activeVote.VotesFor))
 		}
 		againstMessage := vote.MsgOneVoteAgainst
-		if len(r.Vote.VotesAgainst) != 1 {
-			againstMessage = fmt.Sprintf(vote.MsgVotesAgainst, len(r.Vote.VotesAgainst))
+		if len(activeVote.VotesAgainst) != 1 {
+			againstMessage = fmt.Sprintf(vote.MsgVotesAgainst, len(r.ActiveVoteMap[channel].VotesAgainst))
 		}
 		statusMessage := vote.MsgStatusVotesNeeded
-		if len(r.Vote.VotesAgainst)+len(r.Vote.VotesFor) >= 5 {
-			if len(r.Vote.VotesFor) > len(r.Vote.VotesAgainst) {
+		if len(activeVote.VotesAgainst)+len(activeVote.VotesFor) >= 5 {
+			if len(activeVote.VotesFor) > len(activeVote.VotesAgainst) {
 				statusMessage = vote.MsgStatusVotePassing
 			} else {
 				statusMessage = vote.MsgStatusVoteFailing
@@ -644,12 +648,12 @@ func (r *TestRunner) SendVoteStatusMessage(channel model.Snowflake) {
 		}
 
 		// The time remaining is independently tested, so just assert its presence.
-		timeMessage := vote.TimeString(r.UTCClock, r.Vote.TimestampEnd)
+		timeMessage := vote.TimeString(r.UTCClock, activeVote.TimestampEnd)
 
 		// Build the expected string and assert that it's in the message buffer.
 		var buffer bytes.Buffer
-		buffer.WriteString(fmt.Sprintf(vote.MsgVoteOwner, r.Vote.Author.Username))
-		buffer.WriteString(r.Vote.Message)
+		buffer.WriteString(fmt.Sprintf(vote.MsgVoteOwner, activeVote.Author.Username))
+		buffer.WriteString(activeVote.Message)
 		buffer.WriteString("\n")
 		buffer.WriteString(vote.MsgSpacer)
 		buffer.WriteString("\n")
@@ -694,16 +698,18 @@ func assertNumDiscordMessages(t *testing.T, discordSession *util.InMemoryDiscord
 	}
 }
 
-func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *util.InMemoryStringMap, newVote *Vote) {
+func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *util.InMemoryStringMap, activeVoteMap map[model.Snowflake]*Vote) {
 	t.Helper()
 
 	modelHelper := vote.NewModelHelper(voteMap, utcClock)
-	ok, _ := modelHelper.IsVoteActive()
-	if newVote != nil && !ok {
-		t.Errorf("Expected a vote to be active, but was not")
-	}
-	if newVote == nil && ok {
-		t.Errorf("Expected a vote to not be active, but one was")
+	for channel, vote := range activeVoteMap {
+		ok, _ := modelHelper.IsVoteActive(channel)
+		if vote != nil && !ok {
+			t.Errorf("Expected a vote to be active, but was not")
+		}
+		if vote == nil && ok {
+			t.Errorf("Expected a vote to not be active, but one was")
+		}
 	}
 }
 
@@ -806,6 +812,7 @@ func newUser(name string, id model.Snowflake, bot bool) *discordgo.User {
 
 // Enough information to reconstruct the status message.
 type Vote struct {
+	Channel      model.Snowflake
 	Author       *discordgo.User
 	Message      string
 	VotesFor     []model.Snowflake
@@ -813,8 +820,9 @@ type Vote struct {
 	TimestampEnd time.Time
 }
 
-func newVote(author *discordgo.User, message string, timestampEnd time.Time) *Vote {
+func newVote(channel model.Snowflake, author *discordgo.User, message string, timestampEnd time.Time) *Vote {
 	return &Vote{
+		Channel:      channel,
 		Author:       author,
 		Message:      message,
 		VotesFor:     []model.Snowflake{},

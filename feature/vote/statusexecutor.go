@@ -40,7 +40,7 @@ const (
 
 // Execute prints the status of the current vote.
 func (e *StatusExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
-	ok, err := e.modelHelper.IsVoteActive()
+	ok, err := e.modelHelper.IsVoteActive(channel)
 	if err != nil {
 		log.Fatal("Error reading vote status", err)
 	}
@@ -51,7 +51,7 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel model.Snowflake, 
 		return
 	}
 
-	vote, err := e.modelHelper.MostRecentVote()
+	vote, err := e.modelHelper.MostRecentVote(channel)
 	if err != nil {
 		log.Fatal("Error pulling most recent vote", err)
 	}

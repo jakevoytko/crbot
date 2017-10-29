@@ -32,22 +32,22 @@ const (
 )
 
 // Execute uploads the command list to github and pings the gist link in chat.
-func (e *VoteExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
-	discordChannel, err := s.Channel(channel.Format())
+func (e *VoteExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
+	discordChannel, err := s.Channel(channelID.Format())
 	if err != nil {
 		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
 	}
 	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
-		s.ChannelMessageSend(channel.Format(), MsgVoteMustBePublic)
+		s.ChannelMessageSend(channelID.Format(), MsgVoteMustBePublic)
 		return
 	}
 
-	ok, err := e.modelHelper.IsVoteActive()
+	ok, err := e.modelHelper.IsVoteActive(channelID)
 	if err != nil {
 		log.Fatal("Error occurred while calling for active vote", err)
 	}
 	if ok {
-		_, err := s.ChannelMessageSend(channel.Format(), MsgActiveVote)
+		_, err := s.ChannelMessageSend(channelID.Format(), MsgActiveVote)
 		if err != nil {
 			log.Fatal("Unable to send vote-already-active message to user", err)
 		}
@@ -59,13 +59,13 @@ func (e *VoteExecutor) Execute(s api.DiscordSession, channel model.Snowflake, co
 		log.Info("Error parsing command user ID", err)
 		return
 	}
-	_, err = e.modelHelper.StartNewVote(userID, command.Vote.Message)
+	_, err = e.modelHelper.StartNewVote(channelID, userID, command.Vote.Message)
 	if err != nil {
 		log.Fatal("error starting new vote", err)
 	}
 
 	broadcastMessage := fmt.Sprintf(MsgBroadcastNewVote, command.Author.Mention(), command.Vote.Message)
-	_, err = s.ChannelMessageSend(channel.Format(), broadcastMessage)
+	_, err = s.ChannelMessageSend(channelID.Format(), broadcastMessage)
 	if err != nil {
 		log.Fatal("Unable to broadcast new message across the channel", err)
 	}
