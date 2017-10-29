@@ -21,6 +21,7 @@ import (
 
 const (
 	MainChannelID   = model.Snowflake(8675309)
+	SecondChannelID = model.Snowflake(9000000)
 	DirectMessageID = model.Snowflake(1)
 )
 
@@ -346,6 +347,42 @@ func TestVote_TwoVotes(t *testing.T) {
 	runner.SendVoteStatusMessage(MainChannelID)
 }
 
+func TestVote_TwoChannels(t *testing.T) {
+	runner := NewTestRunner(t)
+
+	// Initialize users.
+	users := []*discordgo.User{
+		newUser("user0", 0 /* id */, false /* bot */),
+		newUser("user1", 1 /* id */, false /* bot */),
+		newUser("user2", 2 /* id */, false /* bot */),
+		newUser("user3", 3 /* id */, false /* bot */),
+		newUser("user4", 4 /* id */, false /* bot */),
+	}
+	for _, user := range users {
+		runner.AddUser(user)
+	}
+
+	// Start the votes.
+	runner.SendVoteMessageAs(users[0], MainChannelID)
+	runner.SendVoteMessageAs(users[0], SecondChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
+	runner.SendVoteStatusMessage(SecondChannelID)
+
+	// Cast votes
+	for _, user := range users {
+		runner.CastBallotAs(user, MainChannelID, true /* inFavor */)
+		runner.CastBallotAs(user, SecondChannelID, false /* inFavor */)
+		runner.SendVoteStatusMessage(MainChannelID)
+		runner.SendVoteStatusMessage(SecondChannelID)
+	}
+
+	// Expires both votes.
+	runner.ExpireVote(MainChannelID)
+	runner.ExpireVote(SecondChannelID)
+	runner.SendVoteStatusMessage(MainChannelID)
+	runner.SendVoteStatusMessage(SecondChannelID)
+}
+
 // TestRunner is a helper that executes messages incrementally, and asserts that
 // the global state is always what is expected.
 type TestRunner struct {
@@ -380,6 +417,10 @@ func NewTestRunner(t *testing.T) *TestRunner {
 	discordSession := util.NewInMemoryDiscordSession()
 	discordSession.SetChannel(&discordgo.Channel{
 		ID:   MainChannelID.Format(),
+		Type: discordgo.ChannelTypeGuildText,
+	})
+	discordSession.SetChannel(&discordgo.Channel{
+		ID:   SecondChannelID.Format(),
 		Type: discordgo.ChannelTypeGuildText,
 	})
 	discordSession.SetChannel(&discordgo.Channel{

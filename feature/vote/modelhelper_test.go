@@ -20,13 +20,32 @@ func TestIsVoteActive_NoMemory(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
 	assertIsVoteActive(t, modelHelper, Channel1, false)
+	assertIsVoteActive(t, modelHelper, Channel2, false)
 }
 
 func TestIsVoteActive_ActiveVote(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
+	// Active on one channel
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
 	assertIsVoteActive(t, modelHelper, Channel1, true)
+
+	// But not the other
+	assertIsVoteActive(t, modelHelper, Channel2, false)
+}
+
+func TestIsVoteActive_2Votes(t *testing.T) {
+	modelHelper, _ := initializeTests()
+
+	// Active on one channel
+	assertStartNewVote(t, modelHelper, Channel1, UserID1)
+	assertIsVoteActive(t, modelHelper, Channel1, true)
+
+	assertIsVoteActive(t, modelHelper, Channel2, false)
+
+	// And then on the other
+	assertStartNewVote(t, modelHelper, Channel2, UserID1)
+	assertIsVoteActive(t, modelHelper, Channel2, true)
 }
 
 func TestIsVoteActive_TimeExpires(t *testing.T) {
@@ -43,10 +62,55 @@ func TestIsVoteActive_TimeExpires(t *testing.T) {
 	assertIsVoteActive(t, modelHelper, Channel1, false)
 }
 
+func TestIsVoteActive_TimeExpiresForBothVotes(t *testing.T) {
+	modelHelper, clock := initializeTests()
+
+	assertStartNewVote(t, modelHelper, Channel1, UserID1)
+	assertStartNewVote(t, modelHelper, Channel2, UserID1)
+	assertIsVoteActive(t, modelHelper, Channel1, true)
+	assertIsVoteActive(t, modelHelper, Channel2, true)
+
+	// Advance the clock 1ns before the vote will expire, and then verify that
+	// advancing it 1ns causes the vote to expire.
+	clock.Advance(VoteDuration - time.Duration(1)*time.Nanosecond)
+	assertIsVoteActive(t, modelHelper, Channel1, true)
+	assertIsVoteActive(t, modelHelper, Channel2, true)
+	clock.Advance(time.Duration(1) * time.Nanosecond)
+	assertIsVoteActive(t, modelHelper, Channel1, false)
+	assertIsVoteActive(t, modelHelper, Channel2, false)
+}
+
+func TestIsVoteActive_OffsetStartTimes(t *testing.T) {
+	modelHelper, clock := initializeTests()
+
+	// Start a vote
+	assertStartNewVote(t, modelHelper, Channel1, UserID1)
+	assertIsVoteActive(t, modelHelper, Channel1, true)
+
+	// Advance the clock 15 minutes. Start a second vote and assert that they are
+	// both active.
+	advanceTime := time.Duration(15) * time.Minute
+	clock.Advance(advanceTime)
+	assertStartNewVote(t, modelHelper, Channel2, UserID1)
+	assertIsVoteActive(t, modelHelper, Channel1, true)
+	assertIsVoteActive(t, modelHelper, Channel2, true)
+
+	// Advance the clock 15m... assert that the first vote has expired.
+	clock.Advance(advanceTime)
+	assertIsVoteActive(t, modelHelper, Channel1, false)
+	assertIsVoteActive(t, modelHelper, Channel2, true)
+
+	// And then assert that the vote can expire.
+	clock.Advance(advanceTime)
+	assertIsVoteActive(t, modelHelper, Channel1, false)
+	assertIsVoteActive(t, modelHelper, Channel2, false)
+}
+
 func TestMostRecentVote_NoMemory(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
 	assertMostRecentVote(t, modelHelper, Channel1, nil)
+	assertMostRecentVote(t, modelHelper, Channel2, nil)
 }
 
 func TestMostRecentVote_ActiveVote(t *testing.T) {
@@ -54,6 +118,16 @@ func TestMostRecentVote_ActiveVote(t *testing.T) {
 
 	newVote := assertStartNewVote(t, modelHelper, Channel1, UserID1)
 	assertMostRecentVote(t, modelHelper, Channel1, newVote)
+	assertMostRecentVote(t, modelHelper, Channel2, nil)
+}
+
+func TestMostRecentVote_2ActiveVotes(t *testing.T) {
+	modelHelper, _ := initializeTests()
+
+	newVote1 := assertStartNewVote(t, modelHelper, Channel1, UserID1)
+	newVote2 := assertStartNewVote(t, modelHelper, Channel2, UserID1)
+	assertMostRecentVote(t, modelHelper, Channel1, newVote1)
+	assertMostRecentVote(t, modelHelper, Channel2, newVote2)
 }
 
 func TestMostRecentVote_ReturnsExpiredVote(t *testing.T) {
@@ -72,6 +146,7 @@ func TestMostRecentVoteID_NoMemory(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
 	assertMostRecentVoteID(t, modelHelper, Channel1, 0)
+	assertMostRecentVoteID(t, modelHelper, Channel2, 0)
 }
 
 func TestMostRecentVoteID_ActiveVote(t *testing.T) {
@@ -79,6 +154,16 @@ func TestMostRecentVoteID_ActiveVote(t *testing.T) {
 
 	newVote := assertStartNewVote(t, modelHelper, Channel1, UserID1)
 	assertMostRecentVoteID(t, modelHelper, Channel1, newVote.VoteID)
+	assertMostRecentVoteID(t, modelHelper, Channel2, 0)
+}
+
+func TestMostRecentVoteID_2ActiveVotes(t *testing.T) {
+	modelHelper, _ := initializeTests()
+
+	newVote1 := assertStartNewVote(t, modelHelper, Channel1, UserID1)
+	newVote2 := assertStartNewVote(t, modelHelper, Channel2, UserID1)
+	assertMostRecentVoteID(t, modelHelper, Channel1, newVote1.VoteID)
+	assertMostRecentVoteID(t, modelHelper, Channel2, newVote2.VoteID)
 }
 
 func TestMostRecentVoteID_ReturnsExpiredVote(t *testing.T) {
@@ -171,6 +256,19 @@ func TestCastBallot_LotsOfVotes(t *testing.T) {
 	}
 }
 
+func TestCastBallot_LotsOfVotes_2Channels(t *testing.T) {
+	modelHelper, _ := initializeTests()
+
+	assertStartNewVote(t, modelHelper, Channel1, 1 /* userID */)
+	assertStartNewVote(t, modelHelper, Channel2, 1 /* userID */)
+	for userID := 0; userID < 10; userID++ {
+		inFavor := userID%2 == 0
+		// Votes are opposite per-channel for testing.
+		assertCastBallot(t, modelHelper, Channel1, model.Snowflake(userID), inFavor)
+		assertCastBallot(t, modelHelper, Channel2, model.Snowflake(userID), !inFavor)
+	}
+}
+
 func TestCastBallot_InFavorFailsOnExpiredVote(t *testing.T) {
 	modelHelper, clock := initializeTests()
 
@@ -204,6 +302,15 @@ func TestSetVoteOutcome_Passed(t *testing.T) {
 	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeFailed)
 	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotEnough)
 	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotDone)
+}
+
+func TestSetVoteOutcome_Passed_2Channels(t *testing.T) {
+	modelHelper, _ := initializeTests()
+
+	assertStartNewVote(t, modelHelper, Channel1, UserID1)
+	assertStartNewVote(t, modelHelper, Channel2, UserID1)
+	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomePassed)
+	assertSetVoteOutcome(t, modelHelper, Channel2, VoteOutcomePassed)
 }
 
 func TestSetVoteOutcome_Failed(t *testing.T) {
