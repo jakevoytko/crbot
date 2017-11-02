@@ -30,8 +30,28 @@ func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gis
 // Controller methods
 ///////////////////////////////////////////////////////////////////////////////
 
+func handleCommands(featureRegistry *feature.Registry, s api.DiscordSession, commandChannel <-chan *model.Command) {
+	for command := range commandChannel {
+		var err error // so I don't have to use := in the intercept() call
+		for _, interceptor := range featureRegistry.CommandInterceptors() {
+			command, err = interceptor.Intercept(command, s)
+			if err != nil {
+				panic("Ran into error intercepting commands")
+			}
+		}
+
+		executor := featureRegistry.GetExecutorByType(command.Type)
+		if executor != nil {
+			if err != nil {
+				log.Fatal("Error parsing snowflake", err)
+			}
+			executor.Execute(s, command.ChannelID, command)
+		}
+	}
+}
+
 // getHandleMessage returns the main handler for incoming messages.
-func getHandleMessage(commandMap model.StringMap, featureRegistry *feature.Registry) func(api.DiscordSession, *discordgo.MessageCreate) {
+func getHandleMessage(commandMap model.StringMap, featureRegistry *feature.Registry, commandChannel chan<- *model.Command) func(api.DiscordSession, *discordgo.MessageCreate) {
 	return func(s api.DiscordSession, m *discordgo.MessageCreate) {
 		// Never reply to a bot.
 		if m.Author.Bot {
@@ -44,22 +64,14 @@ func getHandleMessage(commandMap model.StringMap, featureRegistry *feature.Regis
 			return
 		}
 		command.Author = m.Author
-
-		for _, interceptor := range featureRegistry.CommandInterceptors() {
-			command, err = interceptor.Intercept(command, s, m)
-			if err != nil {
-				panic("Ran into error intercepting commands")
-			}
+		channelID, err := model.ParseSnowflake(m.ChannelID)
+		if err != nil {
+			log.Info("Error parsing channel ID", err)
+			return
 		}
+		command.ChannelID = channelID
 
-		executor := featureRegistry.GetExecutorByType(command.Type)
-		if executor != nil {
-			snowflake, err := model.ParseSnowflake(m.ChannelID)
-			if err != nil {
-				log.Fatal("Error parsing snowflake", err)
-			}
-			executor.Execute(s, snowflake, command)
-		}
+		commandChannel <- command
 	}
 }
 

@@ -446,6 +446,13 @@ func NewTestRunner(t *testing.T) *TestRunner {
 	utcClock := util.NewFakeUTCClock()
 
 	registry := InitializeRegistry(customMap, voteMap, gist, &app.Config{RickList: rickList}, utcClock)
+
+	// 0-length channel. Each time it uses a command, it tries to issue 2 as a
+	// hack to make sure that the first one has been processed.
+	commandChannel := make(chan *model.Command)
+
+	go handleCommands(registry, discordSession, commandChannel)
+
 	return &TestRunner{
 		T:                    t,
 		Learns:               map[string]*Learn{},
@@ -458,7 +465,7 @@ func NewTestRunner(t *testing.T) *TestRunner {
 		DiscordSession:       discordSession,
 		UTCClock:             utcClock,
 		FeatureRegistry:      registry,
-		Handler:              getHandleMessage(customMap, registry),
+		Handler:              getHandleMessage(customMap, registry, commandChannel),
 	}
 }
 
@@ -821,6 +828,18 @@ func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, ha
 		},
 	}
 	handler(discordSession, messageCreate)
+
+	// A no-op command that flushes out the 0 length buffer so assertions are
+	// correct. Otherwise, processing would happen asynchronously, so it'd be
+	// impossible to assert that the program had behaved correctly.
+	noOp := &discordgo.MessageCreate{
+		&discordgo.Message{
+			Author:    author,
+			ChannelID: channel.Format(),
+			Content:   "",
+		},
+	}
+	handler(discordSession, noOp)
 }
 
 func assertNewMessages(t *testing.T, discordSession *util.InMemoryDiscordSession, newMessages []*util.Message) {

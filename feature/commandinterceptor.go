@@ -1,7 +1,6 @@
 package feature
 
 import (
-	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/model"
 )
@@ -10,5 +9,5 @@ import (
 // command. For instance, moderation and command ACLs can be implemented this
 // way.
 type CommandInterceptor interface {
-	Intercept(*model.Command, api.DiscordSession, *discordgo.MessageCreate) (*model.Command, error)
+	Intercept(*model.Command, api.DiscordSession) (*model.Command, error)
 }

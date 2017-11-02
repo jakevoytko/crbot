@@ -20,17 +20,23 @@ func NewRickListCommandInterceptor(config *app.Config) *RickListCommandIntercept
 }
 
 // Intercept checks whether the command is forbidden by the ricklist.
-func (i *RickListCommandInterceptor) Intercept(command *model.Command, s api.DiscordSession, m *discordgo.MessageCreate) (*model.Command, error) {
+func (i *RickListCommandInterceptor) Intercept(command *model.Command, s api.DiscordSession) (*model.Command, error) {
 	// Check moderation.
 	// RickList
 	// - RickListed users can only use ?learn in private channels, without it responding with
 	//   a rickroll.
-	if channel, err := s.Channel(m.ChannelID); err == nil && (channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM) && command.Type != model.Type_Learn {
-		for _, ricked := range i.rickList {
-			if ricked.Format() == m.Author.ID {
-				return &model.Command{
-					Type: model.Type_RickList,
-				}, nil
+	if channel, err := s.Channel(command.ChannelID.Format()); err == nil {
+		isPrivate := channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM
+		isAllowed := command.Type == model.Type_Learn || command.Type == model.Type_None
+		if isPrivate && !isAllowed {
+			for _, ricked := range i.rickList {
+				if ricked.Format() == command.Author.ID {
+					return &model.Command{
+						Type:      model.Type_RickList,
+						Author:    nil,
+						ChannelID: command.ChannelID,
+					}, nil
+				}
 			}
 		}
 	}

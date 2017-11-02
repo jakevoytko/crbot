@@ -51,8 +51,14 @@ func main() {
 
 	featureRegistry := InitializeRegistry(commandMap, voteMap, gist, config, clock)
 
+	// A command channel large enough to process a few commands without needing to
+	// block.
+	commandChannel := make(chan *model.Command, 10)
+
+	go handleCommands(featureRegistry, discord, commandChannel)
+
 	// Open communications with Discord.
-	handler := getHandleMessage(commandMap, featureRegistry)
+	handler := getHandleMessage(commandMap, featureRegistry, commandChannel)
 
 	// Wrapper is needed so the discordgo registry recognizes the input types.
 	wrappedHandler := func(s *discordgo.Session, c *discordgo.MessageCreate) {
