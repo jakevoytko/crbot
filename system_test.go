@@ -383,6 +383,19 @@ func TestVote_TwoChannels(t *testing.T) {
 	runner.SendVoteStatusMessage(SecondChannelID)
 }
 
+func TestVote_CannotVoteTwice(t *testing.T) {
+	runner := NewTestRunner(t)
+	runner.SendVoteStatusMessage(MainChannelID)
+
+	// Calls vote with no args, and then actually starts a vote.
+	author := newUser("author", 0 /* id */, false /* bot */)
+	runner.AddUser(author)
+	runner.SendVoteMessageAs(author, MainChannelID)
+	runner.CastBallotAs(author, MainChannelID, true /* inFavor */)
+	runner.CastDuplicateBallotAs(author, MainChannelID, true /* inFavor */)
+	runner.CastDuplicateBallotAs(author, MainChannelID, false /* inFavor */)
+}
+
 // TestRunner is a helper that executes messages incrementally, and asserts that
 // the global state is always what is expected.
 type TestRunner struct {
@@ -541,6 +554,25 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel model.Snowflak
 
 	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
 		util.NewMessage(channel.Format(), expectedMessage+"\n"+vote.StatusLine(r.UTCClock, reconstructedVote)),
+	})
+	r.AssertState()
+}
+
+func (r *TestRunner) CastDuplicateBallotAs(author *discordgo.User, channel model.Snowflake, inFavor bool) {
+	r.T.Helper()
+
+	voteString := "?no"
+	if inFavor {
+		voteString = "?yes"
+	}
+
+	sendMessageAs(author, r.DiscordSession, r.Handler, channel, voteString)
+
+	// Update internal state.
+	r.DiscordMessagesCount++
+
+	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
+		util.NewMessage(channel.Format(), fmt.Sprintf(vote.MsgAlreadyVoted, author.Mention())),
 	})
 	r.AssertState()
 }

@@ -27,7 +27,7 @@ func (e *BallotExecutor) GetType() int {
 }
 
 const (
-	MsgAlreadyVoted       = "You already voted"
+	MsgAlreadyVoted       = "%v already voted"
 	MsgVotedAgainst       = "%v voted no"
 	MsgVotedInFavor       = "%v voted yes"
 	MsgBallotMustBePublic = "Ballots can only be cast in public channels"
@@ -57,7 +57,7 @@ func (e *BallotExecutor) Execute(s api.DiscordSession, channelID model.Snowflake
 		return
 
 	case ErrorAlreadyVoted:
-		if _, err := s.ChannelMessageSend(channelID.Format(), MsgAlreadyVoted); err != nil {
+		if _, err := s.ChannelMessageSend(channelID.Format(), fmt.Sprintf(MsgAlreadyVoted, command.Author.Mention())); err != nil {
 			log.Fatal("Unable to send already voted message to user", err)
 		}
 		return
