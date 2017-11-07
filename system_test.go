@@ -364,7 +364,14 @@ func TestVote_TwoChannels(t *testing.T) {
 
 	// Start the votes.
 	runner.SendVoteMessageAs(users[0], MainChannelID)
+
+	// Stagger the vote starts, since in practice votes will never start exactly
+	// at the same moment.
+	runner.UTCClock.Advance(vote.VoteDuration / 2)
+	runner.UTCTimer.ElapseTime(vote.VoteDuration / 2)
+
 	runner.SendVoteMessageAs(users[0], SecondChannelID)
+
 	runner.SendVoteStatusMessage(MainChannelID)
 	runner.SendVoteStatusMessage(SecondChannelID)
 
@@ -414,6 +421,7 @@ type TestRunner struct {
 	Gist           *util.InMemoryGist
 	DiscordSession *util.InMemoryDiscordSession
 	UTCClock       *util.FakeUTCClock
+	UTCTimer       *util.FakeUTCTimer
 
 	// Real objects
 	FeatureRegistry *feature.Registry
@@ -445,11 +453,13 @@ func NewTestRunner(t *testing.T) *TestRunner {
 
 	utcClock := util.NewFakeUTCClock()
 
-	registry := InitializeRegistry(customMap, voteMap, gist, &app.Config{RickList: rickList}, utcClock)
-
-	// 0-length channel. Each time it uses a command, it tries to issue 2 as a
-	// hack to make sure that the first one has been processed.
+	// 0-length channel. Each time it consumes/processes a command, it issues a
+	// no-op as a hack to make sure that the first one has been processed.
 	commandChannel := make(chan *model.Command)
+
+	utcTimer := util.NewFakeUTCTimer()
+
+	registry := InitializeRegistry(customMap, voteMap, gist, &app.Config{RickList: rickList}, utcClock, utcTimer, commandChannel)
 
 	go handleCommands(registry, discordSession, commandChannel)
 
@@ -464,6 +474,7 @@ func NewTestRunner(t *testing.T) *TestRunner {
 		Gist:                 gist,
 		DiscordSession:       discordSession,
 		UTCClock:             utcClock,
+		UTCTimer:             utcTimer,
 		FeatureRegistry:      registry,
 		Handler:              getHandleMessage(customMap, registry, commandChannel),
 	}
@@ -548,16 +559,7 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel model.Snowflak
 
 	// Reconstruct the status string and assert internal state.
 	activeVote := r.ActiveVoteMap[channel]
-	reconstructedVote := vote.NewVote(
-		0, /* voteID */
-		channel,
-		id,
-		activeVote.Message,
-		time.Time{},
-		activeVote.TimestampEnd,
-		activeVote.VotesFor,
-		activeVote.VotesAgainst,
-		vote.VoteOutcomeNotDone)
+	reconstructedVote := activeVote.Reconstruct()
 
 	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
 		util.NewMessage(channel.Format(), expectedMessage+"\n"+vote.StatusLine(r.UTCClock, reconstructedVote)),
@@ -584,10 +586,47 @@ func (r *TestRunner) CastDuplicateBallotAs(author *discordgo.User, channel model
 	r.AssertState()
 }
 
-// Advances the clock enough that the vote expires.
+// Advances the clock enough that the vote expires, and fires the trigger.
 func (r *TestRunner) ExpireVote(channel model.Snowflake) {
-	r.UTCClock.Advance(vote.VoteDuration)
+	r.T.Helper()
+
+	v := r.ActiveVoteMap[channel]
+
+	// Calculate the time to elapse to expire the given vote.
+	toElapse := v.TimestampEnd.Sub(r.UTCClock.Now())
+
+	// The UTC clock and UTC timer need to be advanced together.
+	r.UTCClock.Advance(toElapse)
+
+	// Elapse time requires a flush because it can generate the conclude command.
+	r.UTCTimer.ElapseTime(toElapse)
+	flushChannel(r.DiscordSession, r.Handler, channel)
+
+	// Update internal state.
+	r.DiscordMessagesCount++
+
+	// Calculate expected vote outcome.
+	voteOutcome := vote.VoteOutcomeNotEnough
+	if len(v.VotesFor)+len(v.VotesAgainst) >= 5 {
+		voteOutcome = vote.VoteOutcomeFailed
+		if len(v.VotesFor) > len(v.VotesAgainst) {
+			voteOutcome = vote.VoteOutcomePassed
+		}
+	}
+
+	reconstructedVote := v.Reconstruct()
+	reconstructedVote.VoteOutcome = voteOutcome
+	statusLine := vote.CompletedStatusLine(reconstructedVote)
+
+	expectedMessage := fmt.Sprintf(vote.MsgVoteConcluded, v.Author.Mention()) +
+		"\n" +
+		statusLine
+
 	r.ActiveVoteMap[channel] = nil
+
+	assertNewMessages(r.T, r.DiscordSession,
+		[]*util.Message{util.NewMessage(channel.Format(), expectedMessage)})
+	r.AssertState()
 }
 
 func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel model.Snowflake, message string, learn *Learn) {
@@ -828,13 +867,18 @@ func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, ha
 		},
 	}
 	handler(discordSession, messageCreate)
+	flushChannel(discordSession, handler, channel)
+}
+
+func flushChannel(discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel model.Snowflake) {
+	user := newUser("fake", model.Snowflake(0), false /* isBot */)
 
 	// A no-op command that flushes out the 0 length buffer so assertions are
 	// correct. Otherwise, processing would happen asynchronously, so it'd be
 	// impossible to assert that the program had behaved correctly.
 	noOp := &discordgo.MessageCreate{
 		&discordgo.Message{
-			Author:    author,
+			Author:    user,
 			ChannelID: channel.Format(),
 			Content:   "",
 		},
@@ -921,4 +965,21 @@ func newVote(channel model.Snowflake, author *discordgo.User, message string, ti
 		VotesAgainst: []model.Snowflake{},
 		TimestampEnd: timestampEnd,
 	}
+}
+
+// Reconstruct creates a vote.Vote out of the local storage vote. This isn't
+// meant to be a complete reconstruction, but rather all the info necessary for
+// testing (mostly reproducing status lines).
+func (v *Vote) Reconstruct() *vote.Vote {
+	parsedSnowflake, _ := model.ParseSnowflake(v.Author.ID)
+	return vote.NewVote(
+		0, /* voteID */
+		v.Channel,
+		parsedSnowflake,
+		v.Message,
+		time.Time{},
+		v.TimestampEnd,
+		v.VotesFor,
+		v.VotesAgainst,
+		vote.VoteOutcomeNotDone)
 }

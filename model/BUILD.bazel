@@ -8,6 +8,7 @@ go_library(
         "redisstringmap.go",
         "stringmap.go",
         "utcclock.go",
+        "utctimer.go",
     ],
     deps = [
         "@com_github_bwmarrin_discordgo//:go_default_library",

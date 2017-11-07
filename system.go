@@ -13,16 +13,25 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gist api.Gist, config *app.Config, clock model.UTCClock) *feature.Registry {
+func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gist api.Gist, config *app.Config, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *feature.Registry {
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
 	// a better pattern here.
 	featureRegistry := feature.NewRegistry()
-	featureRegistry.Register(NewHelpFeature(featureRegistry))
-	featureRegistry.Register(NewLearnFeature(featureRegistry, commandMap))
-	featureRegistry.Register(NewListFeature(featureRegistry, commandMap, gist))
-	featureRegistry.Register(moderation.NewFeature(featureRegistry, config))
-	featureRegistry.Register(vote.NewFeature(featureRegistry, voteMap, clock))
+	allFeatures := []feature.Feature{
+		NewHelpFeature(featureRegistry),
+		NewLearnFeature(featureRegistry, commandMap),
+		NewListFeature(featureRegistry, commandMap, gist),
+		moderation.NewFeature(featureRegistry, config),
+		vote.NewFeature(featureRegistry, voteMap, clock, timer, commandChannel),
+	}
+
+	for _, f := range allFeatures {
+		err := featureRegistry.Register(f)
+		if err != nil {
+			panic(err)
+		}
+	}
 	return featureRegistry
 }
 

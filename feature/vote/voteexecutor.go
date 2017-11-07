@@ -11,12 +11,16 @@ import (
 )
 
 type VoteExecutor struct {
-	modelHelper *ModelHelper
+	modelHelper    *ModelHelper
+	commandChannel chan<- *model.Command
+	utcTimer       model.UTCTimer
 }
 
-func NewVoteExecutor(modelHelper *ModelHelper) *VoteExecutor {
+func NewVoteExecutor(modelHelper *ModelHelper, commandChannel chan<- *model.Command, utcTimer model.UTCTimer) *VoteExecutor {
 	return &VoteExecutor{
-		modelHelper: modelHelper,
+		modelHelper:    modelHelper,
+		commandChannel: commandChannel,
+		utcTimer:       utcTimer,
 	}
 }
 
@@ -31,7 +35,8 @@ const (
 	MsgVoteMustBePublic = "Votes can only be started in public channels"
 )
 
-// Execute uploads the command list to github and pings the gist link in chat.
+// Execute starts a new vote if one is not already active. It also starts a
+// timer to use to conclude the vote.
 func (e *VoteExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
 	discordChannel, err := s.Channel(channelID.Format())
 	if err != nil {
@@ -59,7 +64,7 @@ func (e *VoteExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, 
 		log.Info("Error parsing command user ID", err)
 		return
 	}
-	_, err = e.modelHelper.StartNewVote(channelID, userID, command.Vote.Message)
+	vote, err := e.modelHelper.StartNewVote(channelID, userID, command.Vote.Message)
 	if err != nil {
 		log.Fatal("error starting new vote", err)
 	}
@@ -69,4 +74,13 @@ func (e *VoteExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, 
 	if err != nil {
 		log.Fatal("Unable to broadcast new message across the channel", err)
 	}
+
+	// After the vote has expired, send a conclude command so the status can be
+	// written to storage and printed to the users.
+	e.utcTimer.ExecuteAfter(vote.TimestampEnd.Sub(vote.TimestampStart), func() {
+		e.commandChannel <- &model.Command{
+			Type:      model.Type_VoteConclude,
+			ChannelID: channelID,
+		}
+	})
 }

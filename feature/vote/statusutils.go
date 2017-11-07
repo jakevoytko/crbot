@@ -8,7 +8,7 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-// Returns the full status line. To be reused in the ballot executor.
+// Returns the full status line of an in-progress vote.
 func StatusLine(clock model.UTCClock, vote *Vote) string {
 	// Add the vote totals.
 	statusStr := statusString(vote)
@@ -26,6 +26,34 @@ func StatusLine(clock model.UTCClock, vote *Vote) string {
 	timeString := TimeString(clock, vote.TimestampEnd)
 
 	return statusStr + ". " + votesForStr + ", " + votesAgainstStr + ". " + timeString
+}
+
+// Returns the full status line of a concluded vote.
+func CompletedStatusLine(vote *Vote) string {
+	statusStr := MsgStatusInconclusive
+	switch vote.VoteOutcome {
+	case VoteOutcomeNotDone:
+		statusStr = MsgStatusInconclusive // Don't know how this would happen.
+	case VoteOutcomePassed:
+		statusStr = MsgStatusVotePassed
+	case VoteOutcomeFailed:
+		statusStr = MsgStatusVoteFailed
+	case VoteOutcomeNotEnough:
+		statusStr = MsgStatusInconclusive
+	}
+
+	votesFor := len(vote.VotesFor)
+	votesAgainst := len(vote.VotesAgainst)
+
+	votesForStr := MsgOneVoteFor
+	if votesFor != 1 {
+		votesForStr = fmt.Sprintf(MsgVotesFor, votesFor)
+	}
+	votesAgainstStr := MsgOneVoteAgainst
+	if votesAgainst != 1 {
+		votesAgainstStr = fmt.Sprintf(MsgVotesAgainst, votesAgainst)
+	}
+	return statusStr + " " + votesForStr + ", " + votesAgainstStr
 }
 
 func statusString(vote *Vote) string {

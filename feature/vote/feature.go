@@ -9,13 +9,17 @@ import (
 type Feature struct {
 	featureRegistry *feature.Registry
 	modelHelper     *ModelHelper
+	commandChannel  chan<- *model.Command
+	utcTimer        model.UTCTimer
 }
 
 // NewFeature returns a new Feature.
-func NewFeature(featureRegistry *feature.Registry, voteMap model.StringMap, clock model.UTCClock) *Feature {
+func NewFeature(featureRegistry *feature.Registry, voteMap model.StringMap, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *Feature {
 	return &Feature{
 		featureRegistry: featureRegistry,
 		modelHelper:     NewModelHelper(voteMap, clock),
+		utcTimer:        timer,
+		commandChannel:  commandChannel,
 	}
 }
 
@@ -44,8 +48,9 @@ func (f *Feature) FallbackParser() feature.Parser {
 // Executors gets the executors.
 func (f *Feature) Executors() []feature.Executor {
 	return []feature.Executor{
-		NewStatusExecutor(f.modelHelper),
-		NewVoteExecutor(f.modelHelper),
 		NewBallotExecutor(f.modelHelper),
+		NewConcludeExecutor(f.modelHelper),
+		NewStatusExecutor(f.modelHelper),
+		NewVoteExecutor(f.modelHelper, f.commandChannel, f.utcTimer),
 	}
 }

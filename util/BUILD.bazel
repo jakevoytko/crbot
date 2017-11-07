@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "discordsession.go",
         "fakeutcclock.go",
+        "fakeutctimer.go",
         "gist.go",
         "inmemorystringmap.go",
         "util.go",

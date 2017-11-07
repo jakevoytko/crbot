@@ -26,16 +26,19 @@ func (e *StatusExecutor) GetType() int {
 }
 
 const (
-	MsgNoActiveVote      = "No active vote"
-	MsgOneVoteAgainst    = "1 vote against"
-	MsgOneVoteFor        = "1 vote for"
-	MsgSpacer            = "-----"
-	MsgStatusVoteFailing = "Vote is failing"
-	MsgStatusVotePassing = "Vote is passing"
-	MsgStatusVotesNeeded = "5 votes must be cast before vote can pass"
-	MsgVoteOwner         = "Vote started by %s: "
-	MsgVotesAgainst      = "%d votes against"
-	MsgVotesFor          = "%d votes for"
+	MsgNoActiveVote       = "No active vote"
+	MsgOneVoteAgainst     = "1 vote against"
+	MsgOneVoteFor         = "1 vote for"
+	MsgSpacer             = "-----"
+	MsgStatusInconclusive = "Not enough votes were cast."
+	MsgStatusVoteFailed   = "Vote Failed."
+	MsgStatusVoteFailing  = "Vote is failing"
+	MsgStatusVotePassed   = "Vote Passed!"
+	MsgStatusVotePassing  = "Vote is passing"
+	MsgStatusVotesNeeded  = "5 votes must be cast before vote can pass"
+	MsgVoteOwner          = "Vote started by %s: "
+	MsgVotesAgainst       = "%d votes against"
+	MsgVotesFor           = "%d votes for"
 )
 
 // Execute prints the status of the current vote.

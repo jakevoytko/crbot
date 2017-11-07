@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "ballotexecutor.go",
         "ballotparser.go",
+        "concludeexecutor.go",
         "feature.go",
         "modelhelper.go",
         "statusexecutor.go",

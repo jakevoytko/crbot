@@ -18,6 +18,7 @@ const (
 	Type_Unrecognized
 	Type_Vote
 	Type_VoteBallot
+	Type_VoteConclude
 	Type_VoteStatus
 
 	Name_Help           = "?help"

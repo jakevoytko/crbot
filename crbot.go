@@ -48,12 +48,14 @@ func main() {
 	}
 
 	clock := model.NewSystemUTCClock()
-
-	featureRegistry := InitializeRegistry(commandMap, voteMap, gist, config, clock)
+	timer := model.NewSystemUTCTimer()
 
 	// A command channel large enough to process a few commands without needing to
 	// block.
 	commandChannel := make(chan *model.Command, 10)
+
+	featureRegistry := InitializeRegistry(
+		commandMap, voteMap, gist, config, clock, timer, commandChannel)
 
 	go handleCommands(featureRegistry, discord, commandChannel)
 
