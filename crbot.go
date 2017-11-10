@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/go-redis/redis"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/model"
@@ -29,15 +30,18 @@ func main() {
 		log.Fatal("Config parsing failed", err)
 	}
 
-	// Initialize Redis.
-	commandMap, err := model.NewRedisStringMap(RedisCommandHash)
-	if err != nil {
+	// Initialize redis.
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+	if _, err := redisClient.Ping().Result(); err != nil {
 		log.Fatal("Unable to initialize Redis", err)
 	}
-	voteMap, err := model.NewRedisStringMap(RedisVoteHash)
-	if err != nil {
-		log.Fatal("Unable to initialize Redis", err)
-	}
+
+	commandMap := model.NewRedisStringMap(redisClient, RedisCommandHash)
+	voteMap := model.NewRedisStringMap(redisClient, RedisVoteHash)
 
 	gist := api.NewRemoteGist()
 

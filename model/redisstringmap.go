@@ -13,21 +13,12 @@ type RedisStringMap struct {
 	bucket      string
 }
 
-// Creates a new Redis client, connects to it, and returns a RedisStringMap.
-func NewRedisStringMap(bucket string) (*RedisStringMap, error) {
-	// Initialize redis.
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	if _, err := redisClient.Ping().Result(); err != nil {
-		return nil, err
-	}
+// NewRedisStringMap works as advertised.
+func NewRedisStringMap(redisClient *redis.Client, bucket string) *RedisStringMap {
 	return &RedisStringMap{
 		redisClient: redisClient,
 		bucket:      bucket,
-	}, nil
+	}
 }
 
 // Has tests whether the map contains the key.
