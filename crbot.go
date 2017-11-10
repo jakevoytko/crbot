@@ -22,6 +22,8 @@ import (
 
 func main() {
 	var filename = flag.String("filename", "secret.json", "Filename of configuration json")
+	var localhost = flag.String("localhost", "localhost", "Configurable localhost hostname, to allow for Docker's weirdness on OSX")
+
 	flag.Parse()
 
 	// Parse config.
@@ -32,7 +34,7 @@ func main() {
 
 	// Initialize redis.
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     *localhost + ":6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})

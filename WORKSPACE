@@ -33,3 +33,25 @@ go_repository(
     importpath = "github.com/gorilla/websocket",
     commit = "3da6ca0cb65383f2b607a677b6b55e8358cacee6",
 )
+
+# Set up rules_docker
+git_repository(
+    name = "io_bazel_rules_docker",
+    remote = "https://github.com/bazelbuild/rules_docker.git",
+    tag = "v0.3.0",
+)
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load(
+    "@io_bazel_rules_docker//go:image.bzl",
+    _go_image_repos = "repositories",
+)
+
+_go_image_repos()
