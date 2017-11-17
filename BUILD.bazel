@@ -55,7 +55,7 @@ container_bundle(
     name = "deploy_bundle",
     images = {
         "bazel:secret_image": ":secret_image",
-        "bazel:crbot_iamge": ":crbot_image",
+        "bazel:crbot_image": ":crbot_image",
     },
 )
 

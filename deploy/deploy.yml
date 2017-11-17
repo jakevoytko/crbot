@@ -1,43 +1,70 @@
 ---
 # This playbook deploys crbot, along with the environment for running it
 
-- name: Install bazel
-  hosts: servers
-  become: yes
+- name: Build crbot
+  hosts: localhost
 
   tasks:
-    - name: Install jdk 8
-      apt:
-        name: openjdk-8-jdk
-        update_cache: yes
+    - name: Create a temp directory
+      # Defines 'path' variable
+      tempfile:
+        state: directory
+        suffix: build
+      register: path
 
-    - name: Add bazel repository
-      apt_repository:
-        repo: deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8
-        state: present
-        filename: bazel
-
-    - name: Add bazel key
-      apt_key:
-        url: https://bazel.build/bazel-release.pub.gpg
-        state: present
-
-    - name: Install or update bazel from the apt repository
-      apt:
-        name: bazel
-        update_cache: yes
-
-- name: Restart crbot
-  hosts: servers
-
-  tasks:
-    - name: Pull the latest version of crbot
+    - name: Clone crbot
       git:
         depth: 1
-        dest: /home/jake/c/crbot
+        dest: "{{path.path}}"
         remote: origin
         repo: https://github.com/jakevoytko/crbot
         version: master
+
+    - name: Copy secret.json into the container
+      copy:
+        src: ~/etc/crbot_secret.json
+        dest: "{{path.path}}/secret.json"
+        owner: jake
+        mode: u+r
+
+    - name: Build the crbot container
+      command: /usr/local/bin/bazel run --cpu=k8 :deploy_bundle
+      args:
+        chdir: "{{path.path}}/"
+
+    - name: Docker save the fully reified environment
+      command: "/usr/local/bin/docker save bazel:crbot_image -o {{path.path}}/crbot.tar"
+
+- name: Deploy crbot
+  hosts: servers
+
+  tasks:
+
+    - name: Copy the full app layer to the remote machine
+      copy:
+        src: "{{hostvars['localhost']['path']['path']}}/crbot.tar"
+        dest: /home/jake/c/crbot.tar
+        owner: jake
+        group: jake
+        mode: u+r
+
+    - name: Install easy install because ansible did not
+      become: yes
+      apt:
+        name: python-setuptools
+        state: present
+
+    - name: Install pip because ansible did not
+      become: yes
+      easy_install:
+        name: pip
+        state: latest
+
+    - name: Install docker-py because ansible did not
+      become: yes
+      pip:
+        name: docker-py
+        version: 1.10.6
 
     - name: Ensure that the crbot service is stopped
       become: yes
@@ -45,18 +72,13 @@
         name: crbot
         state: stopped
 
-    - name: Copy secret.json from local to remote
-      copy:
-        src: ~/etc/crbot_secret.json
-        dest: /home/jake/c/crbot/secret.json
-        owner: jake
-        group: jake
-        mode: u+r
-
-    - name: Build the crbot service
-      command: /usr/bin/bazel build :crbot
-      args:
-        chdir: /home/jake/c/crbot
+    - name: Load the image into the remote docker server
+      become: yes
+      docker_image:
+        load_path: /home/jake/c/crbot.tar
+        name: bazel:crbot_image
+        rm: yes
+        state: present
 
     - name: Install the systemd service file
       become: yes

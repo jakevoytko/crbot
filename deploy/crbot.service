@@ -4,8 +4,7 @@ Documentation=https://github.com/jakevoytko/crbot
 
 [Service]
 Type=simple
-ExecStart=/home/jake/c/crbot/run.sh
-WorkingDirectory=/home/jake/c/crbot/
+ExecStart=/usr/bin/docker run --rm --net=host bazel:crbot_image --filename /secret.json
 
 [Install]
 WantedBy=multi-user.target
