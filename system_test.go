@@ -13,13 +13,6 @@ import (
 	"github.com/jakevoytko/crbot/testutil"
 )
 
-func TestNewServer(t *testing.T) {
-	runner := testutil.NewRunner(t)
-
-	// Assert initial state.
-	runner.AssertState()
-}
-
 func TestLearn_NoResponse(t *testing.T) {
 	runner := testutil.NewRunner(t)
 
