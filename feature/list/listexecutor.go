@@ -1,8 +1,7 @@
-package main
+package list
 
 import (
 	"bytes"
-	"errors"
 	"sort"
 	"strings"
 
@@ -11,77 +10,6 @@ import (
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 )
-
-// ListFeature is a Feature that lists commands that are available.
-type ListFeature struct {
-	featureRegistry *feature.Registry
-	commandMap      model.StringMap
-	gist            api.Gist
-}
-
-// NewListFeature returns a new ListFeature.
-func NewListFeature(
-	featureRegistry *feature.Registry,
-	commandMap model.StringMap,
-	gist api.Gist) *ListFeature {
-
-	return &ListFeature{
-		featureRegistry: featureRegistry,
-		commandMap:      commandMap,
-		gist:            gist,
-	}
-}
-
-// Parsers returns the parsers.
-func (f *ListFeature) Parsers() []feature.Parser {
-	return []feature.Parser{NewListParser()}
-}
-
-// CommandInterceptors returns nothing.
-func (f *ListFeature) CommandInterceptors() []feature.CommandInterceptor {
-	return []feature.CommandInterceptor{}
-}
-
-// FallbackParser returns nil.
-func (f *ListFeature) FallbackParser() feature.Parser {
-	return nil
-}
-
-func (f *ListFeature) Executors() []feature.Executor {
-	return []feature.Executor{NewListExecutor(f.featureRegistry, f.commandMap, f.gist)}
-}
-
-// ListParser parses ?list commands.
-type ListParser struct{}
-
-// NewListParser works as advertised.
-func NewListParser() *ListParser {
-	return &ListParser{}
-}
-
-// GetName returns the named type of this feature.
-func (p *ListParser) GetName() string {
-	return model.Name_List
-}
-
-const (
-	MsgHelpList = "Type `?list` to get the URL of a Gist with all builtin and learned commands"
-)
-
-// HelpText explains how to use ?list.
-func (p *ListParser) HelpText(command string) (string, error) {
-	return MsgHelpList, nil
-}
-
-// Parse parses the given list command.
-func (p *ListParser) Parse(splitContent []string) (*model.Command, error) {
-	if splitContent[0] != p.GetName() {
-		log.Fatal("parseList called with non-list command", errors.New("wat"))
-	}
-	return &model.Command{
-		Type: model.Type_List,
-	}, nil
-}
 
 const (
 	MsgGistAddress  = "The list of commands is here"

@@ -13,6 +13,7 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/feature/list"
 	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/model"
@@ -156,11 +157,11 @@ func TestIntegration(t *testing.T) {
 	// All recognized help commands.
 	runner.SendMessage(MainChannelID, "?help help", MsgHelpHelp)
 	runner.SendMessage(MainChannelID, "?help learn", MsgHelpLearn)
-	runner.SendMessage(MainChannelID, "?help list", MsgHelpList)
+	runner.SendMessage(MainChannelID, "?help list", list.MsgHelpList)
 	runner.SendMessage(MainChannelID, "?help unlearn", MsgHelpUnlearn)
 	runner.SendMessage(MainChannelID, "?help ?help", MsgHelpHelp)
 	runner.SendMessage(MainChannelID, "?help ?learn", MsgHelpLearn)
-	runner.SendMessage(MainChannelID, "?help ?list", MsgHelpList)
+	runner.SendMessage(MainChannelID, "?help ?list", list.MsgHelpList)
 	runner.SendMessage(MainChannelID, "?help ?unlearn", MsgHelpUnlearn)
 	runner.SendMessage(MainChannelID, "?help  help", MsgHelpHelp)
 	// Help with custom commands.
@@ -689,7 +690,7 @@ func (r *TestRunner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString(MsgHelpLearn)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?list: ")
-		buffer.WriteString(MsgHelpList)
+		buffer.WriteString(list.MsgHelpList)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?no: ")
 		buffer.WriteString(vote.MsgHelpBallotAgainst)
