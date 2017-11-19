@@ -13,6 +13,7 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/list"
 	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/feature/vote"
@@ -151,19 +152,19 @@ func TestIntegration(t *testing.T) {
 	runner.SendMessageWithoutResponse(MainChannelID, "?call")
 
 	// Unrecognized help commands.
-	runner.SendMessage(MainChannelID, "?help", MsgDefaultHelp)
-	runner.SendMessage(MainChannelID, "?help abunchofgibberish", MsgDefaultHelp)
-	runner.SendMessage(MainChannelID, "?help ??help", MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help", help.MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help abunchofgibberish", help.MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help ??help", help.MsgDefaultHelp)
 	// All recognized help commands.
-	runner.SendMessage(MainChannelID, "?help help", MsgHelpHelp)
+	runner.SendMessage(MainChannelID, "?help help", help.MsgHelpHelp)
 	runner.SendMessage(MainChannelID, "?help learn", MsgHelpLearn)
 	runner.SendMessage(MainChannelID, "?help list", list.MsgHelpList)
 	runner.SendMessage(MainChannelID, "?help unlearn", MsgHelpUnlearn)
-	runner.SendMessage(MainChannelID, "?help ?help", MsgHelpHelp)
+	runner.SendMessage(MainChannelID, "?help ?help", help.MsgHelpHelp)
 	runner.SendMessage(MainChannelID, "?help ?learn", MsgHelpLearn)
 	runner.SendMessage(MainChannelID, "?help ?list", list.MsgHelpList)
 	runner.SendMessage(MainChannelID, "?help ?unlearn", MsgHelpUnlearn)
-	runner.SendMessage(MainChannelID, "?help  help", MsgHelpHelp)
+	runner.SendMessage(MainChannelID, "?help  help", help.MsgHelpHelp)
 	// Help with custom commands.
 	runner.SendLearnMessage(MainChannelID, "?learn help-noarg response", NewLearn("help-noarg", "response"))
 	runner.SendLearnMessage(MainChannelID, "?learn help-arg response $1", NewLearn("help-arg", "response $1"))
@@ -171,8 +172,8 @@ func TestIntegration(t *testing.T) {
 	runner.SendMessage(MainChannelID, "?help help-arg", "?help-arg <args>")
 	runner.SendUnlearnMessage(MainChannelID, "?unlearn help-noarg", "help-noarg")
 	runner.SendUnlearnMessage(MainChannelID, "?unlearn help-arg", "help-arg")
-	runner.SendMessage(MainChannelID, "?help help-noarg", MsgDefaultHelp)
-	runner.SendMessage(MainChannelID, "?help help-arg", MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help help-noarg", help.MsgDefaultHelp)
+	runner.SendMessage(MainChannelID, "?help help-arg", help.MsgDefaultHelp)
 
 	// Moderation
 	rickListedUser := &discordgo.User{
@@ -186,7 +187,7 @@ func TestIntegration(t *testing.T) {
 		MFAEnabled:    false,
 		Bot:           false,
 	}
-	runner.SendMessageAs(rickListedUser, MainChannelID, "?help help-arg", MsgDefaultHelp)
+	runner.SendMessageAs(rickListedUser, MainChannelID, "?help help-arg", help.MsgDefaultHelp)
 	runner.SendMessageAs(rickListedUser, DirectMessageID, "?help help-arg", moderation.MsgRickList)
 	runner.SendLearnMessageAs(rickListedUser, DirectMessageID, "?learn rick list", NewLearn("rick", "list"))
 }
@@ -684,7 +685,7 @@ func (r *TestRunner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString(vote.MsgHelpBallotAgainst)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?help: ")
-		buffer.WriteString(MsgHelpHelp)
+		buffer.WriteString(help.MsgHelpHelp)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?learn: ")
 		buffer.WriteString(MsgHelpLearn)

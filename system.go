@@ -7,6 +7,7 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/list"
 	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/feature/vote"
@@ -20,7 +21,7 @@ func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gis
 	// a better pattern here.
 	featureRegistry := feature.NewRegistry()
 	allFeatures := []feature.Feature{
-		NewHelpFeature(featureRegistry),
+		help.NewFeature(featureRegistry),
 		NewLearnFeature(featureRegistry, commandMap),
 		list.NewFeature(featureRegistry, commandMap, gist),
 		moderation.NewFeature(featureRegistry, config),
