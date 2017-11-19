@@ -4,47 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/learn"
 	"github.com/jakevoytko/crbot/feature/list"
-	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/testutil"
 )
-
-func TestLearn_NoResponse(t *testing.T) {
-	runner := testutil.NewRunner(t)
-
-	// Commands that should never return a response.
-	runner.SendMessageWithoutResponse(testutil.MainChannelID, "?")
-	runner.SendMessageWithoutResponse(testutil.MainChannelID, "!")
-	runner.SendMessageWithoutResponse(testutil.MainChannelID, ".")
-	runner.SendMessageWithoutResponse(testutil.MainChannelID, "")
-	runner.SendMessageWithoutResponse(testutil.MainChannelID, "!help")
-	runner.SendMessageWithoutResponse(testutil.MainChannelID, "help")
-	runner.SendMessageWithoutResponse(testutil.MainChannelID, ".help")
-
-	// Test ?list. ?list tests will be interspersed through the learn examples
-	// below, since learn and unlearn interact with it.
-	runner.SendListMessage(testutil.MainChannelID)
-}
-
-func TestLearn_WrongFormat(t *testing.T) {
-	runner := testutil.NewRunner(t)
-
-	// Basic learn responses.
-	// Wrong call format
-	runner.SendMessage(testutil.MainChannelID, "?learn", learn.MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn test", learn.MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn ?call response", learn.MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn !call response", learn.MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn /call response", learn.MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn ", learn.MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn multi\nline\ncall response", learn.MsgHelpLearn)
-	// Wrong response format.
-	runner.SendMessage(testutil.MainChannelID, "?learn call ?response", learn.MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn call !response", learn.MsgHelpLearn)
-}
 
 func TestIntegration(t *testing.T) {
 	runner := testutil.NewRunner(t)
@@ -152,20 +116,4 @@ func TestIntegration(t *testing.T) {
 	runner.SendUnlearnMessage(testutil.MainChannelID, "?unlearn help-arg", "help-arg")
 	runner.SendMessage(testutil.MainChannelID, "?help help-noarg", help.MsgDefaultHelp)
 	runner.SendMessage(testutil.MainChannelID, "?help help-arg", help.MsgDefaultHelp)
-
-	// Moderation
-	rickListedUser := &discordgo.User{
-		ID:            "2",
-		Email:         "email@example.com",
-		Username:      "username",
-		Avatar:        "avatar",
-		Discriminator: "discriminator",
-		Token:         "token",
-		Verified:      true,
-		MFAEnabled:    false,
-		Bot:           false,
-	}
-	runner.SendMessageAs(rickListedUser, testutil.MainChannelID, "?help help-arg", help.MsgDefaultHelp)
-	runner.SendMessageAs(rickListedUser, testutil.DirectMessageID, "?help help-arg", moderation.MsgRickList)
-	runner.SendLearnMessageAs(rickListedUser, testutil.DirectMessageID, "?learn rick list", testutil.NewLearnData("rick", "list"))
 }
