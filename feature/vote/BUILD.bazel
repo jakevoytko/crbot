@@ -27,17 +27,14 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "modelhelper.go",
-        "statusexecutor.go",
-        "statusutils.go",
-        "modelhelper_test.go",
-        "statusutils_test.go",
-    ],
+    srcs = glob(["*.go"]),
     deps = [
         "//api:go_default_library",
+        "//feature:go_default_library",
         "//log:go_default_library",
         "//model:go_default_library",
         "//testutil:go_default_library",
+        "//util:go_default_library",
+        "@com_github_bwmarrin_discordgo//:go_default_library",
     ],
 )
