@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jakevoytko/crbot/util"
+	testutil "github.com/jakevoytko/crbot/testutil"
 )
 
 func TestTimeString(t *testing.T) {
-	utcClock := util.NewFakeUTCClock()
+	utcClock := testutil.NewFakeUTCClock()
 
 	testCases := []struct {
 		InFuture        time.Duration

@@ -19,7 +19,7 @@ import (
 	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/model"
-	"github.com/jakevoytko/crbot/util"
+	testutil "github.com/jakevoytko/crbot/testutil"
 )
 
 const (
@@ -419,12 +419,12 @@ type TestRunner struct {
 	ActiveVoteMap        map[model.Snowflake]*Vote // channel->vote. May be nil
 
 	// Fakes
-	CustomMap      *util.InMemoryStringMap
-	VoteMap        *util.InMemoryStringMap
-	Gist           *util.InMemoryGist
-	DiscordSession *util.InMemoryDiscordSession
-	UTCClock       *util.FakeUTCClock
-	UTCTimer       *util.FakeUTCTimer
+	CustomMap      *testutil.InMemoryStringMap
+	VoteMap        *testutil.InMemoryStringMap
+	Gist           *testutil.InMemoryGist
+	DiscordSession *testutil.InMemoryDiscordSession
+	UTCClock       *testutil.FakeUTCClock
+	UTCTimer       *testutil.FakeUTCTimer
 
 	// Real objects
 	FeatureRegistry *feature.Registry
@@ -435,10 +435,10 @@ type TestRunner struct {
 
 func NewTestRunner(t *testing.T) *TestRunner {
 	// Initialize fakes.
-	customMap := util.NewInMemoryStringMap()
-	voteMap := util.NewInMemoryStringMap()
-	gist := util.NewInMemoryGist()
-	discordSession := util.NewInMemoryDiscordSession()
+	customMap := testutil.NewInMemoryStringMap()
+	voteMap := testutil.NewInMemoryStringMap()
+	gist := testutil.NewInMemoryGist()
+	discordSession := testutil.NewInMemoryDiscordSession()
 	discordSession.SetChannel(&discordgo.Channel{
 		ID:   MainChannelID.Format(),
 		Type: discordgo.ChannelTypeGuildText,
@@ -454,13 +454,13 @@ func NewTestRunner(t *testing.T) *TestRunner {
 
 	rickList := []model.Snowflake{model.Snowflake(2)}
 
-	utcClock := util.NewFakeUTCClock()
+	utcClock := testutil.NewFakeUTCClock()
 
 	// 0-length channel. Each time it consumes/processes a command, it issues a
 	// no-op as a hack to make sure that the first one has been processed.
 	commandChannel := make(chan *model.Command)
 
-	utcTimer := util.NewFakeUTCTimer()
+	utcTimer := testutil.NewFakeUTCTimer()
 
 	registry := InitializeRegistry(customMap, voteMap, gist, &app.Config{RickList: rickList}, utcClock, utcTimer, commandChannel)
 
@@ -504,7 +504,7 @@ func (r *TestRunner) SendMessage(channel model.Snowflake, message, expectedRespo
 	sendMessage(r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel.Format(), expectedResponse)})
+		[]*testutil.Message{testutil.NewMessage(channel.Format(), expectedResponse)})
 	r.AssertState()
 }
 
@@ -514,7 +514,7 @@ func (r *TestRunner) SendMessageAs(author *discordgo.User, channel model.Snowfla
 	sendMessageAs(author, r.DiscordSession, r.Handler, channel, message)
 	r.DiscordMessagesCount++
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel.Format(), expectedResponse)})
+		[]*testutil.Message{testutil.NewMessage(channel.Format(), expectedResponse)})
 	r.AssertState()
 }
 
@@ -525,7 +525,7 @@ func (r *TestRunner) SendLearnMessage(channel model.Snowflake, message string, l
 	r.DiscordMessagesCount++
 	r.Learns[learnData.Call] = learnData
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(learn.MsgLearnSuccess, learnData.Call))})
+		[]*testutil.Message{testutil.NewMessage(channel.Format(), fmt.Sprintf(learn.MsgLearnSuccess, learnData.Call))})
 	r.AssertState()
 	r.SendListMessage(channel)
 }
@@ -537,7 +537,7 @@ func (r *TestRunner) SendVoteMessageAs(author *discordgo.User, channel model.Sno
 	r.DiscordMessagesCount++
 	r.ActiveVoteMap[channel] = newVote(channel, author, "a vote has been called", r.UTCClock.Now().Add(vote.VoteDuration))
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(vote.MsgBroadcastNewVote, author.Mention(), "a vote has been called"))})
+		[]*testutil.Message{testutil.NewMessage(channel.Format(), fmt.Sprintf(vote.MsgBroadcastNewVote, author.Mention(), "a vote has been called"))})
 	r.AssertState()
 }
 
@@ -564,8 +564,8 @@ func (r *TestRunner) CastBallotAs(author *discordgo.User, channel model.Snowflak
 	activeVote := r.ActiveVoteMap[channel]
 	reconstructedVote := activeVote.Reconstruct()
 
-	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
-		util.NewMessage(channel.Format(), expectedMessage+"\n"+vote.StatusLine(r.UTCClock, reconstructedVote)),
+	assertNewMessages(r.T, r.DiscordSession, []*testutil.Message{
+		testutil.NewMessage(channel.Format(), expectedMessage+"\n"+vote.StatusLine(r.UTCClock, reconstructedVote)),
 	})
 	r.AssertState()
 }
@@ -583,8 +583,8 @@ func (r *TestRunner) CastDuplicateBallotAs(author *discordgo.User, channel model
 	// Update internal state.
 	r.DiscordMessagesCount++
 
-	assertNewMessages(r.T, r.DiscordSession, []*util.Message{
-		util.NewMessage(channel.Format(), fmt.Sprintf(vote.MsgAlreadyVoted, author.Mention())),
+	assertNewMessages(r.T, r.DiscordSession, []*testutil.Message{
+		testutil.NewMessage(channel.Format(), fmt.Sprintf(vote.MsgAlreadyVoted, author.Mention())),
 	})
 	r.AssertState()
 }
@@ -628,7 +628,7 @@ func (r *TestRunner) ExpireVote(channel model.Snowflake) {
 	r.ActiveVoteMap[channel] = nil
 
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel.Format(), expectedMessage)})
+		[]*testutil.Message{testutil.NewMessage(channel.Format(), expectedMessage)})
 	r.AssertState()
 }
 
@@ -639,7 +639,7 @@ func (r *TestRunner) SendLearnMessageAs(author *discordgo.User, channel model.Sn
 	r.DiscordMessagesCount++
 	r.Learns[learnData.Call] = learnData
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(learn.MsgLearnSuccess, learnData.Call))})
+		[]*testutil.Message{testutil.NewMessage(channel.Format(), fmt.Sprintf(learn.MsgLearnSuccess, learnData.Call))})
 	r.AssertState()
 	r.SendListMessage(channel)
 }
@@ -651,7 +651,7 @@ func (r *TestRunner) SendUnlearnMessage(channel model.Snowflake, message string,
 	r.DiscordMessagesCount++
 	delete(r.Learns, call)
 	assertNewMessages(r.T, r.DiscordSession,
-		[]*util.Message{util.NewMessage(channel.Format(), fmt.Sprintf(learn.MsgUnlearnSuccess, call))})
+		[]*testutil.Message{testutil.NewMessage(channel.Format(), fmt.Sprintf(learn.MsgUnlearnSuccess, call))})
 	r.AssertState()
 	r.SendListMessage(channel)
 }
@@ -660,7 +660,7 @@ func (r *TestRunner) SendMessageWithoutResponse(channel model.Snowflake, message
 	r.T.Helper()
 
 	sendMessage(r.DiscordSession, r.Handler, channel, message)
-	assertNewMessages(r.T, r.DiscordSession, []*util.Message{})
+	assertNewMessages(r.T, r.DiscordSession, []*testutil.Message{})
 	r.AssertState()
 }
 
@@ -670,7 +670,7 @@ func (r *TestRunner) SendListMessage(channel model.Snowflake) {
 	sendMessage(r.DiscordSession, r.Handler, channel, "?list")
 	r.DiscordMessagesCount++
 	r.GistsCount++
-	assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel.Format(), "The list of commands is here: https://www.example.com/success")})
+	assertNewMessages(r.T, r.DiscordSession, []*testutil.Message{testutil.NewMessage(channel.Format(), "The list of commands is here: https://www.example.com/success")})
 
 	// Assert gist state. Cannot be in AssertState because this would fail at the
 	// next learn or unlearn.
@@ -749,7 +749,7 @@ func (r *TestRunner) SendVoteStatusMessage(channel model.Snowflake) {
 	activeVote, _ := r.ActiveVoteMap[channel]
 
 	if activeVote == nil {
-		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel.Format(), vote.MsgNoActiveVote)})
+		assertNewMessages(r.T, r.DiscordSession, []*testutil.Message{testutil.NewMessage(channel.Format(), vote.MsgNoActiveVote)})
 	} else {
 		// Calculate the expected status messages.
 		forMessage := vote.MsgOneVoteFor
@@ -786,7 +786,7 @@ func (r *TestRunner) SendVoteStatusMessage(channel model.Snowflake) {
 		buffer.WriteString(againstMessage)
 		buffer.WriteString(". ")
 		buffer.WriteString(timeMessage)
-		assertNewMessages(r.T, r.DiscordSession, []*util.Message{util.NewMessage(channel.Format(), buffer.String())})
+		assertNewMessages(r.T, r.DiscordSession, []*testutil.Message{testutil.NewMessage(channel.Format(), buffer.String())})
 	}
 
 	r.AssertState()
@@ -796,7 +796,7 @@ func (r *TestRunner) AddUser(user *discordgo.User) {
 	r.DiscordSession.Users[user.ID] = user
 }
 
-func assertNumCommands(t *testing.T, customMap *util.InMemoryStringMap, count int) {
+func assertNumCommands(t *testing.T, customMap *testutil.InMemoryStringMap, count int) {
 	t.Helper()
 
 	if all, _ := customMap.GetAll(); len(all) != count {
@@ -804,7 +804,7 @@ func assertNumCommands(t *testing.T, customMap *util.InMemoryStringMap, count in
 	}
 }
 
-func assertNumGists(t *testing.T, gist *util.InMemoryGist, count int) {
+func assertNumGists(t *testing.T, gist *testutil.InMemoryGist, count int) {
 	t.Helper()
 
 	if len(gist.Messages) != count {
@@ -812,7 +812,7 @@ func assertNumGists(t *testing.T, gist *util.InMemoryGist, count int) {
 	}
 }
 
-func assertNumDiscordMessages(t *testing.T, discordSession *util.InMemoryDiscordSession, count int) {
+func assertNumDiscordMessages(t *testing.T, discordSession *testutil.InMemoryDiscordSession, count int) {
 	t.Helper()
 
 	if len(discordSession.Messages) != count {
@@ -820,7 +820,7 @@ func assertNumDiscordMessages(t *testing.T, discordSession *util.InMemoryDiscord
 	}
 }
 
-func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *util.InMemoryStringMap, activeVoteMap map[model.Snowflake]*Vote) {
+func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *testutil.InMemoryStringMap, activeVoteMap map[model.Snowflake]*Vote) {
 	t.Helper()
 
 	modelHelper := vote.NewModelHelper(voteMap, utcClock)
@@ -889,7 +889,7 @@ func flushChannel(discordSession api.DiscordSession, handler func(api.DiscordSes
 	handler(discordSession, noOp)
 }
 
-func assertNewMessages(t *testing.T, discordSession *util.InMemoryDiscordSession, newMessages []*util.Message) {
+func assertNewMessages(t *testing.T, discordSession *testutil.InMemoryDiscordSession, newMessages []*testutil.Message) {
 	t.Helper()
 
 	if len(discordSession.Messages) < len(newMessages) {
@@ -910,7 +910,7 @@ func assertNewMessages(t *testing.T, discordSession *util.InMemoryDiscordSession
 	}
 }
 
-func assertCommand(t *testing.T, commandMap *util.InMemoryStringMap, call, response string) {
+func assertCommand(t *testing.T, commandMap *testutil.InMemoryStringMap, call, response string) {
 	t.Helper()
 
 	if _, err := commandMap.Get(call); err != nil {

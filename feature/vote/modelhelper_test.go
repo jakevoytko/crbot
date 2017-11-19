@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jakevoytko/crbot/model"
-	"github.com/jakevoytko/crbot/util"
+	testutil "github.com/jakevoytko/crbot/testutil"
 )
 
 const (
@@ -350,9 +350,9 @@ func TestSetVoteOutcome_SucceedsWhenExpired(t *testing.T) {
 	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomePassed)
 }
 
-func initializeTests() (*ModelHelper, *util.FakeUTCClock) {
-	stringMap := util.NewInMemoryStringMap()
-	clock := util.NewFakeUTCClock()
+func initializeTests() (*ModelHelper, *testutil.FakeUTCClock) {
+	stringMap := testutil.NewInMemoryStringMap()
+	clock := testutil.NewFakeUTCClock()
 	return NewModelHelper(stringMap, clock), clock
 }
 
