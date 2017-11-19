@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jakevoytko/crbot/model"
-	testutil "github.com/jakevoytko/crbot/testutil"
+	"github.com/jakevoytko/crbot/testutil"
 )
 
 const (
@@ -191,7 +191,7 @@ func TestStartNewVote_AddingFromNoMemory(t *testing.T) {
 	if len(vote.VotesFor) != 0 || len(vote.VotesAgainst) != 0 {
 		t.Errorf("New vote should have no recorded votes")
 	}
-	if vote.VoteOutcome != VoteOutcomeNotDone {
+	if vote.VoteOutcome != model.VoteOutcomeNotDone {
 		t.Errorf("Vote outcome should be NotDone")
 	}
 
@@ -288,20 +288,20 @@ func TestCastBallot_OpposedFailsOnExpiredVote(t *testing.T) {
 func TestSetVoteOutcome_NotStarted(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
-	assertEarlySetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomePassed)
-	assertEarlySetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeFailed)
-	assertEarlySetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotEnough)
-	assertEarlySetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotDone)
+	assertEarlySetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomePassed)
+	assertEarlySetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeFailed)
+	assertEarlySetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeNotEnough)
+	assertEarlySetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeNotDone)
 }
 
 func TestSetVoteOutcome_Passed(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
-	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomePassed)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeFailed)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotEnough)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotDone)
+	assertSetVoteOutcome(t, modelHelper, Channel1, model.VoteOutcomePassed)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeFailed)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeNotEnough)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeNotDone)
 }
 
 func TestSetVoteOutcome_Passed_2Channels(t *testing.T) {
@@ -309,37 +309,37 @@ func TestSetVoteOutcome_Passed_2Channels(t *testing.T) {
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
 	assertStartNewVote(t, modelHelper, Channel2, UserID1)
-	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomePassed)
-	assertSetVoteOutcome(t, modelHelper, Channel2, VoteOutcomePassed)
+	assertSetVoteOutcome(t, modelHelper, Channel1, model.VoteOutcomePassed)
+	assertSetVoteOutcome(t, modelHelper, Channel2, model.VoteOutcomePassed)
 }
 
 func TestSetVoteOutcome_Failed(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
-	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomeFailed)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomePassed)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotEnough)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotDone)
+	assertSetVoteOutcome(t, modelHelper, Channel1, model.VoteOutcomeFailed)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomePassed)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeNotEnough)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeNotDone)
 }
 
 func TestSetVoteOutcome_NotEnough(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
-	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomeNotEnough)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeFailed)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomePassed)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotDone)
+	assertSetVoteOutcome(t, modelHelper, Channel1, model.VoteOutcomeNotEnough)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeFailed)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomePassed)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeNotDone)
 }
 
 func TestSetVoteOutcome_NotDoneCanBeOverwritten(t *testing.T) {
 	modelHelper, _ := initializeTests()
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
-	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomeNotDone)
-	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomePassed)
-	assertSetVoteOutcomeFails(t, modelHelper, Channel1, VoteOutcomeNotDone)
+	assertSetVoteOutcome(t, modelHelper, Channel1, model.VoteOutcomeNotDone)
+	assertSetVoteOutcome(t, modelHelper, Channel1, model.VoteOutcomePassed)
+	assertSetVoteOutcomeFails(t, modelHelper, Channel1, model.VoteOutcomeNotDone)
 }
 
 func TestSetVoteOutcome_SucceedsWhenExpired(t *testing.T) {
@@ -347,7 +347,7 @@ func TestSetVoteOutcome_SucceedsWhenExpired(t *testing.T) {
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
 	clock.Advance(VoteDuration)
-	assertSetVoteOutcome(t, modelHelper, Channel1, VoteOutcomePassed)
+	assertSetVoteOutcome(t, modelHelper, Channel1, model.VoteOutcomePassed)
 }
 
 func initializeTests() (*ModelHelper, *testutil.FakeUTCClock) {
@@ -368,7 +368,7 @@ func assertIsVoteActive(t *testing.T, modelHelper *ModelHelper, channel model.Sn
 	}
 }
 
-func assertMostRecentVote(t *testing.T, modelHelper *ModelHelper, channelID model.Snowflake, vote *Vote) {
+func assertMostRecentVote(t *testing.T, modelHelper *ModelHelper, channelID model.Snowflake, vote *model.Vote) {
 	t.Helper()
 
 	mostRecentVote, err := modelHelper.MostRecentVote(channelID)
@@ -401,7 +401,7 @@ func assertStartNewVoteFails(t *testing.T, modelHelper *ModelHelper, channelID, 
 	}
 }
 
-func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, channelID, userID model.Snowflake) *Vote {
+func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, channelID, userID model.Snowflake) *model.Vote {
 	t.Helper()
 
 	vote, err := modelHelper.StartNewVote(channelID, userID, "hug Jake")

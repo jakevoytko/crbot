@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	testutil "github.com/jakevoytko/crbot/testutil"
+	"github.com/jakevoytko/crbot/testutil"
 )
 
 func TestTimeString(t *testing.T) {

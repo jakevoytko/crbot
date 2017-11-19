@@ -9,7 +9,7 @@ import (
 )
 
 // Returns the full status line of an in-progress vote.
-func StatusLine(clock model.UTCClock, vote *Vote) string {
+func StatusLine(clock model.UTCClock, vote *model.Vote) string {
 	// Add the vote totals.
 	statusStr := statusString(vote)
 	votesFor := len(vote.VotesFor)
@@ -29,16 +29,16 @@ func StatusLine(clock model.UTCClock, vote *Vote) string {
 }
 
 // Returns the full status line of a concluded vote.
-func CompletedStatusLine(vote *Vote) string {
+func CompletedStatusLine(vote *model.Vote) string {
 	statusStr := MsgStatusInconclusive
 	switch vote.VoteOutcome {
-	case VoteOutcomeNotDone:
+	case model.VoteOutcomeNotDone:
 		statusStr = MsgStatusInconclusive // Don't know how this would happen.
-	case VoteOutcomePassed:
+	case model.VoteOutcomePassed:
 		statusStr = MsgStatusVotePassed
-	case VoteOutcomeFailed:
+	case model.VoteOutcomeFailed:
 		statusStr = MsgStatusVoteFailed
-	case VoteOutcomeNotEnough:
+	case model.VoteOutcomeNotEnough:
 		statusStr = MsgStatusInconclusive
 	}
 
@@ -56,10 +56,10 @@ func CompletedStatusLine(vote *Vote) string {
 	return statusStr + " " + votesForStr + ", " + votesAgainstStr
 }
 
-func statusString(vote *Vote) string {
+func statusString(vote *model.Vote) string {
 	if vote.HasEnoughVotes() {
 		switch vote.CalculateActiveStatus() {
-		case VoteOutcomePassed:
+		case model.VoteOutcomePassed:
 			return MsgStatusVotePassing
 
 		default:

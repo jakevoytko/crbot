@@ -1,10 +1,6 @@
-package vote
+package model
 
-import (
-	"time"
-
-	"github.com/jakevoytko/crbot/model"
-)
+import "time"
 
 const (
 	// These are serialized and stored, so they cannot change.
@@ -15,20 +11,22 @@ const (
 )
 
 // Vote is the JSON-serialized and -deserialized implementation of a single vote.
+// TODO(jake): When there is a testrunner with vote-specific functionality, move
+// this back into the vote package
 type Vote struct {
 	VoteID         int
-	ChannelID      model.Snowflake
-	UserID         model.Snowflake
+	ChannelID      Snowflake
+	UserID         Snowflake
 	Message        string
 	TimestampStart time.Time
 	TimestampEnd   time.Time
-	VotesFor       []model.Snowflake
-	VotesAgainst   []model.Snowflake
+	VotesFor       []Snowflake
+	VotesAgainst   []Snowflake
 	VoteOutcome    int
 }
 
 // NewVote works as advertised.
-func NewVote(voteID int, channelID, userID model.Snowflake, message string, timestampStart, timestampEnd time.Time, votesFor, votesAgainst []model.Snowflake, voteOutcome int) *Vote {
+func NewVote(voteID int, channelID, userID Snowflake, message string, timestampStart, timestampEnd time.Time, votesFor, votesAgainst []Snowflake, voteOutcome int) *Vote {
 	return &Vote{
 		VoteID:         voteID,
 		ChannelID:      channelID,

@@ -45,7 +45,7 @@ func (e *ConcludeExecutor) Execute(s api.DiscordSession, channelID model.Snowfla
 		return
 	}
 
-	voteOutcome := VoteOutcomeNotEnough
+	voteOutcome := model.VoteOutcomeNotEnough
 	if vote.HasEnoughVotes() {
 		voteOutcome = vote.CalculateActiveStatus()
 	}
