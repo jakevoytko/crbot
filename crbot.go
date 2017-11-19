@@ -9,6 +9,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/model"
 )
 
@@ -27,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	// Parse config.
-	config, err := app.ParseConfig(*filename)
+	config, err := config.ParseConfig(*filename)
 	if err != nil {
 		log.Fatal("Config parsing failed", err)
 	}
@@ -60,13 +61,13 @@ func main() {
 	// block.
 	commandChannel := make(chan *model.Command, 10)
 
-	featureRegistry := InitializeRegistry(
+	featureRegistry := app.InitializeRegistry(
 		commandMap, voteMap, gist, config, clock, timer, commandChannel)
 
-	go handleCommands(featureRegistry, discord, commandChannel)
+	go app.HandleCommands(featureRegistry, discord, commandChannel)
 
 	// Open communications with Discord.
-	handler := getHandleMessage(commandMap, featureRegistry, commandChannel)
+	handler := app.GetHandleMessage(commandMap, featureRegistry, commandChannel)
 
 	// Wrapper is needed so the discordgo registry recognizes the input types.
 	wrappedHandler := func(s *discordgo.Session, c *discordgo.MessageCreate) {

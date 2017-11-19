@@ -3,7 +3,7 @@ package moderation
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
-	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/model"
 )
 
@@ -13,7 +13,7 @@ type RickListCommandInterceptor struct {
 }
 
 // NewRickListCommandInterceptor returns a new ricklist command interceptor.
-func NewRickListCommandInterceptor(config *app.Config) *RickListCommandInterceptor {
+func NewRickListCommandInterceptor(config *config.Config) *RickListCommandInterceptor {
 	return &RickListCommandInterceptor{
 		rickList: config.RickList,
 	}

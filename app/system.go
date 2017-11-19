@@ -1,11 +1,11 @@
-package main
+package app
 
 import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
-	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/learn"
@@ -16,7 +16,7 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gist api.Gist, config *app.Config, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *feature.Registry {
+func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gist api.Gist, config *config.Config, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *feature.Registry {
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
 	// a better pattern here.
@@ -42,7 +42,7 @@ func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gis
 // Controller methods
 ///////////////////////////////////////////////////////////////////////////////
 
-func handleCommands(featureRegistry *feature.Registry, s api.DiscordSession, commandChannel <-chan *model.Command) {
+func HandleCommands(featureRegistry *feature.Registry, s api.DiscordSession, commandChannel <-chan *model.Command) {
 	for command := range commandChannel {
 		var err error // so I don't have to use := in the intercept() call
 		for _, interceptor := range featureRegistry.CommandInterceptors() {
@@ -62,8 +62,8 @@ func handleCommands(featureRegistry *feature.Registry, s api.DiscordSession, com
 	}
 }
 
-// getHandleMessage returns the main handler for incoming messages.
-func getHandleMessage(commandMap model.StringMap, featureRegistry *feature.Registry, commandChannel chan<- *model.Command) func(api.DiscordSession, *discordgo.MessageCreate) {
+// GetHandleMessage returns the main handler for incoming messages.
+func GetHandleMessage(commandMap model.StringMap, featureRegistry *feature.Registry, commandChannel chan<- *model.Command) func(api.DiscordSession, *discordgo.MessageCreate) {
 	return func(s api.DiscordSession, m *discordgo.MessageCreate) {
 		// Never reply to a bot.
 		if m.Author.Bot {

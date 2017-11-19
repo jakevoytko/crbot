@@ -1,18 +1,18 @@
 package moderation
 
 import (
-	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
 )
 
 // Feature registers feature-specific things for moderation.
 type Feature struct {
 	featureRegistry *feature.Registry
-	config          *app.Config
+	config          *config.Config
 }
 
 // NewFeature returns a new Feature.
-func NewFeature(featureRegistry *feature.Registry, config *app.Config) *Feature {
+func NewFeature(featureRegistry *feature.Registry, config *config.Config) *Feature {
 	return &Feature{
 		featureRegistry: featureRegistry,
 		config:          config,

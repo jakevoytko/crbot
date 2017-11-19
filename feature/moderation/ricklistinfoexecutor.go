@@ -5,18 +5,18 @@ import (
 	"strings"
 
 	"github.com/jakevoytko/crbot/api"
-	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 )
 
 // RickListInfoExecutor prints a rick roll.
 type RickListInfoExecutor struct {
-	config *app.Config
+	config *config.Config
 }
 
 // NewRickListInfoExecutor works as advertised.
-func NewRickListInfoExecutor(config *app.Config) *RickListInfoExecutor {
+func NewRickListInfoExecutor(config *config.Config) *RickListInfoExecutor {
 	return &RickListInfoExecutor{
 		config: config,
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/learn"
@@ -462,9 +463,9 @@ func NewTestRunner(t *testing.T) *TestRunner {
 
 	utcTimer := testutil.NewFakeUTCTimer()
 
-	registry := InitializeRegistry(customMap, voteMap, gist, &app.Config{RickList: rickList}, utcClock, utcTimer, commandChannel)
+	registry := app.InitializeRegistry(customMap, voteMap, gist, &config.Config{RickList: rickList}, utcClock, utcTimer, commandChannel)
 
-	go handleCommands(registry, discordSession, commandChannel)
+	go app.HandleCommands(registry, discordSession, commandChannel)
 
 	return &TestRunner{
 		T:                    t,
@@ -479,7 +480,7 @@ func NewTestRunner(t *testing.T) *TestRunner {
 		UTCClock:             utcClock,
 		UTCTimer:             utcTimer,
 		FeatureRegistry:      registry,
-		Handler:              getHandleMessage(customMap, registry, commandChannel),
+		Handler:              app.GetHandleMessage(customMap, registry, commandChannel),
 	}
 }
 
