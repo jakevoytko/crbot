@@ -25,7 +25,7 @@ func (e *ConcludeExecutor) GetType() int {
 }
 
 const (
-	MsgVoteConcluded = "@everyone -- Vote started by %s has concluded"
+	MsgVoteConcluded = "@here -- Vote started by %s has concluded"
 )
 
 func (e *ConcludeExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
