@@ -2,6 +2,8 @@ package learn
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/jakevoytko/crbot/api"
@@ -27,6 +29,14 @@ func (e *CustomExecutor) PublicOnly() bool {
 	return false
 }
 
+// Detect a single-image giphy album so that it can be rewritten. Giphy albums
+// do not get unfurled properly in Discord mobile.
+var giphyRegexp = regexp.MustCompile(`^https://([[:alnum:]]+.)*giphy.com/media/([[:alnum:]]+)/giphy.gif$`)
+
+const (
+	MsgGiphyLink = "https://i.giphy.com/%s.gif"
+)
+
 // Execute returns the response if possible.
 func (e *CustomExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Custom == nil {
@@ -46,12 +56,17 @@ func (e *CustomExecutor) Execute(s api.DiscordSession, channel model.Snowflake, 
 		log.Fatal("Error reading custom response", err)
 	}
 
+	// Perform command substitutions.
 	if strings.Contains(response, "$1") {
 		if command.Custom.Args == "" {
 			response = MsgCustomNeedsArgs
 		} else {
 			response = strings.Replace(response, "$1", command.Custom.Args, 4)
 		}
+	} else if matches := giphyRegexp.FindStringSubmatch(response); len(matches) > 2 {
+		url := matches[2]
+		response = fmt.Sprintf(MsgGiphyLink, url)
 	}
+
 	s.ChannelMessageSend(channel.Format(), response)
 }

@@ -35,3 +35,13 @@ func TestLearn_WrongFormat(t *testing.T) {
 	runner.SendMessage(testutil.MainChannelID, "?learn call ?response", MsgHelpLearn)
 	runner.SendMessage(testutil.MainChannelID, "?learn call !response", MsgHelpLearn)
 }
+
+func TestLearn_GiphyRewrite(t *testing.T) {
+	runner := testutil.NewRunner(t)
+
+	albumURL := "https://media3.giphy.com/media/f4YPX09pxYGkM/giphy.gif"
+	imageURL := "https://i.giphy.com/f4YPX09pxYGkM.gif"
+
+	runner.SendLearnMessage(testutil.MainChannelID, "?learn test "+albumURL, testutil.NewLearnData("test", albumURL))
+	runner.SendMessage(testutil.MainChannelID, "?test", imageURL)
+}
