@@ -19,19 +19,19 @@ go_repository(
 go_repository(
     name = "com_github_go_redis_redis",
     importpath = "github.com/go-redis/redis",
-    tag = "v6.7.3"
+    tag = "v6.7.4"
 )
 
 go_repository(
     name = "org_golang_x_crypto",
     importpath = "golang.org/x/crypto",
-    commit = "687d4b818545e443c8ba223cbef20b1721afd4db",
+    commit = "b080dc9a8c480b08e698fb1219160d598526310f",
 )
 
 go_repository(
     name = "com_github_gorilla_websocket",
     importpath = "github.com/gorilla/websocket",
-    commit = "3da6ca0cb65383f2b607a677b6b55e8358cacee6",
+    commit = "23059f29570f0e13fca80ef6aea0f04c11daaa4d",
 )
 
 # Set up rules_docker
