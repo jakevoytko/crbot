@@ -11,4 +11,6 @@ type Executor interface {
 	GetType() int
 	// Execute the given command, for the session and channel name provided.
 	Execute(api.DiscordSession, model.Snowflake, *model.Command)
+	// Whether the command cannot be executed in private channels.
+	PublicOnly() bool
 }

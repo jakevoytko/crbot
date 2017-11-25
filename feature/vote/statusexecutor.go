@@ -25,6 +25,11 @@ func (e *StatusExecutor) GetType() int {
 	return model.Type_VoteStatus
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private channel.
+func (e *StatusExecutor) PublicOnly() bool {
+	return true
+}
+
 const (
 	MsgNoActiveVote       = "No active vote"
 	MsgOneVoteAgainst     = "1 vote against"

@@ -1,11 +1,9 @@
 package vote
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
@@ -26,26 +24,21 @@ func (e *BallotExecutor) GetType() int {
 	return model.Type_VoteBallot
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private channel.
+func (e *BallotExecutor) PublicOnly() bool {
+	return true
+}
+
 const (
-	MsgAlreadyVoted       = "%v already voted"
-	MsgVotedAgainst       = "%v voted no"
-	MsgVotedInFavor       = "%v voted yes"
-	MsgBallotMustBePublic = "Ballots can only be cast in public channels"
+	MsgAlreadyVoted = "%v already voted"
+	MsgVotedAgainst = "%v voted no"
+	MsgVotedInFavor = "%v voted yes"
 )
 
 func (e *BallotExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
 	userID, err := model.ParseSnowflake(command.Author.ID)
 	if err != nil {
 		log.Fatal("Error parsing discord user ID", err)
-	}
-
-	discordChannel, err := s.Channel(channelID.Format())
-	if err != nil {
-		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
-	}
-	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
-		s.ChannelMessageSend(channelID.Format(), MsgBallotMustBePublic)
-		return
 	}
 
 	vote, err := e.modelHelper.CastBallot(channelID, userID, command.Ballot.InFavor)

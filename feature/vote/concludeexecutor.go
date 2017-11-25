@@ -24,6 +24,14 @@ func (e *ConcludeExecutor) GetType() int {
 	return model.Type_VoteConclude
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private
+// channel. Since the vote is pinned to a channel, it should have been filtered
+// then. If somehow the channel went private at that point, allow it to
+// conclude.
+func (e *ConcludeExecutor) PublicOnly() bool {
+	return false
+}
+
 const (
 	MsgVoteConcluded = "@here -- Vote started by %s has concluded"
 )

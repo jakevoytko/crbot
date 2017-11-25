@@ -36,6 +36,11 @@ func (e *ListExecutor) GetType() int {
 	return model.Type_List
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private channel.
+func (e *ListExecutor) PublicOnly() bool {
+	return false
+}
+
 // Execute uploads the command list to github and pings the gist link in chat.
 func (e *ListExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	builtins := e.featureRegistry.GetInvokableFeatureNames()

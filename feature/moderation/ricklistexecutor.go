@@ -24,6 +24,11 @@ func (e *RickListExecutor) GetType() int {
 	return model.Type_RickList
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private channel.
+func (e *RickListExecutor) PublicOnly() bool {
+	return false
+}
+
 // Execute replies over the given channel with a rick roll.
 func (e *RickListExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if _, err := s.ChannelMessageSend(channel.Format(), MsgRickList); err != nil {

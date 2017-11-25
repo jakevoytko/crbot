@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eo pipefail
+
 # This will load the image and then fail due to a bazel bug in argument parsing.
 bazel run --cpu k8 :crbot_image -- --filename "/secret.json" --localhost docker.for.mac.localhost
 
