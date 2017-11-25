@@ -27,6 +27,11 @@ func (e *RickListInfoExecutor) GetType() int {
 	return model.Type_RickListInfo
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private channel.
+func (e *RickListInfoExecutor) PublicOnly() bool {
+	return false
+}
+
 const (
 	MsgRickListEmpty = "Nobody is on the ricklist."
 	MsgRickListUsers = "On the Rick list: "

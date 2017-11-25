@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/learn"
 	"github.com/jakevoytko/crbot/feature/list"
@@ -66,7 +67,7 @@ func TestIntegration(t *testing.T) {
 	runner.SendMessage(testutil.MainChannelID, "?unlearn", learn.MsgHelpUnlearn)
 	runner.SendMessage(testutil.MainChannelID, "?unlearn ", learn.MsgHelpUnlearn)
 	// Can't unlearn in a private channel
-	runner.SendMessage(testutil.DirectMessageID, "?unlearn call", learn.MsgUnlearnMustBePublic)
+	runner.SendMessage(testutil.DirectMessageID, "?unlearn call", fmt.Sprintf(app.MsgPublicOnly, "?unlearn"))
 	// Can't unlearn builtin commands.
 	runner.SendMessage(testutil.MainChannelID, "?unlearn help", fmt.Sprintf(learn.MsgUnlearnFail, "help"))
 	runner.SendMessage(testutil.MainChannelID, "?unlearn learn", fmt.Sprintf(learn.MsgUnlearnFail, "learn"))

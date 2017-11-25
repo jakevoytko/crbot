@@ -1,10 +1,8 @@
 package vote
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
@@ -29,24 +27,19 @@ func (e *VoteExecutor) GetType() int {
 	return model.Type_Vote
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private channel.
+func (e *VoteExecutor) PublicOnly() bool {
+	return true
+}
+
 const (
 	MsgActiveVote       = "Cannot start a vote while another is in progress. Type `?votestatus` for more info"
 	MsgBroadcastNewVote = "@everyone -- %s started a new vote: %s\n\nType `?yes` or `?no` to vote. 30 minutes remaining."
-	MsgVoteMustBePublic = "Votes can only be started in public channels"
 )
 
 // Execute starts a new vote if one is not already active. It also starts a
 // timer to use to conclude the vote.
 func (e *VoteExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
-	discordChannel, err := s.Channel(channelID.Format())
-	if err != nil {
-		log.Fatal("This message didn't come from a valid channel", errors.New("wat"))
-	}
-	if discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM {
-		s.ChannelMessageSend(channelID.Format(), MsgVoteMustBePublic)
-		return
-	}
-
 	ok, err := e.modelHelper.IsVoteActive(channelID)
 	if err != nil {
 		log.Fatal("Error occurred while calling for active vote", err)

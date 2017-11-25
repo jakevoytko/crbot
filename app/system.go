@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -42,6 +43,10 @@ func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gis
 // Controller methods
 ///////////////////////////////////////////////////////////////////////////////
 
+const (
+	MsgPublicOnly = "Cannot execute `%s` in a private channel"
+)
+
 func HandleCommands(featureRegistry *feature.Registry, s api.DiscordSession, commandChannel <-chan *model.Command) {
 	for command := range commandChannel {
 		var err error // so I don't have to use := in the intercept() call
@@ -56,6 +61,15 @@ func HandleCommands(featureRegistry *feature.Registry, s api.DiscordSession, com
 		if executor != nil {
 			if err != nil {
 				log.Fatal("Error parsing snowflake", err)
+			}
+			discordChannel, err := s.Channel(command.ChannelID.Format())
+			if err != nil {
+				log.Info("Error retrieving channel from discord for command executor", err)
+				continue
+			}
+			if (discordChannel.Type == discordgo.ChannelTypeDM || discordChannel.Type == discordgo.ChannelTypeGroupDM) && executor.PublicOnly() {
+				s.ChannelMessageSend(command.ChannelID.Format(), fmt.Sprintf(MsgPublicOnly, command.OriginalName))
+				continue
 			}
 			executor.Execute(s, command.ChannelID, command)
 		}
@@ -98,7 +112,9 @@ func parseCommand(commandMap model.StringMap, registry *feature.Registry, conten
 
 	// Parse builtins.
 	if parser := registry.GetParserByName(splitContent[0]); parser != nil {
-		return parser.Parse(splitContent)
+		command, err := parser.Parse(splitContent)
+		command.OriginalName = splitContent[0]
+		return command, err
 	}
 
 	// See if it's a custom command.

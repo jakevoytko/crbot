@@ -1,9 +1,11 @@
 package vote
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/testutil"
 )
 
@@ -218,4 +220,16 @@ func TestVote_CannotVoteTwice(t *testing.T) {
 	runner.CastBallotAs(author, testutil.MainChannelID, true /* inFavor */)
 	runner.CastDuplicateBallotAs(author, testutil.MainChannelID, true /* inFavor */)
 	runner.CastDuplicateBallotAs(author, testutil.MainChannelID, false /* inFavor */)
+}
+
+func TestVote_PrivateChannel(t *testing.T) {
+	runner := testutil.NewRunner(t)
+	author := testutil.NewUser("author", 0 /* id */, false /* bot */)
+	runner.AddUser(author)
+	runner.SendMessageAs(author, testutil.DirectMessageID, "?vote asdf", fmt.Sprintf(app.MsgPublicOnly, "?vote"))
+	runner.SendMessageAs(author, testutil.DirectMessageID, "?votestatus", fmt.Sprintf(app.MsgPublicOnly, "?votestatus"))
+	runner.SendMessageAs(author, testutil.DirectMessageID, "?f1", fmt.Sprintf(app.MsgPublicOnly, "?f1"))
+	runner.SendMessageAs(author, testutil.DirectMessageID, "?f2", fmt.Sprintf(app.MsgPublicOnly, "?f2"))
+	runner.SendMessageAs(author, testutil.DirectMessageID, "?yes", fmt.Sprintf(app.MsgPublicOnly, "?yes"))
+	runner.SendMessageAs(author, testutil.DirectMessageID, "?no", fmt.Sprintf(app.MsgPublicOnly, "?no"))
 }

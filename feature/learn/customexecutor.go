@@ -22,6 +22,11 @@ func (e *CustomExecutor) GetType() int {
 	return model.Type_Custom
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private channel.
+func (e *CustomExecutor) PublicOnly() bool {
+	return false
+}
+
 // Execute returns the response if possible.
 func (e *CustomExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Custom == nil {

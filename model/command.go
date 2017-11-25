@@ -70,9 +70,10 @@ type BallotData struct {
 // TODO(jake): Make this an interface that has only getType(), cast in features.
 type Command struct {
 	// Metadata
-	Author    *discordgo.User
-	ChannelID Snowflake
-	Type      int
+	Author       *discordgo.User
+	ChannelID    Snowflake
+	Type         int
+	OriginalName string
 
 	// Message data
 	Ballot  *BallotData

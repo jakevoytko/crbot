@@ -24,6 +24,11 @@ func (f *LearnExecutor) GetType() int {
 	return model.Type_Learn
 }
 
+// PublicOnly returns whether the executor should be intercepted in a private channel.
+func (e *LearnExecutor) PublicOnly() bool {
+	return false
+}
+
 // Execute replies over the given channel with a help message.
 func (f *LearnExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Learn == nil {
