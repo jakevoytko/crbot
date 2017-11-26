@@ -1,6 +1,7 @@
 package moderation
 
 import (
+	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
 )
@@ -45,3 +46,6 @@ func (f *Feature) Executors() []feature.Executor {
 		NewRickListInfoExecutor(f.config),
 	}
 }
+
+// OnInitialLoad does nothing.
+func (f *Feature) OnInitialLoad(s api.DiscordSession) error { return nil }

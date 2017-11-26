@@ -67,3 +67,27 @@ func (m *RedisStringMap) GetAll() (map[string]string, error) {
 	}
 	return result.Val(), nil
 }
+
+// ScanKeys returns all of the keys that match the given pattern.
+func (m *RedisStringMap) ScanKeys(pattern string) ([]string, error) {
+	// HScan does not guarantee that keys won't be returned multiple times, so use
+	// a map to try to produce a consistent snapshot.
+	keyMap := map[string]bool{}
+
+	scanCmd := m.redisClient.HScan(m.bucket, 0 /* cursor */, pattern, 100 /* count */)
+
+	iter := scanCmd.Iterator()
+	for iter.Next() {
+		keyMap[iter.Val()] = true
+	}
+
+	if scanCmd.Err() != nil {
+		return nil, scanCmd.Err()
+	}
+
+	results := []string{}
+	for key := range keyMap {
+		results = append(results, key)
+	}
+	return results, nil
+}

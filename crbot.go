@@ -3,13 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-redis/redis"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/config"
+	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 )
 
@@ -63,6 +63,14 @@ func main() {
 
 	featureRegistry := app.InitializeRegistry(
 		commandMap, voteMap, gist, config, clock, timer, commandChannel)
+
+	// Run any initial load handlers up front.
+	for _, fn := range featureRegistry.GetInitialLoadFns() {
+		err := fn(discord)
+		if err != nil {
+			log.Info("Error running initial load function", err)
+		}
+	}
 
 	go app.HandleCommands(featureRegistry, discord, commandChannel)
 

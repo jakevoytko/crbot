@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/testutil"
 )
 
@@ -35,5 +36,138 @@ func TestTimeString(t *testing.T) {
 		if expected != actual {
 			t.Errorf("Got %v expected %v for time %v", actual, expected, testTime)
 		}
+	}
+}
+
+// TestRunner isn't set up to correctly test initial load, so the tests are
+// being done manually here.
+func TestHandleVotesOnInitialLoad_EmptyMap(t *testing.T) {
+	session := testutil.NewInMemoryDiscordSession()
+	stringMap := testutil.NewInMemoryStringMap()
+	timer := testutil.NewFakeUTCTimer()
+	clock := testutil.NewFakeUTCClock()
+	modelHelper := NewModelHelper(stringMap, clock)
+	commandChannel := make(chan *model.Command, 10)
+
+	handleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
+
+	timer.ElapseTime(VoteDuration)
+	clock.Advance(VoteDuration)
+
+	select {
+	case _, _ = <-commandChannel:
+		t.Errorf("Channel should have been empty")
+	default:
+	}
+}
+
+func TestHandleVotesOnInitialLoad_HalfDoneVote(t *testing.T) {
+	session := testutil.NewInMemoryDiscordSession()
+	stringMap := testutil.NewInMemoryStringMap()
+	timer := testutil.NewFakeUTCTimer()
+	clock := testutil.NewFakeUTCClock()
+	modelHelper := NewModelHelper(stringMap, clock)
+	commandChannel := make(chan *model.Command, 10)
+
+	modelHelper.StartNewVote(model.Snowflake(1) /* channelID */, model.Snowflake(2) /* userID */, "oh noes")
+
+	timer.ElapseTime(VoteDuration / 2)
+	clock.Advance(VoteDuration / 2)
+
+	handleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
+
+	// Assert the channel is now empty.
+	select {
+	case _, _ = <-commandChannel:
+		t.Errorf("Channel should have been empty")
+	default:
+	}
+
+	// Cause the new timer to fire.
+	timer.ElapseTime(VoteDuration)
+	clock.Advance(VoteDuration)
+
+	// Assert the command currently in the channel.
+	select {
+	case command, ok := <-commandChannel:
+		if !ok {
+			t.Errorf("Should have gotten a command from the command channel")
+		}
+		if command.Type != model.Type_VoteConclude {
+			t.Errorf("Expected a conclude vote")
+		}
+	default:
+		t.Errorf("Channel should have not been empty")
+	}
+
+	// Assert the channel is now empty.
+	select {
+	case _, _ = <-commandChannel:
+		t.Errorf("Channel should have been empty")
+	default:
+	}
+}
+
+func TestHandleVotesOnInitialLoad_VoteExpired(t *testing.T) {
+	session := testutil.NewInMemoryDiscordSession()
+	stringMap := testutil.NewInMemoryStringMap()
+	timer := testutil.NewFakeUTCTimer()
+	clock := testutil.NewFakeUTCClock()
+	modelHelper := NewModelHelper(stringMap, clock)
+	commandChannel := make(chan *model.Command, 10)
+
+	modelHelper.StartNewVote(model.Snowflake(1) /* channelID */, model.Snowflake(2) /* userID */, "oh noes")
+
+	timer.ElapseTime(VoteDuration)
+	clock.Advance(VoteDuration)
+
+	handleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
+
+	// Assert the command currently in the channel.
+	select {
+	case command, ok := <-commandChannel:
+		if !ok {
+			t.Errorf("Should have gotten a command from the command channel")
+		}
+		if command.Type != model.Type_VoteConclude {
+			t.Errorf("Expected a conclude vote")
+		}
+	default:
+		t.Errorf("Channel should have not been empty")
+	}
+
+	// Assert the channel is now empty.
+	select {
+	case _, _ = <-commandChannel:
+		t.Errorf("Channel should have been empty")
+	default:
+	}
+}
+
+func TestHandleVotesOnInitialLoad_PreviousExpriedVotesDoNotCauseNewConcludes(t *testing.T) {
+	session := testutil.NewInMemoryDiscordSession()
+	stringMap := testutil.NewInMemoryStringMap()
+	timer := testutil.NewFakeUTCTimer()
+	clock := testutil.NewFakeUTCClock()
+	modelHelper := NewModelHelper(stringMap, clock)
+	commandChannel := make(chan *model.Command, 10)
+
+	modelHelper.StartNewVote(model.Snowflake(1) /* channelID */, model.Snowflake(2) /* userID */, "oh noes")
+
+	timer.ElapseTime(VoteDuration)
+	clock.Advance(VoteDuration)
+
+	modelHelper.SetVoteOutcome(model.Snowflake(1) /* channelID */, model.VoteOutcomeNotEnough)
+
+	handleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
+
+	timer.ElapseTime(VoteDuration)
+	clock.Advance(VoteDuration)
+
+	// Assert the channel is now empty.
+	select {
+	case _, _ = <-commandChannel:
+		t.Errorf("Channel should have been empty")
+	default:
 	}
 }

@@ -13,4 +13,8 @@ type StringMap interface {
 	Delete(key string) error
 	// GetAll returns every entry as a map.
 	GetAll() (map[string]string, error)
+	// Scan finds all keys that match the given pattern. It uses *-style wildcard
+	// matching. It is not guaranteed to find all of the keys if keys are being
+	// added and removed during the search in a separate thread.
+	ScanKeys(pattern string) ([]string, error)
 }

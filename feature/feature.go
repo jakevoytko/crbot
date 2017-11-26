@@ -1,5 +1,7 @@
 package feature
 
+import "github.com/jakevoytko/crbot/api"
+
 // Feature encapsulates all of the behavior necessary for a built-in
 // feature.
 type Feature interface {
@@ -12,4 +14,7 @@ type Feature interface {
 	CommandInterceptors() []CommandInterceptor
 	// Returns all executors associated with this feature.
 	Executors() []Executor
+	// A callback that allows the feature to perform work before the normal
+	// command flow begins.
+	OnInitialLoad(s api.DiscordSession) error
 }

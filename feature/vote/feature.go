@@ -1,6 +1,7 @@
 package vote
 
 import (
+	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/model"
 )
@@ -11,6 +12,7 @@ type Feature struct {
 	modelHelper     *ModelHelper
 	commandChannel  chan<- *model.Command
 	utcTimer        model.UTCTimer
+	utcClock        model.UTCClock
 }
 
 // NewFeature returns a new Feature.
@@ -19,6 +21,7 @@ func NewFeature(featureRegistry *feature.Registry, voteMap model.StringMap, cloc
 		featureRegistry: featureRegistry,
 		modelHelper:     NewModelHelper(voteMap, clock),
 		utcTimer:        timer,
+		utcClock:        clock,
 		commandChannel:  commandChannel,
 	}
 }
@@ -53,4 +56,9 @@ func (f *Feature) Executors() []feature.Executor {
 		NewStatusExecutor(f.modelHelper),
 		NewVoteExecutor(f.modelHelper, f.commandChannel, f.utcTimer),
 	}
+}
+
+// OnInitialLoad cleans up from any votes that were already active when crbot shut down.
+func (f *Feature) OnInitialLoad(s api.DiscordSession) error {
+	return handleVotesOnInitialLoad(s, f.modelHelper, f.utcClock, f.utcTimer, f.commandChannel)
 }

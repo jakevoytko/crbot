@@ -44,3 +44,6 @@ func (f *Feature) FallbackParser() feature.Parser {
 func (f *Feature) Executors() []feature.Executor {
 	return []feature.Executor{NewListExecutor(f.featureRegistry, f.commandMap, f.gist)}
 }
+
+// OnInitialLoad does nothing.
+func (f *Feature) OnInitialLoad(s api.DiscordSession) error { return nil }

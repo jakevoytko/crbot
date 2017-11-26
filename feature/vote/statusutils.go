@@ -5,6 +5,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/model"
 )
 
@@ -100,4 +101,30 @@ func TimeString(clock model.UTCClock, timestampEnd time.Time) string {
 	// If it's less than a millisecond or already over, just go with the "no time
 	// remaining" message.
 	return timeString
+}
+
+// Iterates through active vote pointers to see if any require timers to be
+// re-fired.
+func handleVotesOnInitialLoad(s api.DiscordSession, modelHelper *ModelHelper, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) error {
+	votes, err := modelHelper.MostRecentVotes()
+	if err != nil {
+		return err
+	}
+
+	now := clock.Now()
+
+	for _, vote := range votes {
+		// Start a timer so that this vote can conclude. This will conclude expired
+		// votes immediately (negative durations cause timers to fire).
+		if vote.VoteOutcome == model.VoteOutcomeNotDone {
+			timer.ExecuteAfter(vote.TimestampEnd.Sub(now), func() {
+				commandChannel <- &model.Command{
+					Type:      model.Type_VoteConclude,
+					ChannelID: vote.ChannelID,
+				}
+			})
+		}
+	}
+
+	return nil
 }

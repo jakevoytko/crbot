@@ -3,6 +3,8 @@ package feature
 import (
 	"errors"
 	"fmt"
+
+	"github.com/jakevoytko/crbot/api"
 )
 
 // Registry stores all of the features.
@@ -15,6 +17,7 @@ type Registry struct {
 	interceptors          []CommandInterceptor
 	typeToExecutor        map[int]Executor
 	invokableFeatureNames []string
+	initialLoadFns        []func(s api.DiscordSession) error
 }
 
 // NewRegistry works as advertised.
@@ -24,6 +27,7 @@ func NewRegistry() *Registry {
 		interceptors:          []CommandInterceptor{},
 		typeToExecutor:        map[int]Executor{},
 		invokableFeatureNames: []string{},
+		initialLoadFns:        []func(s api.DiscordSession) error{},
 	}
 }
 
@@ -59,6 +63,11 @@ func (r *Registry) Register(feature Feature) error {
 		}
 		r.typeToExecutor[executor.GetType()] = executor
 	}
+
+	// Register initial load function. Store as closures.
+	r.initialLoadFns = append(r.initialLoadFns, func(s api.DiscordSession) error {
+		return feature.OnInitialLoad(s)
+	})
 
 	return nil
 }
@@ -100,4 +109,8 @@ func (r *Registry) GetInvokableFeatureNames() []string {
 // GetCommandInterceptors gets the execution interceptors.
 func (r *Registry) CommandInterceptors() []CommandInterceptor {
 	return r.interceptors
+}
+
+func (r *Registry) GetInitialLoadFns() []func(api.DiscordSession) error {
+	return r.initialLoadFns
 }

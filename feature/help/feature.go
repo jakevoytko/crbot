@@ -1,6 +1,9 @@
 package help
 
-import "github.com/jakevoytko/crbot/feature"
+import (
+	"github.com/jakevoytko/crbot/api"
+	"github.com/jakevoytko/crbot/feature"
+)
 
 // Feature is a Feature that prints a help prompt for the user.
 type Feature struct {
@@ -33,3 +36,6 @@ func (f *Feature) FallbackParser() feature.Parser {
 func (f *Feature) Executors() []feature.Executor {
 	return []feature.Executor{NewHelpExecutor(f.featureRegistry)}
 }
+
+// OnInitialLoad does nothing.
+func (f *Feature) OnInitialLoad(s api.DiscordSession) error { return nil }

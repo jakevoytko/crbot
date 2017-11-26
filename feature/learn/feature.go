@@ -1,6 +1,7 @@
 package learn
 
 import (
+	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/model"
 )
@@ -45,6 +46,9 @@ func (f *Feature) Executors() []feature.Executor {
 		NewCustomExecutor(f.commandMap),
 	}
 }
+
+// OnInitialLoad does nothing.
+func (f *Feature) OnInitialLoad(s api.DiscordSession) error { return nil }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Messages

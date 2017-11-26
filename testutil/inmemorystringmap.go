@@ -1,6 +1,10 @@
 package testutil
 
-import "errors"
+import (
+	"errors"
+	"regexp"
+	"strings"
+)
 
 // InMemoryStringMap is a test implementation of StringMap.
 type InMemoryStringMap struct {
@@ -48,4 +52,22 @@ func (m *InMemoryStringMap) Delete(key string) error {
 // GetAll returns the map
 func (m *InMemoryStringMap) GetAll() (map[string]string, error) {
 	return m.memory, nil
+}
+
+// ScanKeys returns keys that match the given glob pattern. It replaces *s with
+// .* and runs a regexp on them.
+func (m *InMemoryStringMap) ScanKeys(pattern string) ([]string, error) {
+	regexpPattern := strings.Replace(pattern, "*", ".*", -1 /* limit */)
+	matcher, err := regexp.Compile(regexpPattern)
+	if err != nil {
+		return nil, err
+	}
+
+	keys := []string{}
+	for key := range m.memory {
+		if matcher.MatchString(key) {
+			keys = append(keys, key)
+		}
+	}
+	return keys, nil
 }

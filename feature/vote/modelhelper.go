@@ -31,8 +31,9 @@ func NewModelHelper(stringMap model.StringMap, utcClock model.UTCClock) *ModelHe
 }
 
 const (
-	KeyMostRecentVoteID = "most-recent-vote-id-channel-%v"
-	KeyVoteTemplate     = "vote-%v-channel-%v"
+	KeyMostRecentVoteID   = "most-recent-vote-id-channel-%v"
+	RedisMostRecentVoteID = "most-recent-vote-id-channel-*"
+	KeyVoteTemplate       = "vote-%v-channel-%v"
 
 	VoteDuration = time.Duration(30) * time.Minute
 )
@@ -57,6 +58,45 @@ func (h *ModelHelper) IsVoteActive(channelID model.Snowflake) (bool, error) {
 	// Bail if the current time is not within the vote's range.
 	return vote.VoteOutcome == model.VoteOutcomeNotDone &&
 		currentTime.Sub(vote.TimestampStart) >= 0 && vote.TimestampEnd.Sub(currentTime) > 0, nil
+}
+
+// MostRecentVotes returns every most recent vote in the database.
+func (h *ModelHelper) MostRecentVotes() ([]*model.Vote, error) {
+	results, err := h.StringMap.ScanKeys(RedisMostRecentVoteID)
+	if err != nil {
+		return nil, err
+	}
+
+	votes := []*model.Vote{}
+	for _, key := range results {
+		mostRecentVoteKey, err := h.StringMap.Get(key)
+		if err != nil {
+			return nil, err
+		}
+
+		ok, err := h.StringMap.Has(mostRecentVoteKey)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			// Missing vote for some reason. Ignore.
+			continue
+		}
+
+		mostRecentVote, err := h.StringMap.Get(mostRecentVoteKey)
+		if err != nil {
+			return nil, err
+		}
+
+		var vote model.Vote
+		err = json.Unmarshal([]byte(mostRecentVote), &vote)
+		if err != nil {
+			return nil, err
+		}
+		votes = append(votes, &vote)
+	}
+
+	return votes, nil
 }
 
 // MostRecentVote returns the active vote, or nil if none present. Returns an error
