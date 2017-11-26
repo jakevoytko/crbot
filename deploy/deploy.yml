@@ -66,6 +66,12 @@
         name: docker-py
         state: latest
 
+    - name: Install the systemd service file
+      become: yes
+      template:
+        src: crbot.service
+        dest: /etc/systemd/system/crbot.service
+
     - name: Ensure that the crbot service is stopped
       become: yes
       systemd:
@@ -80,12 +86,6 @@
         rm: yes
         state: present
         force: yes
-
-    - name: Install the systemd service file
-      become: yes
-      template:
-        src: crbot.service
-        dest: /etc/systemd/system/crbot.service
 
     - name: Ensure that the crbot service is restarted and running
       become: yes
