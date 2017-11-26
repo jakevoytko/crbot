@@ -79,6 +79,7 @@
         name: bazel:crbot_image
         rm: yes
         state: present
+        force: yes
 
     - name: Install the systemd service file
       become: yes
