@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/testutil"
 )
@@ -32,7 +33,7 @@ func TestTimeString(t *testing.T) {
 	for _, testCase := range testCases {
 		testTime := utcClock.Now().Add(testCase.InFuture)
 		expected := testCase.ExpectedMessage
-		actual := TimeString(utcClock, testTime)
+		actual := vote.TimeString(utcClock, testTime)
 		if expected != actual {
 			t.Errorf("Got %v expected %v for time %v", actual, expected, testTime)
 		}
@@ -46,13 +47,13 @@ func TestHandleVotesOnInitialLoad_EmptyMap(t *testing.T) {
 	stringMap := testutil.NewInMemoryStringMap()
 	timer := testutil.NewFakeUTCTimer()
 	clock := testutil.NewFakeUTCClock()
-	modelHelper := NewModelHelper(stringMap, clock)
+	modelHelper := vote.NewModelHelper(stringMap, clock)
 	commandChannel := make(chan *model.Command, 10)
 
-	handleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
+	vote.HandleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
 
-	timer.ElapseTime(VoteDuration)
-	clock.Advance(VoteDuration)
+	timer.ElapseTime(vote.VoteDuration)
+	clock.Advance(vote.VoteDuration)
 
 	select {
 	case _, _ = <-commandChannel:
@@ -66,15 +67,15 @@ func TestHandleVotesOnInitialLoad_HalfDoneVote(t *testing.T) {
 	stringMap := testutil.NewInMemoryStringMap()
 	timer := testutil.NewFakeUTCTimer()
 	clock := testutil.NewFakeUTCClock()
-	modelHelper := NewModelHelper(stringMap, clock)
+	modelHelper := vote.NewModelHelper(stringMap, clock)
 	commandChannel := make(chan *model.Command, 10)
 
 	modelHelper.StartNewVote(model.Snowflake(1) /* channelID */, model.Snowflake(2) /* userID */, "oh noes")
 
-	timer.ElapseTime(VoteDuration / 2)
-	clock.Advance(VoteDuration / 2)
+	timer.ElapseTime(vote.VoteDuration / 2)
+	clock.Advance(vote.VoteDuration / 2)
 
-	handleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
+	vote.HandleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
 
 	// Assert the channel is now empty.
 	select {
@@ -84,8 +85,8 @@ func TestHandleVotesOnInitialLoad_HalfDoneVote(t *testing.T) {
 	}
 
 	// Cause the new timer to fire.
-	timer.ElapseTime(VoteDuration)
-	clock.Advance(VoteDuration)
+	timer.ElapseTime(vote.VoteDuration)
+	clock.Advance(vote.VoteDuration)
 
 	// Assert the command currently in the channel.
 	select {
@@ -113,15 +114,15 @@ func TestHandleVotesOnInitialLoad_VoteExpired(t *testing.T) {
 	stringMap := testutil.NewInMemoryStringMap()
 	timer := testutil.NewFakeUTCTimer()
 	clock := testutil.NewFakeUTCClock()
-	modelHelper := NewModelHelper(stringMap, clock)
+	modelHelper := vote.NewModelHelper(stringMap, clock)
 	commandChannel := make(chan *model.Command, 10)
 
 	modelHelper.StartNewVote(model.Snowflake(1) /* channelID */, model.Snowflake(2) /* userID */, "oh noes")
 
-	timer.ElapseTime(VoteDuration)
-	clock.Advance(VoteDuration)
+	timer.ElapseTime(vote.VoteDuration)
+	clock.Advance(vote.VoteDuration)
 
-	handleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
+	vote.HandleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
 
 	// Assert the command currently in the channel.
 	select {
@@ -149,20 +150,20 @@ func TestHandleVotesOnInitialLoad_PreviousExpriedVotesDoNotCauseNewConcludes(t *
 	stringMap := testutil.NewInMemoryStringMap()
 	timer := testutil.NewFakeUTCTimer()
 	clock := testutil.NewFakeUTCClock()
-	modelHelper := NewModelHelper(stringMap, clock)
+	modelHelper := vote.NewModelHelper(stringMap, clock)
 	commandChannel := make(chan *model.Command, 10)
 
 	modelHelper.StartNewVote(model.Snowflake(1) /* channelID */, model.Snowflake(2) /* userID */, "oh noes")
 
-	timer.ElapseTime(VoteDuration)
-	clock.Advance(VoteDuration)
+	timer.ElapseTime(vote.VoteDuration)
+	clock.Advance(vote.VoteDuration)
 
 	modelHelper.SetVoteOutcome(model.Snowflake(1) /* channelID */, model.VoteOutcomeNotEnough)
 
-	handleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
+	vote.HandleVotesOnInitialLoad(session, modelHelper, clock, timer, commandChannel)
 
-	timer.ElapseTime(VoteDuration)
-	clock.Advance(VoteDuration)
+	timer.ElapseTime(vote.VoteDuration)
+	clock.Advance(vote.VoteDuration)
 
 	// Assert the channel is now empty.
 	select {

@@ -105,7 +105,7 @@ func TimeString(clock model.UTCClock, timestampEnd time.Time) string {
 
 // Iterates through active vote pointers to see if any require timers to be
 // re-fired.
-func handleVotesOnInitialLoad(s api.DiscordSession, modelHelper *ModelHelper, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) error {
+func HandleVotesOnInitialLoad(s api.DiscordSession, modelHelper *ModelHelper, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) error {
 	votes, err := modelHelper.MostRecentVotes()
 	if err != nil {
 		return err

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/testutil"
 )
@@ -56,7 +57,7 @@ func TestIsVoteActive_TimeExpires(t *testing.T) {
 
 	// Advance the clock 1ns before the vote will expire, and then verify that
 	// advancing it 1ns causes the vote to expire.
-	clock.Advance(VoteDuration - time.Duration(1)*time.Nanosecond)
+	clock.Advance(vote.VoteDuration - time.Duration(1)*time.Nanosecond)
 	assertIsVoteActive(t, modelHelper, Channel1, true)
 	clock.Advance(time.Duration(1) * time.Nanosecond)
 	assertIsVoteActive(t, modelHelper, Channel1, false)
@@ -72,7 +73,7 @@ func TestIsVoteActive_TimeExpiresForBothVotes(t *testing.T) {
 
 	// Advance the clock 1ns before the vote will expire, and then verify that
 	// advancing it 1ns causes the vote to expire.
-	clock.Advance(VoteDuration - time.Duration(1)*time.Nanosecond)
+	clock.Advance(vote.VoteDuration - time.Duration(1)*time.Nanosecond)
 	assertIsVoteActive(t, modelHelper, Channel1, true)
 	assertIsVoteActive(t, modelHelper, Channel2, true)
 	clock.Advance(time.Duration(1) * time.Nanosecond)
@@ -137,7 +138,7 @@ func TestMostRecentVote_ReturnsExpiredVote(t *testing.T) {
 	assertIsVoteActive(t, modelHelper, Channel1, true)
 
 	// Check that the correct vote is still returned, even though it has expired.
-	clock.Advance(VoteDuration)
+	clock.Advance(vote.VoteDuration)
 	assertIsVoteActive(t, modelHelper, Channel1, false)
 	assertMostRecentVote(t, modelHelper, Channel1, newVote)
 }
@@ -170,7 +171,7 @@ func TestMostRecentVoteID_ReturnsExpiredVote(t *testing.T) {
 	modelHelper, clock := initializeTests()
 
 	newVote := assertStartNewVote(t, modelHelper, Channel1, UserID1)
-	clock.Advance(VoteDuration)
+	clock.Advance(vote.VoteDuration)
 	assertMostRecentVoteID(t, modelHelper, Channel1, newVote.VoteID)
 }
 
@@ -273,7 +274,7 @@ func TestCastBallot_InFavorFailsOnExpiredVote(t *testing.T) {
 	modelHelper, clock := initializeTests()
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
-	clock.Advance(VoteDuration)
+	clock.Advance(vote.VoteDuration)
 	assertCannotVoteWhenExpired(t, modelHelper, Channel1, UserID1, true)
 }
 
@@ -281,7 +282,7 @@ func TestCastBallot_OpposedFailsOnExpiredVote(t *testing.T) {
 	modelHelper, clock := initializeTests()
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
-	clock.Advance(VoteDuration)
+	clock.Advance(vote.VoteDuration)
 	assertCannotVoteWhenExpired(t, modelHelper, Channel1, UserID1, false)
 }
 
@@ -346,17 +347,17 @@ func TestSetVoteOutcome_SucceedsWhenExpired(t *testing.T) {
 	modelHelper, clock := initializeTests()
 
 	assertStartNewVote(t, modelHelper, Channel1, UserID1)
-	clock.Advance(VoteDuration)
+	clock.Advance(vote.VoteDuration)
 	assertSetVoteOutcome(t, modelHelper, Channel1, model.VoteOutcomePassed)
 }
 
-func initializeTests() (*ModelHelper, *testutil.FakeUTCClock) {
+func initializeTests() (*vote.ModelHelper, *testutil.FakeUTCClock) {
 	stringMap := testutil.NewInMemoryStringMap()
 	clock := testutil.NewFakeUTCClock()
-	return NewModelHelper(stringMap, clock), clock
+	return vote.NewModelHelper(stringMap, clock), clock
 }
 
-func assertIsVoteActive(t *testing.T, modelHelper *ModelHelper, channel model.Snowflake, active bool) {
+func assertIsVoteActive(t *testing.T, modelHelper *vote.ModelHelper, channel model.Snowflake, active bool) {
 	t.Helper()
 
 	ok, err := modelHelper.IsVoteActive(channel)
@@ -368,7 +369,7 @@ func assertIsVoteActive(t *testing.T, modelHelper *ModelHelper, channel model.Sn
 	}
 }
 
-func assertMostRecentVote(t *testing.T, modelHelper *ModelHelper, channelID model.Snowflake, vote *model.Vote) {
+func assertMostRecentVote(t *testing.T, modelHelper *vote.ModelHelper, channelID model.Snowflake, vote *model.Vote) {
 	t.Helper()
 
 	mostRecentVote, err := modelHelper.MostRecentVote(channelID)
@@ -380,7 +381,7 @@ func assertMostRecentVote(t *testing.T, modelHelper *ModelHelper, channelID mode
 	}
 }
 
-func assertMostRecentVoteID(t *testing.T, modelHelper *ModelHelper, channelID model.Snowflake, voteID int) {
+func assertMostRecentVoteID(t *testing.T, modelHelper *vote.ModelHelper, channelID model.Snowflake, voteID int) {
 	t.Helper()
 
 	mostRecentVoteID, err := modelHelper.MostRecentVoteID(channelID)
@@ -392,16 +393,16 @@ func assertMostRecentVoteID(t *testing.T, modelHelper *ModelHelper, channelID mo
 	}
 }
 
-func assertStartNewVoteFails(t *testing.T, modelHelper *ModelHelper, channelID, userID model.Snowflake) {
+func assertStartNewVoteFails(t *testing.T, modelHelper *vote.ModelHelper, channelID, userID model.Snowflake) {
 	t.Helper()
 
 	_, err := modelHelper.StartNewVote(channelID, userID, "hug Jake")
-	if err != ErrorOnlyOneVote {
+	if err != vote.ErrorOnlyOneVote {
 		t.Errorf("Should have failed to add vote with ID %v", userID)
 	}
 }
 
-func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, channelID, userID model.Snowflake) *model.Vote {
+func assertStartNewVote(t *testing.T, modelHelper *vote.ModelHelper, channelID, userID model.Snowflake) *model.Vote {
 	t.Helper()
 
 	vote, err := modelHelper.StartNewVote(channelID, userID, "hug Jake")
@@ -411,16 +412,16 @@ func assertStartNewVote(t *testing.T, modelHelper *ModelHelper, channelID, userI
 	return vote
 }
 
-func assertEarlyBallotFails(t *testing.T, modelHelper *ModelHelper, channelID, userID model.Snowflake, inFavor bool) {
+func assertEarlyBallotFails(t *testing.T, modelHelper *vote.ModelHelper, channelID, userID model.Snowflake, inFavor bool) {
 	t.Helper()
 
 	_, err := modelHelper.CastBallot(channelID, userID, inFavor)
-	if err != ErrorNoVoteActive {
+	if err != vote.ErrorNoVoteActive {
 		t.Errorf("Should have failed due to no active vote")
 	}
 }
 
-func assertCastBallot(t *testing.T, modelHelper *ModelHelper, channelID, userID model.Snowflake, inFavor bool) {
+func assertCastBallot(t *testing.T, modelHelper *vote.ModelHelper, channelID, userID model.Snowflake, inFavor bool) {
 	t.Helper()
 
 	vote, err := modelHelper.CastBallot(channelID, userID, inFavor)
@@ -448,34 +449,34 @@ func assertCastBallot(t *testing.T, modelHelper *ModelHelper, channelID, userID 
 	assertMostRecentVote(t, modelHelper, channelID, vote)
 }
 
-func assertCannotVoteAgain(t *testing.T, modelHelper *ModelHelper, channelID, userID model.Snowflake, inFavor bool) {
+func assertCannotVoteAgain(t *testing.T, modelHelper *vote.ModelHelper, channelID, userID model.Snowflake, inFavor bool) {
 	t.Helper()
 
 	_, err := modelHelper.CastBallot(channelID, userID, inFavor)
-	if err != ErrorAlreadyVoted {
+	if err != vote.ErrorAlreadyVoted {
 		t.Errorf("Expected ballot to fail: %v", err)
 	}
 }
 
-func assertCannotVoteWhenExpired(t *testing.T, modelHelper *ModelHelper, channelID, userID model.Snowflake, inFavor bool) {
+func assertCannotVoteWhenExpired(t *testing.T, modelHelper *vote.ModelHelper, channelID, userID model.Snowflake, inFavor bool) {
 	t.Helper()
 
 	_, err := modelHelper.CastBallot(channelID, userID, inFavor)
-	if err != ErrorNoVoteActive {
+	if err != vote.ErrorNoVoteActive {
 		t.Errorf("Expected ballot to fail: %v", err)
 	}
 }
 
-func assertEarlySetVoteOutcomeFails(t *testing.T, modelHelper *ModelHelper, channelID model.Snowflake, voteOutcome int) {
+func assertEarlySetVoteOutcomeFails(t *testing.T, modelHelper *vote.ModelHelper, channelID model.Snowflake, voteOutcome int) {
 	t.Helper()
 
 	err := modelHelper.SetVoteOutcome(channelID, voteOutcome)
-	if err != ErrorNoVoteActive {
+	if err != vote.ErrorNoVoteActive {
 		t.Errorf("Expected vote to already have an outcome")
 	}
 }
 
-func assertSetVoteOutcome(t *testing.T, modelHelper *ModelHelper, channelID model.Snowflake, voteOutcome int) {
+func assertSetVoteOutcome(t *testing.T, modelHelper *vote.ModelHelper, channelID model.Snowflake, voteOutcome int) {
 	t.Helper()
 
 	err := modelHelper.SetVoteOutcome(channelID, voteOutcome)
@@ -493,11 +494,11 @@ func assertSetVoteOutcome(t *testing.T, modelHelper *ModelHelper, channelID mode
 	}
 }
 
-func assertSetVoteOutcomeFails(t *testing.T, modelHelper *ModelHelper, channelID model.Snowflake, voteOutcome int) {
+func assertSetVoteOutcomeFails(t *testing.T, modelHelper *vote.ModelHelper, channelID model.Snowflake, voteOutcome int) {
 	t.Helper()
 
 	err := modelHelper.SetVoteOutcome(channelID, voteOutcome)
-	if err != ErrorVoteHasOutcome {
+	if err != vote.ErrorVoteHasOutcome {
 		t.Errorf("Expected failure due to existing outcome: %v", err)
 	}
 }

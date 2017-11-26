@@ -60,5 +60,5 @@ func (f *Feature) Executors() []feature.Executor {
 
 // OnInitialLoad cleans up from any votes that were already active when crbot shut down.
 func (f *Feature) OnInitialLoad(s api.DiscordSession) error {
-	return handleVotesOnInitialLoad(s, f.modelHelper, f.utcClock, f.utcTimer, f.commandChannel)
+	return HandleVotesOnInitialLoad(s, f.modelHelper, f.utcClock, f.utcTimer, f.commandChannel)
 }

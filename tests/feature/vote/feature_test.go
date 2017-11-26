@@ -6,6 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/app"
+	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/testutil"
 )
 
@@ -16,12 +17,12 @@ func TestVote(t *testing.T) {
 	// Calls vote with no args, and then actually starts a vote.
 	author := testutil.NewUser("author", 0 /* id */, false /* bot */)
 	runner.AddUser(author)
-	runner.SendMessageAs(author, testutil.MainChannelID, "?vote", MsgHelpVote)
+	runner.SendMessageAs(author, testutil.MainChannelID, "?vote", vote.MsgHelpVote)
 	runner.SendVoteMessageAs(author, testutil.MainChannelID)
 	runner.SendVoteStatusMessage(testutil.MainChannelID)
 
 	// Assert that a second vote can't be started.
-	runner.SendMessageAs(author, testutil.MainChannelID, "?vote another vote", MsgActiveVote)
+	runner.SendMessageAs(author, testutil.MainChannelID, "?vote another vote", vote.MsgActiveVote)
 
 	// Time the vote out.
 	runner.ExpireVote(testutil.MainChannelID)
@@ -186,8 +187,8 @@ func TestVote_TwoChannels(t *testing.T) {
 
 	// Stagger the vote starts, since in practice votes will never start exactly
 	// at the same moment.
-	runner.UTCClock.Advance(VoteDuration / 2)
-	runner.UTCTimer.ElapseTime(VoteDuration / 2)
+	runner.UTCClock.Advance(vote.VoteDuration / 2)
+	runner.UTCTimer.ElapseTime(vote.VoteDuration / 2)
 
 	runner.SendVoteMessageAs(users[0], testutil.SecondChannelID)
 
