@@ -86,7 +86,7 @@ func GetHandleMessage(commandMap model.StringMap, featureRegistry *feature.Regis
 			return
 		}
 
-		command, err := parseCommand(commandMap, featureRegistry, m.Content)
+		command, err := parseCommand(commandMap, featureRegistry, m)
 		if err != nil {
 			log.Info("Error parsing command", err)
 			return
@@ -104,7 +104,8 @@ func GetHandleMessage(commandMap model.StringMap, featureRegistry *feature.Regis
 }
 
 // Parses the raw text string from the user. Returns an executable command.
-func parseCommand(commandMap model.StringMap, registry *feature.Registry, content string) (*model.Command, error) {
+func parseCommand(commandMap model.StringMap, registry *feature.Registry, m *discordgo.MessageCreate) (*model.Command, error) {
+	content := m.Content
 	if !strings.HasPrefix(content, "?") {
 		return &model.Command{
 			Type: model.Type_None,
@@ -114,7 +115,7 @@ func parseCommand(commandMap model.StringMap, registry *feature.Registry, conten
 
 	// Parse builtins.
 	if parser := registry.GetParserByName(splitContent[0]); parser != nil {
-		command, err := parser.Parse(splitContent)
+		command, err := parser.Parse(splitContent, m)
 		command.OriginalName = splitContent[0]
 		return command, err
 	}
@@ -126,7 +127,7 @@ func parseCommand(commandMap model.StringMap, registry *feature.Registry, conten
 		return nil, err
 	}
 	if has {
-		return registry.FallbackParser.Parse(splitContent)
+		return registry.FallbackParser.Parse(splitContent, m)
 	}
 
 	// No such command!

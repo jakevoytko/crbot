@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/model"
 )
 
@@ -41,7 +42,7 @@ func (p *BallotParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given list command.
-func (p *BallotParser) Parse(splitContent []string) (*model.Command, error) {
+func (p *BallotParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("parseVoteBallot called with non-list command", errors.New("wat"))
 	}

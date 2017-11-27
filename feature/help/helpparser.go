@@ -3,6 +3,7 @@ package help
 import (
 	"errors"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
@@ -36,7 +37,7 @@ func (p *HelpParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given help command.
-func (p *HelpParser) Parse(splitContent []string) (*model.Command, error) {
+func (p *HelpParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("parseHelp called with non-help command", errors.New("wat"))
 	}

@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
@@ -36,7 +37,7 @@ func (p *LearnParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given learn command.
-func (f *LearnParser) Parse(splitContent []string) (*model.Command, error) {
+func (f *LearnParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != f.GetName() {
 		log.Fatal("parseLearn called with non-learn command", errors.New("wat"))
 	}

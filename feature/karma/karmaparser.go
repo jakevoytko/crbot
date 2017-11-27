@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/util"
 )
@@ -44,35 +45,54 @@ func (p *KarmaParser) HelpText(command string) (string, error) {
 	return MsgHelpKarmaDecrement, nil
 }
 
+// The target is mentioned in plaintext.
+var directMentionRegexp *regexp.Regexp = regexp.MustCompile("^[[:alnum:]].*$")
+
+// The target is an embedded entity that needs to be looked up in the message.
+var entityRegexp *regexp.Regexp = regexp.MustCompile("^<@([[:digit:]]+)>$")
+
 // Parse parses the given karma command.
-func (p *KarmaParser) Parse(splitContent []string) (*model.Command, error) {
+func (p *KarmaParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("KarmaParser.Parse called with non-list command", errors.New("wat"))
 	}
 
 	splitContent = util.CollapseWhitespace(splitContent, 1)
-	targetRegexp := regexp.MustCompile("^[[:alnum:]].*$")
 
-	// Resolve the target of the karma, removing leading @ and anything after #
 	var target string
+
 	if len(splitContent) > 1 {
-		target = strings.Split(strings.TrimPrefix(splitContent[1], "@"), "#")[0]
+		// First, test to see if there is an embedded entity that can be looked up.
+		entityMatch := entityRegexp.FindStringSubmatch(splitContent[1])
+		if len(entityMatch) == 2 {
+			// Look up the ID in mentions in the original message.
+			id := entityMatch[1]
+			for _, mention := range m.Mentions {
+				if mention.ID == id {
+					target = mention.Username
+				}
+			}
+		}
+
+		// If not, try to trim and match what's left.
+		if len(target) == 0 {
+			trimmedTarget := strings.Split(strings.TrimPrefix(splitContent[1], "@"), "#")[0]
+			if directMentionRegexp.MatchString(trimmedTarget) {
+				target = trimmedTarget
+			}
+		}
 	}
 
 	// Show help when not enough data is present, or malicious data is present.
-	if len(splitContent) < 2 || !targetRegexp.MatchString(target) {
+	if len(splitContent) < 2 || len(target) == 0 {
+		commandType := model.Name_KarmaDecrement
 		if p.Increment {
-			return &model.Command{
-				Type: model.Type_Help,
-				Help: &model.HelpData{
-					Command: model.Name_KarmaIncrement,
-				},
-			}, nil
+			commandType = model.Name_KarmaIncrement
 		}
 		return &model.Command{
 			Type: model.Type_Help,
 			Help: &model.HelpData{
-				Command: model.Name_KarmaDecrement,
+				Command: commandType,
 			},
 		}, nil
 	}

@@ -14,6 +14,7 @@ type KarmaExecutor struct {
 	karmaMap model.StringMap
 }
 
+// NewKarmaExecutor works as advertised.
 func NewKarmaExecutor(karmaMap model.StringMap) *KarmaExecutor {
 	return &KarmaExecutor{karmaMap: karmaMap}
 }
@@ -33,6 +34,8 @@ const (
 	MsgDecrementKarma = "%v has been downvoted. %v now has %d karma."
 )
 
+// Execute attempts to add karma to the total already in memory, or creates a
+// new record if it was not found.
 func (e *KarmaExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
 	if command.Karma == nil {
 		log.Fatal("Incorrectly generated karma command", errors.New("wat"))
@@ -68,10 +71,12 @@ func (e *KarmaExecutor) Execute(s api.DiscordSession, channelID model.Snowflake,
 	}
 
 	// Send ack.
+	karmaAckMessage := MsgDecrementKarma
 	if command.Karma.Increment {
-		s.ChannelMessageSend(channelID.Format(), fmt.Sprintf(MsgIncrementKarma, command.Karma.Target, command.Karma.Target, newKarma))
-	} else {
-		s.ChannelMessageSend(channelID.Format(), fmt.Sprintf(MsgDecrementKarma, command.Karma.Target, command.Karma.Target, newKarma))
+		karmaAckMessage = MsgIncrementKarma
 	}
-
+	_, err = s.ChannelMessageSend(channelID.Format(), fmt.Sprintf(karmaAckMessage, command.Karma.Target, command.Karma.Target, newKarma))
+	if err != nil {
+		log.Info("Error sending karma message", err)
+	}
 }
