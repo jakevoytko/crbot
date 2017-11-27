@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/model"
 )
 
@@ -30,7 +31,7 @@ func (p *ListParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given list command.
-func (p *ListParser) Parse(splitContent []string) (*model.Command, error) {
+func (p *ListParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("parseList called with non-list command", errors.New("wat"))
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 )
@@ -47,7 +48,7 @@ func (p *CustomParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given custom command.
-func (f *CustomParser) Parse(splitContent []string) (*model.Command, error) {
+func (f *CustomParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	// TODO(jake): Drop this and external hash check, handle missing commands solely in execute.
 	has, err := f.commandMap.Has(splitContent[0][1:])
 	if err != nil {

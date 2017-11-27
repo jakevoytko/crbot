@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
@@ -35,7 +36,7 @@ func (p *UnlearnParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given unlearn command.
-func (p *UnlearnParser) Parse(splitContent []string) (*model.Command, error) {
+func (p *UnlearnParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("parseUnlearn called with non-unlearn command", errors.New("wat"))
 	}

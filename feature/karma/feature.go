@@ -23,8 +23,8 @@ func NewFeature(featureRegistry *feature.Registry, karmaMap model.StringMap) *Fe
 // Parsers gets the learn feature parsers.
 func (f *Feature) Parsers() []feature.Parser {
 	return []feature.Parser{
-		NewKarmaParser(model.Name_KarmaIncrement, true),
-		NewKarmaParser(model.Name_KarmaDecrement, false),
+		NewKarmaParser(model.Name_KarmaIncrement, true /* increment */),
+		NewKarmaParser(model.Name_KarmaDecrement, false /* increment */),
 	}
 }
 

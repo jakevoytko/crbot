@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/util"
 )
@@ -34,7 +35,7 @@ func (p *VoteParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given vote command.
-func (f *VoteParser) Parse(splitContent []string) (*model.Command, error) {
+func (f *VoteParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != f.GetName() {
 		log.Fatal("parseVote called with non vote command", errors.New("wat"))
 	}

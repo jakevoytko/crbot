@@ -26,6 +26,11 @@ func TestKarma(t *testing.T) {
 	runner.SendMessage(testutil.MainChannelID, "?-- ?call response", karma.MsgHelpKarmaDecrement)
 }
 
+func TestWhitespace(t *testing.T) {
+	runner := testutil.NewRunner(t)
+	runner.SendMessage(testutil.MainChannelID, "?++    target", fmt.Sprintf(karma.MsgIncrementKarma, "target", "target", 1))
+}
+
 func TestKarmaIncrement(t *testing.T) {
 	runner := testutil.NewRunner(t)
 
