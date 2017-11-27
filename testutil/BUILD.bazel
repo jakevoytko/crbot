@@ -16,6 +16,7 @@ go_library(
         "//app:go_default_library",
         "//config:go_default_library",
         "//feature/help:go_default_library",
+        "//feature/karma:go_default_library",
         "//feature/learn:go_default_library",
         "//feature/list:go_default_library",
         "//feature/moderation:go_default_library",
