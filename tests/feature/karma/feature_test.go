@@ -29,16 +29,18 @@ func TestKarma(t *testing.T) {
 func TestKarmaIncrement(t *testing.T) {
 	runner := testutil.NewRunner(t)
 
+	// Test that karma accumlates and that @ and # are stripped
 	runner.SendMessage(testutil.MainChannelID, "?++ target", fmt.Sprintf(karma.MsgIncrementKarma, "target", "target", 1))
-	runner.SendMessage(testutil.MainChannelID, "?++ target", fmt.Sprintf(karma.MsgIncrementKarma, "target", "target", 2))
-	runner.SendMessage(testutil.MainChannelID, "?++ target", fmt.Sprintf(karma.MsgIncrementKarma, "target", "target", 3))
+	runner.SendMessage(testutil.MainChannelID, "?++ @target", fmt.Sprintf(karma.MsgIncrementKarma, "target", "target", 2))
+	runner.SendMessage(testutil.MainChannelID, "?++ @target#0491", fmt.Sprintf(karma.MsgIncrementKarma, "target", "target", 3))
 }
 
 func TestKarmaDecrement(t *testing.T) {
 	runner := testutil.NewRunner(t)
 
+	// Test that karma accumlates and that @ and # are stripped
 	runner.SendMessage(testutil.MainChannelID, "?-- target", fmt.Sprintf(karma.MsgDecrementKarma, "target", "target", -1))
-	runner.SendMessage(testutil.MainChannelID, "?-- target", fmt.Sprintf(karma.MsgDecrementKarma, "target", "target", -2))
-	runner.SendMessage(testutil.MainChannelID, "?-- target", fmt.Sprintf(karma.MsgDecrementKarma, "target", "target", -3))
+	runner.SendMessage(testutil.MainChannelID, "?-- @target#999", fmt.Sprintf(karma.MsgDecrementKarma, "target", "target", -2))
+	runner.SendMessage(testutil.MainChannelID, "?-- @target#1337", fmt.Sprintf(karma.MsgDecrementKarma, "target", "target", -3))
 
 }
