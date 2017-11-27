@@ -9,6 +9,7 @@ import "github.com/bwmarrin/discordgo"
 const (
 	Type_Custom = iota
 	Type_Help
+	Type_Karma
 	Type_Learn
 	Type_List
 	Type_None
@@ -22,6 +23,8 @@ const (
 	Type_VoteStatus
 
 	Name_Help           = "?help"
+	Name_KarmaIncrement = "?++"
+	Name_KarmaDecrement = "?--"
 	Name_Learn          = "?learn"
 	Name_List           = "?list"
 	Name_RickListInfo   = "?ricklist"
@@ -41,6 +44,13 @@ const (
 // HelpData holds data for Help commands.
 type HelpData struct {
 	Command string
+}
+
+// KarmaData holds the target and whether karma is to be incremented or
+// decremented
+type KarmaData struct {
+	Increment bool
+	Target    string
 }
 
 type LearnData struct {
@@ -79,6 +89,7 @@ type Command struct {
 	Ballot  *BallotData
 	Custom  *CustomData
 	Help    *HelpData
+	Karma   *KarmaData
 	Learn   *LearnData
 	Unlearn *UnlearnData
 	Vote    *VoteData

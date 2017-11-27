@@ -9,6 +9,7 @@ import (
 	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/feature/help"
+	"github.com/jakevoytko/crbot/feature/karma"
 	"github.com/jakevoytko/crbot/feature/learn"
 	"github.com/jakevoytko/crbot/feature/list"
 	"github.com/jakevoytko/crbot/feature/moderation"
@@ -17,13 +18,14 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-func InitializeRegistry(commandMap model.StringMap, voteMap model.StringMap, gist api.Gist, config *config.Config, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *feature.Registry {
+func InitializeRegistry(commandMap model.StringMap, karmaMap model.StringMap, voteMap model.StringMap, gist api.Gist, config *config.Config, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *feature.Registry {
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
 	// a better pattern here.
 	featureRegistry := feature.NewRegistry()
 	allFeatures := []feature.Feature{
 		help.NewFeature(featureRegistry),
+		karma.NewFeature(featureRegistry, karmaMap),
 		learn.NewFeature(featureRegistry, commandMap),
 		list.NewFeature(featureRegistry, commandMap, gist),
 		moderation.NewFeature(featureRegistry, config),

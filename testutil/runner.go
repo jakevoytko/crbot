@@ -15,6 +15,7 @@ import (
 	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/feature/help"
+	"github.com/jakevoytko/crbot/feature/karma"
 	"github.com/jakevoytko/crbot/feature/learn"
 	"github.com/jakevoytko/crbot/feature/list"
 	"github.com/jakevoytko/crbot/feature/moderation"
@@ -42,6 +43,7 @@ type Runner struct {
 
 	// Fakes
 	CustomMap      *InMemoryStringMap
+	KarmaMap       *InMemoryStringMap
 	VoteMap        *InMemoryStringMap
 	Gist           *InMemoryGist
 	DiscordSession *InMemoryDiscordSession
@@ -58,6 +60,7 @@ type Runner struct {
 func NewRunner(t *testing.T) *Runner {
 	// Initialize fakes.
 	customMap := NewInMemoryStringMap()
+	karmaMap := NewInMemoryStringMap()
 	voteMap := NewInMemoryStringMap()
 	gist := NewInMemoryGist()
 	discordSession := NewInMemoryDiscordSession()
@@ -84,7 +87,7 @@ func NewRunner(t *testing.T) *Runner {
 
 	utcTimer := NewFakeUTCTimer()
 
-	registry := app.InitializeRegistry(customMap, voteMap, gist, &config.Config{RickList: rickList}, utcClock, utcTimer, commandChannel)
+	registry := app.InitializeRegistry(customMap, karmaMap, voteMap, gist, &config.Config{RickList: rickList}, utcClock, utcTimer, commandChannel)
 
 	go app.HandleCommands(registry, discordSession, commandChannel)
 
@@ -95,6 +98,7 @@ func NewRunner(t *testing.T) *Runner {
 		GistsCount:           0,
 		DiscordMessagesCount: 0,
 		CustomMap:            customMap,
+		KarmaMap:             karmaMap,
 		VoteMap:              voteMap,
 		Gist:                 gist,
 		DiscordSession:       discordSession,
@@ -300,6 +304,12 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 	if r.GistsCount > 0 {
 		var buffer bytes.Buffer
 		buffer.WriteString("List of builtins:")
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?++: ")
+		buffer.WriteString(karma.MsgHelpKarmaIncrement)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?--: ")
+		buffer.WriteString(karma.MsgHelpKarmaDecrement)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?f1: ")
 		buffer.WriteString(vote.MsgHelpBallotInFavor)

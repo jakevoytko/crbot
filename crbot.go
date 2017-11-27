@@ -44,6 +44,7 @@ func main() {
 	}
 
 	commandMap := model.NewRedisStringMap(redisClient, RedisCommandHash)
+	karmaMap := model.NewRedisStringMap(redisClient, RedisKarmaHash)
 	voteMap := model.NewRedisStringMap(redisClient, RedisVoteHash)
 
 	gist := api.NewRemoteGist()
@@ -62,7 +63,7 @@ func main() {
 	commandChannel := make(chan *model.Command, 10)
 
 	featureRegistry := app.InitializeRegistry(
-		commandMap, voteMap, gist, config, clock, timer, commandChannel)
+		commandMap, karmaMap, voteMap, gist, config, clock, timer, commandChannel)
 
 	// Run any initial load handlers up front.
 	for _, fn := range featureRegistry.GetInitialLoadFns() {
@@ -98,5 +99,6 @@ func main() {
 // NOTE: These cannot change without a migration, since they are mapped to storage.
 const (
 	RedisCommandHash = "crbot-custom-commands"
+	RedisKarmaHash   = "crbot-feature-karma"
 	RedisVoteHash    = "crbot-feature-vote"
 )
