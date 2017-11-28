@@ -49,7 +49,7 @@ func (p *KarmaParser) HelpText(command string) (string, error) {
 var directMentionRegexp *regexp.Regexp = regexp.MustCompile("^[[:alnum:]].*$")
 
 // The target is an embedded entity that needs to be looked up in the message.
-var entityRegexp *regexp.Regexp = regexp.MustCompile("^<@([[:digit:]]+)>$")
+var entityRegexp *regexp.Regexp = regexp.MustCompile("^<@!?([[:digit:]]+)>$")
 
 // Parse parses the given karma command.
 func (p *KarmaParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
