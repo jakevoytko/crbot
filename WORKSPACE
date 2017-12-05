@@ -1,7 +1,7 @@
 git_repository(
     name = "io_bazel_rules_go",
     remote = "https://github.com/bazelbuild/rules_go.git",
-    tag = "0.7.0",
+    tag = "0.7.1",
 )
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains", "go_repository")
 
@@ -25,13 +25,13 @@ go_repository(
 go_repository(
     name = "org_golang_x_crypto",
     importpath = "golang.org/x/crypto",
-    commit = "b080dc9a8c480b08e698fb1219160d598526310f",
+    commit = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122",
 )
 
 go_repository(
     name = "com_github_gorilla_websocket",
     importpath = "github.com/gorilla/websocket",
-    commit = "23059f29570f0e13fca80ef6aea0f04c11daaa4d",
+    commit = "b89020ee79b89a7f932c5617d218fc06db382f53",
 )
 
 # Set up rules_docker
