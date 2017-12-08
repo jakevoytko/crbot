@@ -145,6 +145,14 @@ func (r *Runner) SendMessageAs(author *discordgo.User, channel model.Snowflake, 
 	r.AssertState()
 }
 
+func (r *Runner) SendMessageIgnoringResponse(channel model.Snowflake, message string) {
+	r.T.Helper()
+
+	sendMessage(r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
+	r.AssertState()
+}
+
 func (r *Runner) SendLearnMessage(channel model.Snowflake, message string, learnData *LearnData) {
 	r.T.Helper()
 

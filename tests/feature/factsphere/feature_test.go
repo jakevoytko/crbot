@@ -10,6 +10,6 @@ func TestKarma(t *testing.T) {
 	runner := testutil.NewRunner(t)
 
 	// Correct call format
-	runner.SendMessageWithoutResponse(testutil.MainChannelID, "?factsphere")
+	runner.SendMessageIgnoringResponse(testutil.MainChannelID, "?factsphere")
 
 }
