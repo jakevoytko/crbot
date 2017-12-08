@@ -14,6 +14,7 @@ import (
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/feature/factsphere"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/karma"
 	"github.com/jakevoytko/crbot/feature/learn"
@@ -316,6 +317,9 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?f2: ")
 		buffer.WriteString(vote.MsgHelpBallotAgainst)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?factsphere: ")
+		buffer.WriteString(factsphere.MsgHelpFactSphere)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?help: ")
 		buffer.WriteString(help.MsgHelpHelp)

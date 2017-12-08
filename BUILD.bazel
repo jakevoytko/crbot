@@ -59,6 +59,7 @@ go_test(
     deps = [
         "//api:go_default_library",
         "//app:go_default_library",
+        "//feature/factsphere:go_default_library",
         "//feature/help:go_default_library",
         "//feature/learn:go_default_library",
         "//feature/list:go_default_library",

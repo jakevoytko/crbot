@@ -8,6 +8,7 @@ import "github.com/bwmarrin/discordgo"
 
 const (
 	Type_Custom = iota
+	Type_FactSphere
 	Type_Help
 	Type_Karma
 	Type_Learn
@@ -22,6 +23,7 @@ const (
 	Type_VoteConclude
 	Type_VoteStatus
 
+	Name_FactSphere     = "?factsphere"
 	Name_Help           = "?help"
 	Name_KarmaIncrement = "?++"
 	Name_KarmaDecrement = "?--"
