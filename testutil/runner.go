@@ -14,6 +14,7 @@ import (
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/feature/factsphere"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/karma"
 	"github.com/jakevoytko/crbot/feature/learn"
@@ -141,6 +142,14 @@ func (r *Runner) SendMessageAs(author *discordgo.User, channel model.Snowflake, 
 	r.DiscordMessagesCount++
 	assertNewMessages(r.T, r.DiscordSession,
 		[]*Message{NewMessage(channel.Format(), expectedResponse)})
+	r.AssertState()
+}
+
+func (r *Runner) SendMessageIgnoringResponse(channel model.Snowflake, message string) {
+	r.T.Helper()
+
+	sendMessage(r.DiscordSession, r.Handler, channel, message)
+	r.DiscordMessagesCount++
 	r.AssertState()
 }
 
@@ -316,6 +325,9 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?f2: ")
 		buffer.WriteString(vote.MsgHelpBallotAgainst)
+		buffer.WriteString("\n")
+		buffer.WriteString(" - ?factsphere: ")
+		buffer.WriteString(factsphere.MsgHelpFactSphere)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?help: ")
 		buffer.WriteString(help.MsgHelpHelp)

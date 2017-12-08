@@ -8,6 +8,7 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/feature"
+	"github.com/jakevoytko/crbot/feature/factsphere"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/karma"
 	"github.com/jakevoytko/crbot/feature/learn"
@@ -24,6 +25,7 @@ func InitializeRegistry(commandMap model.StringMap, karmaMap model.StringMap, vo
 	// a better pattern here.
 	featureRegistry := feature.NewRegistry()
 	allFeatures := []feature.Feature{
+		factsphere.NewFeature(featureRegistry),
 		help.NewFeature(featureRegistry),
 		karma.NewFeature(featureRegistry, karmaMap),
 		learn.NewFeature(featureRegistry, commandMap),

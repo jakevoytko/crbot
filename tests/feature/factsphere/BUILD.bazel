@@ -1,0 +1,11 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "go_default_test",
+    srcs = glob(["*.go"]),
+    deps = [
+        "//feature/factsphere:go_default_library",
+        "//testutil:go_default_library",
+        "@com_github_bwmarrin_discordgo//:go_default_library",
+    ],
+)
