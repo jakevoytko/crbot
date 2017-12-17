@@ -1,7 +1,7 @@
 git_repository(
     name = "io_bazel_rules_go",
     remote = "https://github.com/bazelbuild/rules_go.git",
-    tag = "0.7.1",
+    tag = "0.8.1",
 )
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains", "go_repository")
 
@@ -19,7 +19,7 @@ go_repository(
 go_repository(
     name = "com_github_go_redis_redis",
     importpath = "github.com/go-redis/redis",
-    tag = "v6.7.4"
+    tag = "v6.7.5"
 )
 
 go_repository(
@@ -31,14 +31,14 @@ go_repository(
 go_repository(
     name = "com_github_gorilla_websocket",
     importpath = "github.com/gorilla/websocket",
-    commit = "b89020ee79b89a7f932c5617d218fc06db382f53",
+    commit = "cdedf21e585dae942951e34d6defc3215b4280fa",
 )
 
 # Set up rules_docker
 git_repository(
     name = "io_bazel_rules_docker",
     remote = "https://github.com/bazelbuild/rules_docker.git",
-    tag = "v0.3.0",
+    commit = "3caf72f166f8b6b0e529442477a74871ad4d35e9",
 )
 
 load(
