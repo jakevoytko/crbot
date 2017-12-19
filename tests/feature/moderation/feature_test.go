@@ -5,6 +5,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/feature/help"
+	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/testutil"
 )
 
@@ -26,7 +27,7 @@ func TestRickList(t *testing.T) {
 	runner.SendMessageAs(rickListedUser, testutil.MainChannelID, "?help help-arg", help.MsgDefaultHelp)
 
 	// A non-learn message gets intercepted.
-	runner.SendMessageAs(rickListedUser, testutil.DirectMessageID, "?help help-arg", MsgRickList)
+	runner.SendMessageAs(rickListedUser, testutil.DirectMessageID, "?help help-arg", moderation.MsgRickList)
 
 	// A learn can still go through.
 	runner.SendLearnMessageAs(rickListedUser, testutil.DirectMessageID, "?learn rick list", testutil.NewLearnData("rick", "list"))

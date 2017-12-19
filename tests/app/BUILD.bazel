@@ -1,13 +1,13 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
 
-go_library(
-    name = "go_default_library",
+go_test(
+    name = "go_default_test",
     srcs = [
-        "system.go",
+        "system_test.go",
     ],
-    visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",
+        "//app:go_default_library",
         "//config:go_default_library",
         "//feature:go_default_library",
         "//feature/factsphere:go_default_library",
@@ -19,6 +19,7 @@ go_library(
         "//feature/vote:go_default_library",
         "//log:go_default_library",
         "//model:go_default_library",
+        "//testutil:go_default_library",
         "@com_github_bwmarrin_discordgo//:go_default_library",
     ],
 )

@@ -3,6 +3,7 @@ package learn
 import (
 	"testing"
 
+	"github.com/jakevoytko/crbot/feature/learn"
 	"github.com/jakevoytko/crbot/testutil"
 )
 
@@ -24,16 +25,16 @@ func TestLearn_WrongFormat(t *testing.T) {
 
 	// Basic learn responses.
 	// Wrong call format
-	runner.SendMessage(testutil.MainChannelID, "?learn", MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn test", MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn ?call response", MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn !call response", MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn /call response", MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn ", MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn multi\nline\ncall response", MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn", learn.MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn test", learn.MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn ?call response", learn.MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn !call response", learn.MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn /call response", learn.MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn ", learn.MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn multi\nline\ncall response", learn.MsgHelpLearn)
 	// Wrong response format.
-	runner.SendMessage(testutil.MainChannelID, "?learn call ?response", MsgHelpLearn)
-	runner.SendMessage(testutil.MainChannelID, "?learn call !response", MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn call ?response", learn.MsgHelpLearn)
+	runner.SendMessage(testutil.MainChannelID, "?learn call !response", learn.MsgHelpLearn)
 }
 
 func TestLearn_GiphyRewrite(t *testing.T) {
