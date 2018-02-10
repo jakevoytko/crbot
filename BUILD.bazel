@@ -1,5 +1,3 @@
-
-
 load("@io_bazel_rules_go//go:def.bzl", "gazelle", "go_binary", "go_library", "go_prefix")
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
@@ -16,34 +14,34 @@ go_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_go_redis_redis//:go_default_library",
-        "@com_github_bwmarrin_discordgo//:go_default_library",
         "//api:go_default_library",
         "//app:go_default_library",
         "//config:go_default_library",
         "//log:go_default_library",
         "//model:go_default_library",
+        "@com_github_bwmarrin_discordgo//:go_default_library",
+        "@com_github_go_redis_redis//:go_default_library",
     ],
 )
 
 go_binary(
     name = "crbot",
     data = ["secret.json"],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
 
 container_image(
-  name = "secret_image",
-  base = "@go_image_base//image",
-  files = ["secret.json"],
+    name = "secret_image",
+    base = "@go_image_base//image",
+    files = ["secret.json"],
 )
 
 go_image(
     name = "crbot_image",
-    library = ":go_default_library",
-    visibility = ["//visibility:public"],
     base = ":secret_image",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
 )
 
 container_bundle(
