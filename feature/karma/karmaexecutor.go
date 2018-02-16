@@ -8,14 +8,15 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 type KarmaExecutor struct {
-	karmaMap model.StringMap
+	karmaMap stringmap.StringMap
 }
 
 // NewKarmaExecutor works as advertised.
-func NewKarmaExecutor(karmaMap model.StringMap) *KarmaExecutor {
+func NewKarmaExecutor(karmaMap stringmap.StringMap) *KarmaExecutor {
 	return &KarmaExecutor{karmaMap: karmaMap}
 }
 

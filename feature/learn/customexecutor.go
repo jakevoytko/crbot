@@ -9,13 +9,14 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 type CustomExecutor struct {
-	commandMap model.StringMap
+	commandMap stringmap.StringMap
 }
 
-func NewCustomExecutor(commandMap model.StringMap) *CustomExecutor {
+func NewCustomExecutor(commandMap stringmap.StringMap) *CustomExecutor {
 	return &CustomExecutor{commandMap: commandMap}
 }
 

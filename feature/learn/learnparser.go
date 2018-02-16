@@ -10,16 +10,17 @@ import (
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/util"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // LearnParser parses ?learn commands.
 type LearnParser struct {
 	featureRegistry *feature.Registry
-	commandMap      model.StringMap
+	commandMap      stringmap.StringMap
 }
 
 // NewLearnParser works as advertised.
-func NewLearnParser(featureRegistry *feature.Registry, commandMap model.StringMap) *LearnParser {
+func NewLearnParser(featureRegistry *feature.Registry, commandMap stringmap.StringMap) *LearnParser {
 	return &LearnParser{
 		featureRegistry: featureRegistry,
 		commandMap:      commandMap,

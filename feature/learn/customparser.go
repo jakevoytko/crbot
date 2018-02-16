@@ -7,15 +7,16 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // CustomParser parses all fallthrough commands.
 type CustomParser struct {
-	commandMap model.StringMap
+	commandMap stringmap.StringMap
 }
 
 // NewCustomParser works as advertised.
-func NewCustomParser(commandMap model.StringMap) *CustomParser {
+func NewCustomParser(commandMap stringmap.StringMap) *CustomParser {
 	return &CustomParser{
 		commandMap: commandMap,
 	}

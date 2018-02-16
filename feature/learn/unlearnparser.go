@@ -9,16 +9,17 @@ import (
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/util"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // UnlearnParser parses ?unlearn commands.
 type UnlearnParser struct {
 	featureRegistry *feature.Registry
-	commandMap      model.StringMap
+	commandMap      stringmap.StringMap
 }
 
 // NewUnlearnParser works as advertised.
-func NewUnlearnParser(featureRegistry *feature.Registry, commandMap model.StringMap) *UnlearnParser {
+func NewUnlearnParser(featureRegistry *feature.Registry, commandMap stringmap.StringMap) *UnlearnParser {
 	return &UnlearnParser{
 		featureRegistry: featureRegistry,
 		commandMap:      commandMap,

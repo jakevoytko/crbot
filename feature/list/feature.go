@@ -3,20 +3,20 @@ package list
 import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
-	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // Feature is a Feature that lists commands that are available.
 type Feature struct {
 	featureRegistry *feature.Registry
-	commandMap      model.StringMap
+	commandMap      stringmap.StringMap
 	gist            api.Gist
 }
 
 // NewFeature returns a new Feature.
 func NewFeature(
 	featureRegistry *feature.Registry,
-	commandMap model.StringMap,
+	commandMap stringmap.StringMap,
 	gist api.Gist) *Feature {
 
 	return &Feature{

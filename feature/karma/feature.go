@@ -4,16 +4,17 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // Feature allows crbot to record changes in karma
 type Feature struct {
 	featureRegistry *feature.Registry
-	karmaMap        model.StringMap
+	karmaMap        stringmap.StringMap
 }
 
 // NewFeature returns a new Feature.
-func NewFeature(featureRegistry *feature.Registry, karmaMap model.StringMap) *Feature {
+func NewFeature(featureRegistry *feature.Registry, karmaMap stringmap.StringMap) *Feature {
 	return &Feature{
 		featureRegistry: featureRegistry,
 		karmaMap:        karmaMap,

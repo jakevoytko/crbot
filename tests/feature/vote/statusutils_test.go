@@ -7,6 +7,7 @@ import (
 	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/testutil"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 func TestTimeString(t *testing.T) {
@@ -44,7 +45,7 @@ func TestTimeString(t *testing.T) {
 // being done manually here.
 func TestHandleVotesOnInitialLoad_EmptyMap(t *testing.T) {
 	session := testutil.NewInMemoryDiscordSession()
-	stringMap := testutil.NewInMemoryStringMap()
+	stringMap := stringmap.NewInMemoryStringMap()
 	timer := testutil.NewFakeUTCTimer()
 	clock := testutil.NewFakeUTCClock()
 	modelHelper := vote.NewModelHelper(stringMap, clock)
@@ -64,7 +65,7 @@ func TestHandleVotesOnInitialLoad_EmptyMap(t *testing.T) {
 
 func TestHandleVotesOnInitialLoad_HalfDoneVote(t *testing.T) {
 	session := testutil.NewInMemoryDiscordSession()
-	stringMap := testutil.NewInMemoryStringMap()
+	stringMap := stringmap.NewInMemoryStringMap()
 	timer := testutil.NewFakeUTCTimer()
 	clock := testutil.NewFakeUTCClock()
 	modelHelper := vote.NewModelHelper(stringMap, clock)
@@ -111,7 +112,7 @@ func TestHandleVotesOnInitialLoad_HalfDoneVote(t *testing.T) {
 
 func TestHandleVotesOnInitialLoad_VoteExpired(t *testing.T) {
 	session := testutil.NewInMemoryDiscordSession()
-	stringMap := testutil.NewInMemoryStringMap()
+	stringMap := stringmap.NewInMemoryStringMap()
 	timer := testutil.NewFakeUTCTimer()
 	clock := testutil.NewFakeUTCClock()
 	modelHelper := vote.NewModelHelper(stringMap, clock)
@@ -147,7 +148,7 @@ func TestHandleVotesOnInitialLoad_VoteExpired(t *testing.T) {
 
 func TestHandleVotesOnInitialLoad_PreviousExpriedVotesDoNotCauseNewConcludes(t *testing.T) {
 	session := testutil.NewInMemoryDiscordSession()
-	stringMap := testutil.NewInMemoryStringMap()
+	stringMap := stringmap.NewInMemoryStringMap()
 	timer := testutil.NewFakeUTCTimer()
 	clock := testutil.NewFakeUTCClock()
 	modelHelper := vote.NewModelHelper(stringMap, clock)

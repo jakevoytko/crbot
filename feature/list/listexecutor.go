@@ -9,6 +9,7 @@ import (
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 const (
@@ -19,11 +20,11 @@ const (
 
 type ListExecutor struct {
 	featureRegistry *feature.Registry
-	commandMap      model.StringMap
+	commandMap      stringmap.StringMap
 	gist            api.Gist
 }
 
-func NewListExecutor(featureRegistry *feature.Registry, commandMap model.StringMap, gist api.Gist) *ListExecutor {
+func NewListExecutor(featureRegistry *feature.Registry, commandMap stringmap.StringMap, gist api.Gist) *ListExecutor {
 	return &ListExecutor{
 		featureRegistry: featureRegistry,
 		commandMap:      commandMap,

@@ -22,6 +22,7 @@ import (
 	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 const (
@@ -43,9 +44,9 @@ type Runner struct {
 	ActiveVoteDataMap    map[model.Snowflake]*VoteData // channel->vote. May be nil
 
 	// Fakes
-	CustomMap      *InMemoryStringMap
-	KarmaMap       *InMemoryStringMap
-	VoteMap        *InMemoryStringMap
+	CustomMap      *stringmap.InMemoryStringMap
+	KarmaMap       *stringmap.InMemoryStringMap
+	VoteMap        *stringmap.InMemoryStringMap
 	Gist           *InMemoryGist
 	DiscordSession *InMemoryDiscordSession
 	UTCClock       *FakeUTCClock
@@ -60,9 +61,9 @@ type Runner struct {
 
 func NewRunner(t *testing.T) *Runner {
 	// Initialize fakes.
-	customMap := NewInMemoryStringMap()
-	karmaMap := NewInMemoryStringMap()
-	voteMap := NewInMemoryStringMap()
+	customMap := stringmap.NewInMemoryStringMap()
+	karmaMap := stringmap.NewInMemoryStringMap()
+	voteMap := stringmap.NewInMemoryStringMap()
 	gist := NewInMemoryGist()
 	discordSession := NewInMemoryDiscordSession()
 	discordSession.SetChannel(&discordgo.Channel{
@@ -491,7 +492,7 @@ func (v *VoteData) Reconstruct() *model.Vote {
 		model.VoteOutcomeNotDone)
 }
 
-func assertNumCommands(t *testing.T, customMap *InMemoryStringMap, count int) {
+func assertNumCommands(t *testing.T, customMap *stringmap.InMemoryStringMap, count int) {
 	t.Helper()
 
 	if all, _ := customMap.GetAll(); len(all) != count {
@@ -515,7 +516,7 @@ func assertNumDiscordMessages(t *testing.T, discordSession *InMemoryDiscordSessi
 	}
 }
 
-func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *InMemoryStringMap, activeVoteMap map[model.Snowflake]*VoteData) {
+func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *stringmap.InMemoryStringMap, activeVoteMap map[model.Snowflake]*VoteData) {
 	t.Helper()
 
 	modelHelper := vote.NewModelHelper(voteMap, utcClock)
@@ -605,7 +606,7 @@ func assertNewMessages(t *testing.T, discordSession *InMemoryDiscordSession, new
 	}
 }
 
-func assertCommand(t *testing.T, commandMap *InMemoryStringMap, call, response string) {
+func assertCommand(t *testing.T, commandMap *stringmap.InMemoryStringMap, call, response string) {
 	t.Helper()
 
 	if _, err := commandMap.Get(call); err != nil {

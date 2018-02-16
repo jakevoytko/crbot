@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // ModelHelper adds helper functions for using votes with a
@@ -18,12 +19,12 @@ import (
 // vote outcome is recorded, because that is handled in an evented manner
 // (i.e. when a timer ends).
 type ModelHelper struct {
-	StringMap model.StringMap
+	StringMap stringmap.StringMap
 	UTCClock  model.UTCClock
 }
 
 // NewModelHelper works as advertised.
-func NewModelHelper(stringMap model.StringMap, utcClock model.UTCClock) *ModelHelper {
+func NewModelHelper(stringMap stringmap.StringMap, utcClock model.UTCClock) *ModelHelper {
 	return &ModelHelper{
 		StringMap: stringMap,
 		UTCClock:  utcClock,

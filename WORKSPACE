@@ -36,6 +36,13 @@ go_repository(
     importpath = "github.com/gorilla/websocket",
 )
 
+# Import my own projects.
+git_repository(
+    name = "com_github_jakevoytko_go_stringmap",
+    commit = "a7a2d05280fc97d376b250c4b4495cd34cb31ad4",
+    remote = "https://github.com/jakevoytko/go-stringmap.git",
+)
+
 # Set up rules_docker
 git_repository(
     name = "io_bazel_rules_docker",

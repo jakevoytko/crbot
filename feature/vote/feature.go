@@ -4,6 +4,7 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // Feature registers feature-specific things for moderation.
@@ -16,7 +17,7 @@ type Feature struct {
 }
 
 // NewFeature returns a new Feature.
-func NewFeature(featureRegistry *feature.Registry, voteMap model.StringMap, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *Feature {
+func NewFeature(featureRegistry *feature.Registry, voteMap stringmap.StringMap, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *Feature {
 	return &Feature{
 		featureRegistry: featureRegistry,
 		modelHelper:     NewModelHelper(voteMap, clock),

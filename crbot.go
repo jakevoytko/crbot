@@ -11,6 +11,7 @@ import (
 	"github.com/jakevoytko/crbot/config"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -43,9 +44,9 @@ func main() {
 		log.Fatal("Unable to initialize Redis", err)
 	}
 
-	commandMap := model.NewRedisStringMap(redisClient, RedisCommandHash)
-	karmaMap := model.NewRedisStringMap(redisClient, RedisKarmaHash)
-	voteMap := model.NewRedisStringMap(redisClient, RedisVoteHash)
+	commandMap := stringmap.NewRedisStringMap(redisClient, RedisCommandHash)
+	karmaMap := stringmap.NewRedisStringMap(redisClient, RedisKarmaHash)
+	voteMap := stringmap.NewRedisStringMap(redisClient, RedisVoteHash)
 
 	gist := api.NewRemoteGist()
 

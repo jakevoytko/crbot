@@ -7,13 +7,14 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 type UnlearnExecutor struct {
-	commandMap model.StringMap
+	commandMap stringmap.StringMap
 }
 
-func NewUnlearnExecutor(commandMap model.StringMap) *UnlearnExecutor {
+func NewUnlearnExecutor(commandMap stringmap.StringMap) *UnlearnExecutor {
 	return &UnlearnExecutor{commandMap: commandMap}
 }
 

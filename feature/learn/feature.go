@@ -3,17 +3,17 @@ package learn
 import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
-	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // Feature allows crbot to learn new calls and responses
 type Feature struct {
 	featureRegistry *feature.Registry
-	commandMap      model.StringMap
+	commandMap      stringmap.StringMap
 }
 
 // NewFeature returns a new Feature.
-func NewFeature(featureRegistry *feature.Registry, commandMap model.StringMap) *Feature {
+func NewFeature(featureRegistry *feature.Registry, commandMap stringmap.StringMap) *Feature {
 	return &Feature{
 		featureRegistry: featureRegistry,
 		commandMap:      commandMap,

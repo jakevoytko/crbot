@@ -7,15 +7,16 @@ import (
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // LearnExecutor learns a user-generated command.
 type LearnExecutor struct {
-	commandMap model.StringMap
+	commandMap stringmap.StringMap
 }
 
 // NewLearnExecutor works as advertised.
-func NewLearnExecutor(commandMap model.StringMap) *LearnExecutor {
+func NewLearnExecutor(commandMap stringmap.StringMap) *LearnExecutor {
 	return &LearnExecutor{commandMap: commandMap}
 }
 

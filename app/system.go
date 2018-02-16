@@ -17,9 +17,10 @@ import (
 	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
-func InitializeRegistry(commandMap model.StringMap, karmaMap model.StringMap, voteMap model.StringMap, gist api.Gist, config *config.Config, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *feature.Registry {
+func InitializeRegistry(commandMap stringmap.StringMap, karmaMap stringmap.StringMap, voteMap stringmap.StringMap, gist api.Gist, config *config.Config, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *feature.Registry {
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
 	// a better pattern here.
@@ -81,7 +82,7 @@ func HandleCommands(featureRegistry *feature.Registry, s api.DiscordSession, com
 }
 
 // GetHandleMessage returns the main handler for incoming messages.
-func GetHandleMessage(commandMap model.StringMap, featureRegistry *feature.Registry, commandChannel chan<- *model.Command) func(api.DiscordSession, *discordgo.MessageCreate) {
+func GetHandleMessage(commandMap stringmap.StringMap, featureRegistry *feature.Registry, commandChannel chan<- *model.Command) func(api.DiscordSession, *discordgo.MessageCreate) {
 	return func(s api.DiscordSession, m *discordgo.MessageCreate) {
 		// Never reply to a bot.
 		if m.Author.Bot {
@@ -106,7 +107,7 @@ func GetHandleMessage(commandMap model.StringMap, featureRegistry *feature.Regis
 }
 
 // Parses the raw text string from the user. Returns an executable command.
-func parseCommand(commandMap model.StringMap, registry *feature.Registry, m *discordgo.MessageCreate) (*model.Command, error) {
+func parseCommand(commandMap stringmap.StringMap, registry *feature.Registry, m *discordgo.MessageCreate) (*model.Command, error) {
 	content := m.Content
 	if !strings.HasPrefix(content, "?") {
 		return &model.Command{

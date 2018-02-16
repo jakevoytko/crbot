@@ -8,6 +8,7 @@ import (
 	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/model"
 	"github.com/jakevoytko/crbot/testutil"
+	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 const (
@@ -352,7 +353,7 @@ func TestSetVoteOutcome_SucceedsWhenExpired(t *testing.T) {
 }
 
 func initializeTests() (*vote.ModelHelper, *testutil.FakeUTCClock) {
-	stringMap := testutil.NewInMemoryStringMap()
+	stringMap := stringmap.NewInMemoryStringMap()
 	clock := testutil.NewFakeUTCClock()
 	return vote.NewModelHelper(stringMap, clock), clock
 }
