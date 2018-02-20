@@ -21,18 +21,18 @@ go_repository(
 go_repository(
     name = "com_github_go_redis_redis",
     importpath = "github.com/go-redis/redis",
-    tag = "v6.8.3",
+    tag = "v6.9.0",
 )
 
 go_repository(
     name = "org_golang_x_crypto",
-    commit = "5119cf507ed5294cc409c092980c7497ee5d6fd2",
+    commit = "432090b8f568c018896cd8a0fb0345872bbac6ce",
     importpath = "golang.org/x/crypto",
 )
 
 go_repository(
     name = "com_github_gorilla_websocket",
-    commit = "4ac909741dfa57448bfadfdbca0cf7eeaa68f0e2",
+    commit = "f37d1588608ec036fa9b0b7b8afbde47dc06aea9",
     importpath = "github.com/gorilla/websocket",
 )
 
