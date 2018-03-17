@@ -3,13 +3,13 @@
 
 - name: Build crbot
   hosts: localhost
+  vars:
+    path: "~/deploy/crbot"
 
   tasks:
-    - name: Create a temp directory
+    - name: Create deploy directory if it does not exist
       # Defines 'path' variable
-      tempfile:
-        state: directory
-        suffix: build
+      file: path={{path}} state=directory
       register: path
 
     - name: Clone crbot
