@@ -26,7 +26,7 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_crypto",
-    commit = "374053ea96cb300f8671b8d3b07edeeb06e203b4",
+    commit = "88942b9c40a4c9d203b82b3731787b672d6e809b",
     importpath = "golang.org/x/crypto",
 )
 
@@ -39,7 +39,7 @@ go_repository(
 # Import my own projects.
 git_repository(
     name = "com_github_jakevoytko_go_stringmap",
-    commit = "3afb736b5e657a6c6324512aabe6d65d8e3b41dd",
+    commit = "52bc609d9a6e7862b31fd591b0b3467d725703c7",
     remote = "https://github.com/jakevoytko/go-stringmap.git",
 )
 
