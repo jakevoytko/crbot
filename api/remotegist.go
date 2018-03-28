@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -41,6 +42,8 @@ func (g *RemoteGist) Upload(contents string) (string, error) {
 		return "", errors.New(MsgGistPostFail)
 	} else if response.StatusCode != 201 {
 		log.Info("Bad status code", errors.New("Code: "+strconv.Itoa(response.StatusCode)))
+		body, _ := ioutil.ReadAll(response.Body)
+		log.Info("Response body: ", errors.New(string(body)))
 		return "", errors.New(MsgGistStatusCode)
 	}
 
