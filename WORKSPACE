@@ -1,7 +1,7 @@
 http_archive(
     name = "io_bazel_rules_go",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.10.1/rules_go-0.10.1.tar.gz",
-    sha256 = "4b14d8dd31c6dbaf3ff871adcd03f28c3274e42abc855cb8fb4d01233c0154dc",
+    sha256 = "4b2c61795ac2eefcb28f3eb8e1cb2d8fb3c2eafa0f6712473bc5f93728f38758",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.10.2/rules_go-0.10.2.tar.gz",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains", "go_repository")
@@ -26,7 +26,7 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_crypto",
-    commit = "88942b9c40a4c9d203b82b3731787b672d6e809b",
+    commit = "12892e8c234f4fe6f6803f052061de9057903bb2",
     importpath = "golang.org/x/crypto",
 )
 
@@ -39,7 +39,7 @@ go_repository(
 # Import my own projects.
 git_repository(
     name = "com_github_jakevoytko_go_stringmap",
-    commit = "52bc609d9a6e7862b31fd591b0b3467d725703c7",
+    commit = "96db7d019a36e4cca914cd8e343d3ec8f1741271",
     remote = "https://github.com/jakevoytko/go-stringmap.git",
 )
 
