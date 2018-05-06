@@ -1,7 +1,7 @@
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "4b2c61795ac2eefcb28f3eb8e1cb2d8fb3c2eafa0f6712473bc5f93728f38758",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.10.2/rules_go-0.10.2.tar.gz",
+    sha256 = "1868ff68d6079e31b2f09b828b58d62e57ca8e9636edff699247c9108518570b",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.11.1/rules_go-0.11.1.tar.gz",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains", "go_repository")
@@ -26,20 +26,20 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_crypto",
-    commit = "12892e8c234f4fe6f6803f052061de9057903bb2",
+    commit = "4ec37c66abab2c7e02ae775328b2ff001c3f025a",
     importpath = "golang.org/x/crypto",
 )
 
 go_repository(
     name = "com_github_gorilla_websocket",
-    commit = "eb925808374e5ca90c83401a40d711dc08c0c0f6",
+    commit = "21ab95fa12b9bdd8fecf5fa3586aad941cc98785",
     importpath = "github.com/gorilla/websocket",
 )
 
 # Import my own projects.
 git_repository(
     name = "com_github_jakevoytko_go_stringmap",
-    commit = "96db7d019a36e4cca914cd8e343d3ec8f1741271",
+    commit = "73c758d8e93882c7203fb171e4e9986e0514b575",
     remote = "https://github.com/jakevoytko/go-stringmap.git",
 )
 
