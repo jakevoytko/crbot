@@ -9,6 +9,7 @@ go_library(
         "gist.go",
         "runner.go",
     ],
+    importpath = "github.com/jakevoytko/crbot/testutil",
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",

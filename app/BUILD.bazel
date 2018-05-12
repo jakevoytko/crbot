@@ -2,9 +2,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "system.go",
-    ],
+    srcs = ["system.go"],
+    importpath = "github.com/jakevoytko/crbot/app",
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",

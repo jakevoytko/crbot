@@ -1,17 +1,14 @@
-load("@io_bazel_rules_go//go:def.bzl", "gazelle", "go_binary", "go_library", "go_prefix")
+load("@io_bazel_rules_go//go:def.bzl", "gazelle", "go_binary", "go_library")
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-
-go_prefix("github.com/jakevoytko/crbot")
 
 gazelle(name = "gazelle")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "crbot.go",
-    ],
+    srcs = ["crbot.go"],
+    importpath = "github.com/jakevoytko/crbot",
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",

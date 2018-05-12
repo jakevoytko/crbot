@@ -7,6 +7,7 @@ go_library(
         "karmaexecutor.go",
         "karmaparser.go",
     ],
+    importpath = "github.com/jakevoytko/crbot/feature/karma",
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",

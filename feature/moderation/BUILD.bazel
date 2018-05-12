@@ -9,6 +9,7 @@ go_library(
         "ricklistinfoexecutor.go",
         "ricklistinfoparser.go",
     ],
+    importpath = "github.com/jakevoytko/crbot/feature/moderation",
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",

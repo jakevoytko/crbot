@@ -11,6 +11,7 @@ go_library(
         "unlearnexecutor.go",
         "unlearnparser.go",
     ],
+    importpath = "github.com/jakevoytko/crbot/feature/learn",
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",

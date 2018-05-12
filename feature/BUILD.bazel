@@ -9,6 +9,7 @@ go_library(
         "parser.go",
         "registry.go",
     ],
+    importpath = "github.com/jakevoytko/crbot/feature",
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",

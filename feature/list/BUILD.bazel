@@ -7,6 +7,7 @@ go_library(
         "listexecutor.go",
         "listparser.go",
     ],
+    importpath = "github.com/jakevoytko/crbot/feature/list",
     visibility = ["//visibility:public"],
     deps = [
         "//api:go_default_library",
