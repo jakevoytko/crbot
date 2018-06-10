@@ -6,6 +6,7 @@ go_library(
         "discordsession.go",
         "gist.go",
         "remotegist.go",
+        "remotehastebin.go"
     ],
     importpath = "github.com/jakevoytko/crbot/api",
     visibility = ["//visibility:public"],

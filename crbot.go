@@ -48,7 +48,7 @@ func main() {
 	karmaMap := stringmap.NewRedisStringMap(redisClient, RedisKarmaHash)
 	voteMap := stringmap.NewRedisStringMap(redisClient, RedisVoteHash)
 
-	gist := api.NewRemoteGist()
+	gist := api.NewRemoteHastebin()
 
 	// Set up Discord API.
 	discord, err := discordgo.New("Bot " + config.BotToken)
