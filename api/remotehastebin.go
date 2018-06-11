@@ -32,13 +32,16 @@ func (g *RemoteHastebin) Upload(contents string) (string, error) {
 	if err != nil {
 		log.Info("Error POSTing Hastebin", err)
 		return "", errors.New(MsgHastebinPostFail)
-	} else if response.StatusCode != 200 {
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
 		log.Info("Bad status code", errors.New("Code: "+strconv.Itoa(response.StatusCode)))
 		body, _ := ioutil.ReadAll(response.Body)
 		log.Info("Response body: ", errors.New(string(body)))
 		return "", errors.New(MsgHastebinStatusCode)
 	}
-	defer response.Body.Close()
 
 	responseMap := map[string]interface{}{}
 	if err := json.NewDecoder(response.Body).Decode(&responseMap); err != nil {
@@ -47,7 +50,7 @@ func (g *RemoteHastebin) Upload(contents string) (string, error) {
 	}
 
 	if finalUrl, ok := responseMap["key"]; ok {
-		return "https://hastebin.com/" + finalUrl.(string), nil
+		return "https://hastebin.com/raw/" + finalUrl.(string), nil
 	}
 
 	return "", errors.New(MsgHastebinUrlFail)
