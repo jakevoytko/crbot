@@ -1,27 +1,28 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "c1f52b8789218bb1542ed362c4f7de7052abcf254d865d96fb7ba6d44bc15ee3",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.12.0/rules_go-0.12.0.tar.gz",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.15.3/rules_go-0.15.3.tar.gz",
+    sha256 = "97cf62bdef33519412167fd1e4b0810a318a7c234f5f8dc4f53e2da86241c492",
 )
 
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "92a3c59734dad2ef85dc731dbcb2bc23c4568cded79d4b87ebccd787eb89e8d0",
-    url = "https://github.com/bazelbuild/bazel-gazelle/releases/download/0.12.0/bazel-gazelle-0.12.0.tar.gz",
+    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.14.0/bazel-gazelle-0.14.0.tar.gz"],
+    sha256 = "c0a5739d12c6d05b6c1ad56f2200cb0b57c5a70e03ebd2f7b87ce88cabf09c7b",
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains", "go_repository")
+load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
 
 go_rules_dependencies()
 
 go_register_toolchains()
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_gazelle//:deps.bzl", "go_repository", "gazelle_dependencies")
 
 gazelle_dependencies()
 
 # Import Go dependencies.
-
 go_repository(
     name = "com_github_bwmarrin_discordgo",
     importpath = "github.com/bwmarrin/discordgo",
@@ -31,33 +32,34 @@ go_repository(
 go_repository(
     name = "com_github_go_redis_redis",
     importpath = "github.com/go-redis/redis",
-    tag = "v6.10.2",
+    tag = "v6.14.1",
 )
 
 go_repository(
     name = "org_golang_x_crypto",
-    commit = "2d027ae1dddd4694d54f7a8b6cbe78dca8720226",
+    commit = "0e37d006457bf46f9e6692014ba72ef82c33022c",
     importpath = "golang.org/x/crypto",
 )
 
 go_repository(
     name = "com_github_gorilla_websocket",
-    commit = "21ab95fa12b9bdd8fecf5fa3586aad941cc98785",
+    commit = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d",
     importpath = "github.com/gorilla/websocket",
 )
 
 # Import my own projects.
 git_repository(
     name = "com_github_jakevoytko_go_stringmap",
-    commit = "4b6a91450c2b1a30e4c7753340ae56236b86a8e1",
+    commit = "b2746703f56f1d7f79659f69ff5c71823b3f6c69",
     remote = "https://github.com/jakevoytko/go-stringmap.git",
 )
 
 # Set up rules_docker
-git_repository(
+http_archive(
     name = "io_bazel_rules_docker",
-    remote = "https://github.com/bazelbuild/rules_docker.git",
-    tag = "v0.4.0",
+    sha256 = "29d109605e0d6f9c892584f07275b8c9260803bf0c6fcb7de2623b2bedc910bd",
+    strip_prefix = "rules_docker-0.5.1",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.5.1.tar.gz"],
 )
 
 load(

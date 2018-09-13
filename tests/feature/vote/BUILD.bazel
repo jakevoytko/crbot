@@ -2,7 +2,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_test")
 
 go_test(
     name = "go_default_test",
-    srcs = glob(["*.go"]),
+    srcs = [
+        "feature_test.go",
+        "modelhelper_test.go",
+        "statusutils_test.go",
+    ],
     deps = [
         "//app:go_default_library",
         "//feature/vote:go_default_library",
