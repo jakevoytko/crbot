@@ -2,3 +2,4 @@ secret.json
 *~
 bazel-*
 *.retry
+.vscode
