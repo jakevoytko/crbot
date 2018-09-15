@@ -9,10 +9,12 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
+// BallotExecutor executes a vote
 type BallotExecutor struct {
 	modelHelper *ModelHelper
 }
 
+// NewBallotExecutor works as advertised
 func NewBallotExecutor(modelHelper *ModelHelper) *BallotExecutor {
 	return &BallotExecutor{
 		modelHelper: modelHelper,
@@ -21,7 +23,7 @@ func NewBallotExecutor(modelHelper *ModelHelper) *BallotExecutor {
 
 // GetType returns the type of this feature.
 func (e *BallotExecutor) GetType() int {
-	return model.Type_VoteBallot
+	return model.CommandTypeVoteBallot
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
@@ -30,11 +32,15 @@ func (e *BallotExecutor) PublicOnly() bool {
 }
 
 const (
+	// MsgAlreadyVoted returns that the user already voted
 	MsgAlreadyVoted = "%v already voted"
+	// MsgVotedAgainst returns that the user voted against the vote
 	MsgVotedAgainst = "%v voted no"
+	// MsgVotedInFavor returns that the user voted for the vote
 	MsgVotedInFavor = "%v voted yes"
 )
 
+// Execute runs the command
 func (e *BallotExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
 	userID, err := model.ParseSnowflake(command.Author.ID)
 	if err != nil {

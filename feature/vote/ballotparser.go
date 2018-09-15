@@ -8,6 +8,7 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
+// BallotParser parses a vote for or against
 type BallotParser struct {
 	// The message that the parser looks for.
 	Message string
@@ -29,11 +30,13 @@ func (p *BallotParser) GetName() string {
 }
 
 const (
+	// MsgHelpBallotInFavor is help text for ?yes
 	MsgHelpBallotInFavor = "Casts a ballot in favor of the current vote, if one is active"
+	// MsgHelpBallotAgainst is help text for ?no
 	MsgHelpBallotAgainst = "Casts a ballot against the current vote, if one is active"
 )
 
-// GetHelpText returns the help text.
+// HelpText returns the help text.
 func (p *BallotParser) HelpText(command string) (string, error) {
 	if p.InFavor {
 		return MsgHelpBallotInFavor, nil
@@ -47,7 +50,7 @@ func (p *BallotParser) Parse(splitContent []string, m *discordgo.MessageCreate) 
 		log.Fatal("parseVoteBallot called with non-list command", errors.New("wat"))
 	}
 	return &model.Command{
-		Type: model.Type_VoteBallot,
+		Type: model.CommandTypeVoteBallot,
 		Ballot: &model.BallotData{
 			InFavor: p.InFavor,
 		},

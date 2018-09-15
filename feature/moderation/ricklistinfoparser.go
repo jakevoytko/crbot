@@ -18,10 +18,11 @@ func NewRickListInfoParser() *RickListInfoParser {
 
 // GetName returns the named type of this feature.
 func (p *RickListInfoParser) GetName() string {
-	return model.Name_RickListInfo
+	return model.CommandNameRickListInfo
 }
 
 const (
+	// MsgHelpRickListInfo is the help text for ?ricklist
 	MsgHelpRickListInfo = "Type `?ricklist` to print all users on the moderation rick list. These are whitelisted users who will get rickrolled every time they try to run a private command."
 )
 
@@ -36,6 +37,6 @@ func (p *RickListInfoParser) Parse(splitContent []string, m *discordgo.MessageCr
 		log.Fatal("parse ricklist called with non-list command", errors.New("wat"))
 	}
 	return &model.Command{
-		Type: model.Type_RickListInfo,
+		Type: model.CommandTypeRickListInfo,
 	}, nil
 }

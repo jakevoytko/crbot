@@ -8,14 +8,16 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-type VoteExecutor struct {
+// StartVoteExecutor executes a vote begin command
+type StartVoteExecutor struct {
 	modelHelper    *ModelHelper
 	commandChannel chan<- *model.Command
 	utcTimer       model.UTCTimer
 }
 
-func NewVoteExecutor(modelHelper *ModelHelper, commandChannel chan<- *model.Command, utcTimer model.UTCTimer) *VoteExecutor {
-	return &VoteExecutor{
+// NewStartVoteExecutor works as advertised
+func NewStartVoteExecutor(modelHelper *ModelHelper, commandChannel chan<- *model.Command, utcTimer model.UTCTimer) *StartVoteExecutor {
+	return &StartVoteExecutor{
 		modelHelper:    modelHelper,
 		commandChannel: commandChannel,
 		utcTimer:       utcTimer,
@@ -23,23 +25,25 @@ func NewVoteExecutor(modelHelper *ModelHelper, commandChannel chan<- *model.Comm
 }
 
 // GetType returns the type of this feature.
-func (e *VoteExecutor) GetType() int {
-	return model.Type_Vote
+func (e *StartVoteExecutor) GetType() int {
+	return model.CommandTypeVote
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
-func (e *VoteExecutor) PublicOnly() bool {
+func (e *StartVoteExecutor) PublicOnly() bool {
 	return true
 }
 
 const (
-	MsgActiveVote       = "Cannot start a vote while another is in progress. Type `?votestatus` for more info"
+	// MsgActiveVote prints that a vote is already active
+	MsgActiveVote = "Cannot start a vote while another is in progress. Type `?votestatus` for more info"
+	// MsgBroadcastNewVote prints that a new vote is happening
 	MsgBroadcastNewVote = "@everyone -- %s started a new vote: %s\n\nType `?yes` or `?no` to vote. 30 minutes remaining."
 )
 
 // Execute starts a new vote if one is not already active. It also starts a
 // timer to use to conclude the vote.
-func (e *VoteExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
+func (e *StartVoteExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
 	ok, err := e.modelHelper.IsVoteActive(channelID)
 	if err != nil {
 		log.Fatal("Error occurred while calling for active vote", err)
@@ -72,7 +76,7 @@ func (e *VoteExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, 
 	// written to storage and printed to the users.
 	e.utcTimer.ExecuteAfter(vote.TimestampEnd.Sub(vote.TimestampStart), func() {
 		e.commandChannel <- &model.Command{
-			Type:      model.Type_VoteConclude,
+			Type:      model.CommandTypeVoteConclude,
 			ChannelID: channelID,
 		}
 	})

@@ -95,7 +95,7 @@ func TestHandleVotesOnInitialLoad_HalfDoneVote(t *testing.T) {
 		if !ok {
 			t.Errorf("Should have gotten a command from the command channel")
 		}
-		if command.Type != model.Type_VoteConclude {
+		if command.Type != model.CommandTypeVoteConclude {
 			t.Errorf("Expected a conclude vote")
 		}
 	default:
@@ -131,7 +131,7 @@ func TestHandleVotesOnInitialLoad_VoteExpired(t *testing.T) {
 		if !ok {
 			t.Errorf("Should have gotten a command from the command channel")
 		}
-		if command.Type != model.Type_VoteConclude {
+		if command.Type != model.CommandTypeVoteConclude {
 			t.Errorf("Expected a conclude vote")
 		}
 	default:

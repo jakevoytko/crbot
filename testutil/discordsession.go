@@ -36,27 +36,27 @@ func NewInMemoryDiscordSession() *InMemoryDiscordSession {
 	users := make(map[string]*discordgo.User)
 
 	author := &discordgo.User{
-		"bot_id",
-		"bot@email.com",
-		"crbot",
-		"bot avatar",
-		"bot discriminator",
-		"bot token",
-		true,  /* verified */
-		false, /* multifactor enabled */
-		true,  /* Bot */
+		ID:            "bot_id",
+		Email:         "bot@email.com",
+		Username:      "crbot",
+		Avatar:        "bot avatar",
+		Discriminator: "bot discriminator",
+		Token:         "bot token",
+		Verified:      true,  /* verified */
+		MFAEnabled:    false, /* multifactor enabled */
+		Bot:           true,  /* Bot */
 	}
 
 	rickListedUser := &discordgo.User{
-		"2",
-		"bot@email.com",
-		"crbot",
-		"bot avatar",
-		"bot discriminator",
-		"bot token",
-		true,  /* verified */
-		false, /* multifactor enabled */
-		false, /* Bot */
+		ID:            "2",
+		Email:         "bot@email.com",
+		Username:      "crbot",
+		Avatar:        "bot avatar",
+		Discriminator: "bot discriminator",
+		Token:         "bot token",
+		Verified:      true,  /* verified */
+		MFAEnabled:    false, /* multifactor enabled */
+		Bot:           false, /* Bot */
 	}
 
 	users["bot_id"] = author

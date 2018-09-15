@@ -8,6 +8,7 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
+// StatusParser parses ?votestatus commands
 type StatusParser struct {
 }
 
@@ -18,14 +19,15 @@ func NewStatusParser() *StatusParser {
 
 // GetName returns the named type.
 func (p *StatusParser) GetName() string {
-	return model.Name_VoteStatus
+	return model.CommandNameVoteStatus
 }
 
 const (
+	// MsgHelpStatus is the help text for ?votestatus
 	MsgHelpStatus = "Prints the status of the current vote, or a message indicating that no vote is active"
 )
 
-// GetHelpText returns the help text.
+// HelpText returns the help text.
 func (p *StatusParser) HelpText(command string) (string, error) {
 	return MsgHelpStatus, nil
 }
@@ -36,6 +38,6 @@ func (p *StatusParser) Parse(splitContent []string, m *discordgo.MessageCreate) 
 		log.Fatal("parseVoteStatus called with non-list command", errors.New("wat"))
 	}
 	return &model.Command{
-		Type: model.Type_VoteStatus,
+		Type: model.CommandTypeVoteStatus,
 	}, nil
 }

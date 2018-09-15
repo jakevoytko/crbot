@@ -32,17 +32,27 @@ func NewModelHelper(stringMap stringmap.StringMap, utcClock model.UTCClock) *Mod
 }
 
 const (
-	KeyMostRecentVoteID   = "most-recent-vote-id-channel-%v"
+	// KeyMostRecentVoteID is the key/value store key for the vote
+	KeyMostRecentVoteID = "most-recent-vote-id-channel-%v"
+	// RedisMostRecentVoteID is the vote id of the most recent vote
 	RedisMostRecentVoteID = "most-recent-vote-id-channel-*"
-	KeyVoteTemplate       = "vote-%v-channel-%v"
-
+	// KeyVoteTemplate is the map from vote to channel
+	KeyVoteTemplate = "vote-%v-channel-%v"
+	// VoteDuration is the duration of a vote
 	VoteDuration = time.Duration(30) * time.Minute
 )
 
-var ErrorOnlyOneVote error = errors.New("Tried to start vote when one is already active")
-var ErrorNoVoteActive error = errors.New("Cannot vote when there is no active vote")
-var ErrorAlreadyVoted error = errors.New("User already voted")
-var ErrorVoteHasOutcome error = errors.New("Cannot change vote outcome")
+// ErrorOnlyOneVote indicates that a second vote cannot be started
+var ErrorOnlyOneVote = errors.New("Tried to start vote when one is already active")
+
+// ErrorNoVoteActive indicates that the user can't vote if no vote is active
+var ErrorNoVoteActive = errors.New("Cannot vote when there is no active vote")
+
+// ErrorAlreadyVoted indicates that the user can't vote twice
+var ErrorAlreadyVoted = errors.New("User already voted")
+
+// ErrorVoteHasOutcome indicates that the application already set the vote outcome, and to give up
+var ErrorVoteHasOutcome = errors.New("Cannot change vote outcome")
 
 // IsVoteActive returns whether there is a most-recent, active vote.
 func (h *ModelHelper) IsVoteActive(channelID model.Snowflake) (bool, error) {
@@ -224,6 +234,7 @@ func (h *ModelHelper) CastBallot(channelID model.Snowflake, userID model.Snowfla
 	return vote, nil
 }
 
+// SetVoteOutcome terminates an active vote with the given outcome
 func (h *ModelHelper) SetVoteOutcome(channelID model.Snowflake, voteOutcome int) error {
 	vote, err := h.MostRecentVote(channelID)
 	if err != nil {

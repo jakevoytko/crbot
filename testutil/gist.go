@@ -17,7 +17,8 @@ func NewInMemoryGist() *InMemoryGist {
 }
 
 const (
-	GistSuccessUrl = "https://www.example.com/success"
+	// GistSuccessURL is the fake URL for success
+	GistSuccessURL = "https://www.example.com/success"
 )
 
 // Upload stores the message, or returns an error if FailNext is set. Resets FailNext.
@@ -28,5 +29,5 @@ func (g *InMemoryGist) Upload(content string) (string, error) {
 	}
 
 	g.Messages = append(g.Messages, content)
-	return GistSuccessUrl, nil
+	return GistSuccessURL, nil
 }

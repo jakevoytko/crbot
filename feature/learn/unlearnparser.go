@@ -28,7 +28,7 @@ func NewUnlearnParser(featureRegistry *feature.Registry, commandMap stringmap.St
 
 // GetName returns the named type of this feature.
 func (p *UnlearnParser) GetName() string {
-	return model.Name_Unlearn
+	return model.CommandNameUnlearn
 }
 
 // HelpText returns the help text for ?unlearn.
@@ -49,9 +49,9 @@ func (p *UnlearnParser) Parse(splitContent []string, m *discordgo.MessageCreate)
 	// Show help when not enough data is present, or malicious data is present.
 	if len(splitContent) < 2 || !callRegexp.MatchString(splitContent[1]) {
 		return &model.Command{
-			Type: model.Type_Help,
+			Type: model.CommandTypeHelp,
 			Help: &model.HelpData{
-				Command: model.Name_Unlearn,
+				Command: model.CommandNameUnlearn,
 			},
 		}, nil
 	}
@@ -63,7 +63,7 @@ func (p *UnlearnParser) Parse(splitContent []string, m *discordgo.MessageCreate)
 	}
 	if !has || p.featureRegistry.IsInvokable(splitContent[1]) {
 		return &model.Command{
-			Type: model.Type_Unlearn,
+			Type: model.CommandTypeUnlearn,
 			Unlearn: &model.UnlearnData{
 				CallOpen: false,
 				Call:     splitContent[1],
@@ -73,7 +73,7 @@ func (p *UnlearnParser) Parse(splitContent []string, m *discordgo.MessageCreate)
 
 	// Everything is good.
 	return &model.Command{
-		Type: model.Type_Unlearn,
+		Type: model.CommandTypeUnlearn,
 		Unlearn: &model.UnlearnData{
 			CallOpen: true,
 			Call:     splitContent[1],

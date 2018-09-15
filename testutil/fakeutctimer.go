@@ -8,7 +8,7 @@ type timedCallback struct {
 	CB       func()
 }
 
-// FakeUTTimer is a faked UTC timer for testing.
+// FakeUTCTimer is a faked UTC timer for testing.
 type FakeUTCTimer struct {
 	timedCBs []timedCallback
 }

@@ -13,19 +13,24 @@ import (
 )
 
 const (
-	MsgGistAddress  = "The list of commands is here"
+	// MsgGistAddress is a user-visible string announcing the url of the gist
+	MsgGistAddress = "The list of commands is here"
+	// MsgListBuiltins is a user-visible header for the list of builtins
 	MsgListBuiltins = "List of builtins:"
-	MsgListCustom   = "List of learned commands:"
+	// MsgListCustom is a user-visible header for the list of learned commands
+	MsgListCustom = "List of learned commands:"
 )
 
-type ListExecutor struct {
+// Executor uploads all command keys to hastebin and returns the url to the user
+type Executor struct {
 	featureRegistry *feature.Registry
 	commandMap      stringmap.StringMap
 	gist            api.Gist
 }
 
-func NewListExecutor(featureRegistry *feature.Registry, commandMap stringmap.StringMap, gist api.Gist) *ListExecutor {
-	return &ListExecutor{
+// NewExecutor works as advertised
+func NewExecutor(featureRegistry *feature.Registry, commandMap stringmap.StringMap, gist api.Gist) *Executor {
+	return &Executor{
 		featureRegistry: featureRegistry,
 		commandMap:      commandMap,
 		gist:            gist,
@@ -33,17 +38,17 @@ func NewListExecutor(featureRegistry *feature.Registry, commandMap stringmap.Str
 }
 
 // GetType returns the type of this feature.
-func (e *ListExecutor) GetType() int {
-	return model.Type_List
+func (e *Executor) GetType() int {
+	return model.CommandTypeList
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
-func (e *ListExecutor) PublicOnly() bool {
+func (e *Executor) PublicOnly() bool {
 	return false
 }
 
 // Execute uploads the command list to github and pings the gist link in chat.
-func (e *ListExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
+func (e *Executor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	builtins := e.featureRegistry.GetInvokableFeatureNames()
 	all, err := e.commandMap.GetAll()
 	if err != nil {

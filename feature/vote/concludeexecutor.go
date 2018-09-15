@@ -9,10 +9,12 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
+// ConcludeExecutor concludes the active vote and prints the results
 type ConcludeExecutor struct {
 	modelHelper *ModelHelper
 }
 
+// NewConcludeExecutor works as advertised
 func NewConcludeExecutor(modelHelper *ModelHelper) *ConcludeExecutor {
 	return &ConcludeExecutor{
 		modelHelper: modelHelper,
@@ -21,7 +23,7 @@ func NewConcludeExecutor(modelHelper *ModelHelper) *ConcludeExecutor {
 
 // GetType returns the type of this feature.
 func (e *ConcludeExecutor) GetType() int {
-	return model.Type_VoteConclude
+	return model.CommandTypeVoteConclude
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private
@@ -33,9 +35,11 @@ func (e *ConcludeExecutor) PublicOnly() bool {
 }
 
 const (
+	// MsgVoteConcluded is the header for a concluded vote
 	MsgVoteConcluded = "@here -- Vote started by %s has concluded"
 )
 
+// Execute executes the command
 func (e *ConcludeExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
 	vote, err := e.modelHelper.MostRecentVote(channelID)
 	if err != nil {

@@ -49,9 +49,9 @@ func (p *CustomParser) HelpText(command string) (string, error) {
 }
 
 // Parse parses the given custom command.
-func (f *CustomParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
+func (p *CustomParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	// TODO(jake): Drop this and external hash check, handle missing commands solely in execute.
-	has, err := f.commandMap.Has(splitContent[0][1:])
+	has, err := p.commandMap.Has(splitContent[0][1:])
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (f *CustomParser) Parse(splitContent []string, m *discordgo.MessageCreate) 
 		log.Fatal("parseCustom called with non-custom command", errors.New("wat"))
 	}
 	return &model.Command{
-		Type: model.Type_Custom,
+		Type: model.CommandTypeCustom,
 		Custom: &model.CustomData{
 			Call: splitContent[0][1:],
 			Args: strings.Join(splitContent[1:], " "),

@@ -12,17 +12,19 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
+// CustomExecutor executes user-learned commands.
 type CustomExecutor struct {
 	commandMap stringmap.StringMap
 }
 
+// NewCustomExecutor works as advertised.
 func NewCustomExecutor(commandMap stringmap.StringMap) *CustomExecutor {
 	return &CustomExecutor{commandMap: commandMap}
 }
 
 // GetType returns the type of this feature.
 func (e *CustomExecutor) GetType() int {
-	return model.Type_Custom
+	return model.CommandTypeCustom
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
@@ -35,6 +37,7 @@ func (e *CustomExecutor) PublicOnly() bool {
 var giphyRegexp = regexp.MustCompile(`^https://([[:alnum:]]+.)*giphy.com/media/([[:alnum:]]+)/giphy.gif$`)
 
 const (
+	// MsgGiphyLink is the URL format for direct links to images given the key.
 	MsgGiphyLink = "https://i.giphy.com/%s.gif"
 )
 

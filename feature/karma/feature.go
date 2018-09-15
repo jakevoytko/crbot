@@ -24,8 +24,8 @@ func NewFeature(featureRegistry *feature.Registry, karmaMap stringmap.StringMap)
 // Parsers gets the learn feature parsers.
 func (f *Feature) Parsers() []feature.Parser {
 	return []feature.Parser{
-		NewKarmaParser(model.Name_KarmaIncrement, true /* increment */),
-		NewKarmaParser(model.Name_KarmaDecrement, false /* increment */),
+		NewParser(model.CommandNameKarmaIncrement, true /* increment */),
+		NewParser(model.CommandNameKarmaDecrement, false /* increment */),
 	}
 }
 
@@ -41,7 +41,7 @@ func (f *Feature) FallbackParser() feature.Parser {
 
 // Executors gets the executors.
 func (f *Feature) Executors() []feature.Executor {
-	return []feature.Executor{NewKarmaExecutor(f.karmaMap)}
+	return []feature.Executor{NewExecutor(f.karmaMap)}
 }
 
 // OnInitialLoad does nothing.

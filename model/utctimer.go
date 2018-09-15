@@ -8,8 +8,7 @@ type UTCTimer interface {
 	ExecuteAfter(time.Duration, func())
 }
 
-// SystemUTCClock is a UTCClock that returns UTC based on the current system's
-// time.
+// SystemUTCTimer is a real implementation of UTCTimer.
 type SystemUTCTimer struct{}
 
 // NewSystemUTCTimer works as advertised.

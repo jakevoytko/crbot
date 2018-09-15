@@ -25,6 +25,7 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
+// IDs used for testing
 const (
 	MainChannelID   = model.Snowflake(8675309)
 	SecondChannelID = model.Snowflake(9000000)
@@ -59,6 +60,7 @@ type Runner struct {
 	Handler func(api.DiscordSession, *discordgo.MessageCreate)
 }
 
+// NewRunner works as advertised
 func NewRunner(t *testing.T) *Runner {
 	// Initialize fakes.
 	customMap := stringmap.NewInMemoryStringMap()
@@ -111,6 +113,7 @@ func NewRunner(t *testing.T) *Runner {
 	}
 }
 
+// AssertState asserts all of the features against the test runner's state
 func (r *Runner) AssertState() {
 	r.T.Helper()
 
@@ -126,6 +129,7 @@ func (r *Runner) AssertState() {
 	}
 }
 
+// SendMessage sends the message to the bot as the standard test user
 func (r *Runner) SendMessage(channel model.Snowflake, message, expectedResponse string) {
 	r.T.Helper()
 
@@ -136,6 +140,7 @@ func (r *Runner) SendMessage(channel model.Snowflake, message, expectedResponse 
 	r.AssertState()
 }
 
+// SendMessageAs sends a message to the bot as the given user
 func (r *Runner) SendMessageAs(author *discordgo.User, channel model.Snowflake, message, expectedResponse string) {
 	r.T.Helper()
 
@@ -146,6 +151,7 @@ func (r *Runner) SendMessageAs(author *discordgo.User, channel model.Snowflake, 
 	r.AssertState()
 }
 
+// SendMessageIgnoringResponse sends a message to the bot without checking the output
 func (r *Runner) SendMessageIgnoringResponse(channel model.Snowflake, message string) {
 	r.T.Helper()
 
@@ -154,6 +160,7 @@ func (r *Runner) SendMessageIgnoringResponse(channel model.Snowflake, message st
 	r.AssertState()
 }
 
+// SendLearnMessage sends a learn message to the bot
 func (r *Runner) SendLearnMessage(channel model.Snowflake, message string, learnData *LearnData) {
 	r.T.Helper()
 
@@ -166,6 +173,7 @@ func (r *Runner) SendLearnMessage(channel model.Snowflake, message string, learn
 	r.SendListMessage(channel)
 }
 
+// SendVoteMessageAs sends a ?vote message to the bot as the given user
 func (r *Runner) SendVoteMessageAs(author *discordgo.User, channel model.Snowflake) {
 	r.T.Helper()
 
@@ -177,6 +185,7 @@ func (r *Runner) SendVoteMessageAs(author *discordgo.User, channel model.Snowfla
 	r.AssertState()
 }
 
+// CastBallotAs casts a ballot as the given user
 func (r *Runner) CastBallotAs(author *discordgo.User, channel model.Snowflake, inFavor bool) {
 	r.T.Helper()
 
@@ -206,6 +215,7 @@ func (r *Runner) CastBallotAs(author *discordgo.User, channel model.Snowflake, i
 	r.AssertState()
 }
 
+// CastDuplicateBallotAs casts a ballot as the user and expects no state change as a result
 func (r *Runner) CastDuplicateBallotAs(author *discordgo.User, channel model.Snowflake, inFavor bool) {
 	r.T.Helper()
 
@@ -225,7 +235,7 @@ func (r *Runner) CastDuplicateBallotAs(author *discordgo.User, channel model.Sno
 	r.AssertState()
 }
 
-// Advances the clock enough that the vote expires, and fires the trigger.
+// ExpireVote advances the clock enough that the vote expires, and fires the trigger.
 func (r *Runner) ExpireVote(channel model.Snowflake) {
 	r.T.Helper()
 
@@ -268,6 +278,7 @@ func (r *Runner) ExpireVote(channel model.Snowflake) {
 	r.AssertState()
 }
 
+// SendLearnMessageAs sends a ?learn message as the given user
 func (r *Runner) SendLearnMessageAs(author *discordgo.User, channel model.Snowflake, message string, learnData *LearnData) {
 	r.T.Helper()
 
@@ -280,6 +291,7 @@ func (r *Runner) SendLearnMessageAs(author *discordgo.User, channel model.Snowfl
 	r.SendListMessage(channel)
 }
 
+// SendUnlearnMessage sends an ?unlearn message
 func (r *Runner) SendUnlearnMessage(channel model.Snowflake, message string, call string) {
 	r.T.Helper()
 
@@ -292,6 +304,7 @@ func (r *Runner) SendUnlearnMessage(channel model.Snowflake, message string, cal
 	r.SendListMessage(channel)
 }
 
+// SendMessageWithoutResponse sends a message without a response
 func (r *Runner) SendMessageWithoutResponse(channel model.Snowflake, message string) {
 	r.T.Helper()
 
@@ -300,6 +313,7 @@ func (r *Runner) SendMessageWithoutResponse(channel model.Snowflake, message str
 	r.AssertState()
 }
 
+// SendListMessage sends a ?list message to the bot
 func (r *Runner) SendListMessage(channel model.Snowflake) {
 	r.T.Helper()
 
@@ -385,6 +399,7 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 	r.AssertState()
 }
 
+// SendVoteStatusMessage sends a vote status message to the bot
 func (r *Runner) SendVoteStatusMessage(channel model.Snowflake) {
 	r.T.Helper()
 
@@ -437,6 +452,7 @@ func (r *Runner) SendVoteStatusMessage(channel model.Snowflake) {
 	r.AssertState()
 }
 
+// AddUser adds a user in the test session
 func (r *Runner) AddUser(user *discordgo.User) {
 	r.DiscordSession.Users[user.ID] = user
 }
@@ -447,6 +463,7 @@ type LearnData struct {
 	Response string
 }
 
+// NewLearnData stores a duplicate representation of the expected learn data for testing
 func NewLearnData(call, response string) *LearnData {
 	return &LearnData{
 		Call:     call,
@@ -548,7 +565,7 @@ func sendMessage(discordSession api.DiscordSession, handler func(api.DiscordSess
 }
 
 func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel model.Snowflake, message string) {
-	messageCreate := &discordgo.MessageCreate{
+	messageCreate := &discordgo.MessageCreate{ // nolint
 		&discordgo.Message{
 			ID:              "messageID",
 			ChannelID:       channel.Format(),
@@ -618,6 +635,7 @@ func assertCommand(t *testing.T, commandMap *stringmap.InMemoryStringMap, call, 
 	}
 }
 
+// NewUser creates a new user for testing
 func NewUser(name string, id model.Snowflake, bot bool) *discordgo.User {
 	idStr := id.Format()
 	return &discordgo.User{

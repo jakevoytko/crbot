@@ -10,33 +10,34 @@ import (
 )
 
 const (
+	// MsgDefaultHelp is what is shown when ?help is entered with no arguments.
 	MsgDefaultHelp = "Type `?help` for this message, `?list` to list all commands, or `?help <command>` to get help for a particular command."
 )
 
-// HelpExecutor prints help text for help commands.
-type HelpExecutor struct {
+// Executor prints help text for help commands.
+type Executor struct {
 	featureRegistry *feature.Registry
 }
 
-// NewHelpExecutor works as advertised.
-func NewHelpExecutor(featureRegistry *feature.Registry) *HelpExecutor {
-	return &HelpExecutor{
+// NewExecutor works as advertised.
+func NewExecutor(featureRegistry *feature.Registry) *Executor {
+	return &Executor{
 		featureRegistry: featureRegistry,
 	}
 }
 
 // GetType returns the type.
-func (e *HelpExecutor) GetType() int {
-	return model.Type_Help
+func (e *Executor) GetType() int {
+	return model.CommandTypeHelp
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
-func (e *HelpExecutor) PublicOnly() bool {
+func (e *Executor) PublicOnly() bool {
 	return false
 }
 
 // Execute replies over the given channel with a help message.
-func (e *HelpExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
+func (e *Executor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Help == nil {
 		log.Fatal("Incorrectly generated help command", errors.New("wat"))
 	}

@@ -31,11 +31,11 @@ func NewFeature(featureRegistry *feature.Registry, voteMap stringmap.StringMap, 
 func (f *Feature) Parsers() []feature.Parser {
 	return []feature.Parser{
 		NewStatusParser(),
-		NewVoteParser(),
-		NewBallotParser(model.Name_VoteInFavorF1, true /* inFavor */),
-		NewBallotParser(model.Name_VoteInFavorYes, true /* inFavor */),
-		NewBallotParser(model.Name_VoteAgainstF2, false /* inFavor */),
-		NewBallotParser(model.Name_VoteAgainstNo, false /* inFavor */),
+		NewStartVoteParser(),
+		NewBallotParser(model.CommandNameVoteInFavorF1, true /* inFavor */),
+		NewBallotParser(model.CommandNameVoteInFavorYes, true /* inFavor */),
+		NewBallotParser(model.CommandNameVoteAgainstF2, false /* inFavor */),
+		NewBallotParser(model.CommandNameVoteAgainstNo, false /* inFavor */),
 	}
 }
 
@@ -55,7 +55,7 @@ func (f *Feature) Executors() []feature.Executor {
 		NewBallotExecutor(f.modelHelper),
 		NewConcludeExecutor(f.modelHelper),
 		NewStatusExecutor(f.modelHelper),
-		NewVoteExecutor(f.modelHelper, f.commandChannel, f.utcTimer),
+		NewStartVoteExecutor(f.modelHelper, f.commandChannel, f.utcTimer),
 	}
 }
 

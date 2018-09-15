@@ -13,33 +13,33 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
-// LearnParser parses ?learn commands.
-type LearnParser struct {
+// CustomLearnParser parses ?learn commands.
+type CustomLearnParser struct {
 	featureRegistry *feature.Registry
 	commandMap      stringmap.StringMap
 }
 
-// NewLearnParser works as advertised.
-func NewLearnParser(featureRegistry *feature.Registry, commandMap stringmap.StringMap) *LearnParser {
-	return &LearnParser{
+// NewCustomLearnParser works as advertised.
+func NewCustomLearnParser(featureRegistry *feature.Registry, commandMap stringmap.StringMap) *CustomLearnParser {
+	return &CustomLearnParser{
 		featureRegistry: featureRegistry,
 		commandMap:      commandMap,
 	}
 }
 
 // GetName returns the named type of this feature.
-func (p *LearnParser) GetName() string {
-	return model.Name_Learn
+func (p *CustomLearnParser) GetName() string {
+	return model.CommandNameLearn
 }
 
 // HelpText explains how to use ?learn.
-func (p *LearnParser) HelpText(command string) (string, error) {
+func (p *CustomLearnParser) HelpText(command string) (string, error) {
 	return MsgHelpLearn, nil
 }
 
 // Parse parses the given learn command.
-func (f *LearnParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
-	if splitContent[0] != f.GetName() {
+func (p *CustomLearnParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
+	if splitContent[0] != p.GetName() {
 		log.Fatal("parseLearn called with non-learn command", errors.New("wat"))
 	}
 	splitContent = util.CollapseWhitespace(splitContent, 1)
@@ -51,21 +51,21 @@ func (f *LearnParser) Parse(splitContent []string, m *discordgo.MessageCreate) (
 	// Show help when not enough data is present, or malicious data is present.
 	if len(splitContent) < 3 || !callRegexp.MatchString(splitContent[1]) || !responseRegexp.MatchString(splitContent[2]) {
 		return &model.Command{
-			Type: model.Type_Help,
+			Type: model.CommandTypeHelp,
 			Help: &model.HelpData{
-				Command: model.Name_Learn,
+				Command: model.CommandNameLearn,
 			},
 		}, nil
 	}
 
 	// Don't overwrite old or builtin commands.
-	has, err := f.commandMap.Has(splitContent[1])
+	has, err := p.commandMap.Has(splitContent[1])
 	if err != nil {
 		return nil, err
 	}
-	if has || f.featureRegistry.IsInvokable(splitContent[1]) {
+	if has || p.featureRegistry.IsInvokable(splitContent[1]) {
 		return &model.Command{
-			Type: model.Type_Learn,
+			Type: model.CommandTypeLearn,
 			Learn: &model.LearnData{
 				CallOpen: false,
 				Call:     splitContent[1],
@@ -76,7 +76,7 @@ func (f *LearnParser) Parse(splitContent []string, m *discordgo.MessageCreate) (
 	// Everything is good.
 	response := strings.Join(splitContent[2:], " ")
 	return &model.Command{
-		Type: model.Type_Learn,
+		Type: model.CommandTypeLearn,
 		Learn: &model.LearnData{
 			CallOpen: true,
 			Call:     splitContent[1],

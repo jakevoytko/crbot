@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// Vote outcomes used for storage.
 const (
 	// These are serialized and stored, so they cannot change.
 	VoteOutcomeNotDone   = 1
@@ -40,7 +41,7 @@ func NewVote(voteID int, channelID, userID Snowflake, message string, timestampS
 	}
 }
 
-// IsActive returns whether there are enough votes to claim confidence.
+// HasEnoughVotes returns whether there are enough votes to claim confidence.
 func (v *Vote) HasEnoughVotes() bool {
 	return len(v.VotesFor)+len(v.VotesAgainst) >= 5
 }

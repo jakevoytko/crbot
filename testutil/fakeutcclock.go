@@ -2,7 +2,7 @@ package testutil
 
 import "time"
 
-// FakeUTClock is a mockable UTC clock for testing.
+// FakeUTCClock is a mockable UTC clock for testing.
 type FakeUTCClock struct {
 	currentTime time.Time
 }

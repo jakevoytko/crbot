@@ -10,17 +10,19 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
+// UnlearnExecutor attempts to unlearn a custom command and returns the result to the user.
 type UnlearnExecutor struct {
 	commandMap stringmap.StringMap
 }
 
+// NewUnlearnExecutor works as advertised.
 func NewUnlearnExecutor(commandMap stringmap.StringMap) *UnlearnExecutor {
 	return &UnlearnExecutor{commandMap: commandMap}
 }
 
 // GetType returns the type of this feature.
-func (f *UnlearnExecutor) GetType() int {
-	return model.Type_Unlearn
+func (e *UnlearnExecutor) GetType() int {
+	return model.CommandTypeUnlearn
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.

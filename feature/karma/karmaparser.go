@@ -11,34 +11,36 @@ import (
 	"github.com/jakevoytko/crbot/util"
 )
 
-// KarmaParser parses ?++ and ?-- commands
-type KarmaParser struct {
+// Parser parses ?++ and ?-- commands
+type Parser struct {
 	// The message that the parser looks for.
 	Message string
 	// Whether this message is incrementing or decrementing karma
 	Increment bool
 }
 
-// NewKarmaParser works as advertised.
-func NewKarmaParser(message string, increment bool) *KarmaParser {
-	return &KarmaParser{
+// NewParser works as advertised.
+func NewParser(message string, increment bool) *Parser {
+	return &Parser{
 		Message:   message,
 		Increment: increment,
 	}
 }
 
 // GetName returns the named type.
-func (p *KarmaParser) GetName() string {
+func (p *Parser) GetName() string {
 	return p.Message
 }
 
 const (
+	// MsgHelpKarmaIncrement is help text for ?++
 	MsgHelpKarmaIncrement = "Type ?++ <target> to add a single unit of karma to a target's karma score"
+	// MsgHelpKarmaDecrement is help text for ?--
 	MsgHelpKarmaDecrement = "Type ?-- <target> to deduct a single unit of karma from a target's karma score"
 )
 
 // HelpText returns the help text.
-func (p *KarmaParser) HelpText(command string) (string, error) {
+func (p *Parser) HelpText(command string) (string, error) {
 	if p.Increment {
 		return MsgHelpKarmaIncrement, nil
 	}
@@ -46,13 +48,13 @@ func (p *KarmaParser) HelpText(command string) (string, error) {
 }
 
 // The target is mentioned in plaintext.
-var directMentionRegexp *regexp.Regexp = regexp.MustCompile("^[[:alnum:]].*$")
+var directMentionRegexp = regexp.MustCompile("^[[:alnum:]].*$")
 
 // The target is an embedded entity that needs to be looked up in the message.
-var entityRegexp *regexp.Regexp = regexp.MustCompile("^<@!?([[:digit:]]+)>$")
+var entityRegexp = regexp.MustCompile("^<@!?([[:digit:]]+)>$")
 
 // Parse parses the given karma command.
-func (p *KarmaParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
+func (p *Parser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("KarmaParser.Parse called with non-list command", errors.New("wat"))
 	}
@@ -85,12 +87,12 @@ func (p *KarmaParser) Parse(splitContent []string, m *discordgo.MessageCreate) (
 
 	// Show help when not enough data is present, or malicious data is present.
 	if len(splitContent) < 2 || len(target) == 0 {
-		commandType := model.Name_KarmaDecrement
+		commandType := model.CommandNameKarmaDecrement
 		if p.Increment {
-			commandType = model.Name_KarmaIncrement
+			commandType = model.CommandNameKarmaIncrement
 		}
 		return &model.Command{
-			Type: model.Type_Help,
+			Type: model.CommandTypeHelp,
 			Help: &model.HelpData{
 				Command: commandType,
 			},
@@ -98,7 +100,7 @@ func (p *KarmaParser) Parse(splitContent []string, m *discordgo.MessageCreate) (
 	}
 
 	return &model.Command{
-		Type: model.Type_Karma,
+		Type: model.CommandTypeKarma,
 		Karma: &model.KarmaData{
 			Increment: p.Increment,
 			Target:    target,

@@ -11,7 +11,7 @@ import (
 // Configuration handling
 ///////////////////////////////////////////////////////////////////////////////
 
-// Secret holds the serialized bot token.
+// Config represents the JSON format of the config file.
 type Config struct {
 	BotToken string            `json:"bot_token"`
 	RickList []model.Snowflake `json:"ricklist"`

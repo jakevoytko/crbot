@@ -10,10 +10,12 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
+// StatusExecutor allows the user to check on the progress of the current vote
 type StatusExecutor struct {
 	modelHelper *ModelHelper
 }
 
+// NewStatusExecutor works as advertised
 func NewStatusExecutor(modelHelper *ModelHelper) *StatusExecutor {
 	return &StatusExecutor{
 		modelHelper: modelHelper,
@@ -22,7 +24,7 @@ func NewStatusExecutor(modelHelper *ModelHelper) *StatusExecutor {
 
 // GetType returns the type of this feature.
 func (e *StatusExecutor) GetType() int {
-	return model.Type_VoteStatus
+	return model.CommandTypeVoteStatus
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
@@ -31,19 +33,32 @@ func (e *StatusExecutor) PublicOnly() bool {
 }
 
 const (
-	MsgNoActiveVote       = "No active vote"
-	MsgOneVoteAgainst     = "1 vote against"
-	MsgOneVoteFor         = "1 vote for"
-	MsgSpacer             = "-----"
+	// MsgNoActiveVote prints that there was no active vote
+	MsgNoActiveVote = "No active vote"
+	// MsgOneVoteAgainst is the unpluralized message for vote against
+	MsgOneVoteAgainst = "1 vote against"
+	// MsgOneVoteFor is the unpluralized message for vote for
+	MsgOneVoteFor = "1 vote for"
+	// MsgSpacer is used to separate parts of the output string
+	MsgSpacer = "-----"
+	// MsgStatusInconclusive prints that a vote was inconclusive
 	MsgStatusInconclusive = "Not enough votes were cast."
-	MsgStatusVoteFailed   = "Vote Failed."
-	MsgStatusVoteFailing  = "Vote is failing"
-	MsgStatusVotePassed   = "Vote Passed!"
-	MsgStatusVotePassing  = "Vote is passing"
-	MsgStatusVotesNeeded  = "5 votes must be cast before vote can pass"
-	MsgVoteOwner          = "Vote started by %s: "
-	MsgVotesAgainst       = "%d votes against"
-	MsgVotesFor           = "%d votes for"
+	// MsgStatusVoteFailed prints that a vote has failed
+	MsgStatusVoteFailed = "Vote Failed."
+	// MsgStatusVoteFailing prints that a vote is currently failing
+	MsgStatusVoteFailing = "Vote is failing"
+	// MsgStatusVotePassed indicates that the vote has passed
+	MsgStatusVotePassed = "Vote Passed!"
+	// MsgStatusVotePassing prints whether the vote is passing
+	MsgStatusVotePassing = "Vote is passing"
+	// MsgStatusVotesNeeded prints how many votes are needed
+	MsgStatusVotesNeeded = "5 votes must be cast before vote can pass"
+	// MsgVoteOwner prints who started the vote
+	MsgVoteOwner = "Vote started by %s: "
+	// MsgVotesAgainst prints the votes against
+	MsgVotesAgainst = "%d votes against"
+	// MsgVotesFor prints the votes for
+	MsgVotesFor = "%d votes for"
 )
 
 // Execute prints the status of the current vote.

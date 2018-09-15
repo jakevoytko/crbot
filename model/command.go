@@ -6,37 +6,38 @@ import "github.com/bwmarrin/discordgo"
 // Constants
 ///////////////////////////////////////////////////////////////////////////////
 
+// Consts use throughout the application
 const (
-	Type_Custom = iota
-	Type_FactSphere
-	Type_Help
-	Type_Karma
-	Type_Learn
-	Type_List
-	Type_None
-	Type_RickList
-	Type_RickListInfo
-	Type_Unlearn
-	Type_Unrecognized
-	Type_Vote
-	Type_VoteBallot
-	Type_VoteConclude
-	Type_VoteStatus
+	CommandTypeCustom = iota
+	CommandTypeFactSphere
+	CommandTypeHelp
+	CommandTypeKarma
+	CommandTypeLearn
+	CommandTypeList
+	CommandTypeNone
+	CommandTypeRickList
+	CommandTypeRickListInfo
+	CommandTypeUnlearn
+	CommandTypeUnrecognized
+	CommandTypeVote
+	CommandTypeVoteBallot
+	CommandTypeVoteConclude
+	CommandTypeVoteStatus
 
-	Name_FactSphere     = "?factsphere"
-	Name_Help           = "?help"
-	Name_KarmaIncrement = "?++"
-	Name_KarmaDecrement = "?--"
-	Name_Learn          = "?learn"
-	Name_List           = "?list"
-	Name_RickListInfo   = "?ricklist"
-	Name_Unlearn        = "?unlearn"
-	Name_Vote           = "?vote"
-	Name_VoteAgainstF2  = "?f2"
-	Name_VoteAgainstNo  = "?no"
-	Name_VoteInFavorF1  = "?f1"
-	Name_VoteInFavorYes = "?yes"
-	Name_VoteStatus     = "?votestatus"
+	CommandNameFactSphere     = "?factsphere"
+	CommandNameHelp           = "?help"
+	CommandNameKarmaIncrement = "?++"
+	CommandNameKarmaDecrement = "?--"
+	CommandNameLearn          = "?learn"
+	CommandNameList           = "?list"
+	CommandNameRickListInfo   = "?ricklist"
+	CommandNameUnlearn        = "?unlearn"
+	CommandNameVote           = "?vote"
+	CommandNameVoteAgainstF2  = "?f2"
+	CommandNameVoteAgainstNo  = "?no"
+	CommandNameVoteInFavorF1  = "?f1"
+	CommandNameVoteInFavorYes = "?yes"
+	CommandNameVoteStatus     = "?votestatus"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,30 +56,36 @@ type KarmaData struct {
 	Target    string
 }
 
+// LearnData is the learn-specific data
 type LearnData struct {
 	CallOpen bool
 	Call     string
 	Response string
 }
 
+// UnlearnData is the unlearn-specific data
 type UnlearnData struct {
 	CallOpen bool
 	Call     string
 }
 
+// CustomData is the custom ?learn-specific data
 type CustomData struct {
 	Call string
 	Args string
 }
 
+// VoteData contains the information about the proposed vote
 type VoteData struct {
 	Message string
 }
 
+// BallotData represents whether the user is for or against the vote
 type BallotData struct {
 	InFavor bool
 }
 
+// Command is the generic command interface
 // TODO(jake): Make this an interface that has only getType(), cast in features.
 type Command struct {
 	// Metadata

@@ -19,7 +19,7 @@ func NewFeature(featureRegistry *feature.Registry) *Feature {
 
 // Parsers returns the parsers.
 func (f *Feature) Parsers() []feature.Parser {
-	return []feature.Parser{NewHelpParser(f.featureRegistry)}
+	return []feature.Parser{NewParser(f.featureRegistry)}
 }
 
 // CommandInterceptors returns nothing.
@@ -34,7 +34,7 @@ func (f *Feature) FallbackParser() feature.Parser {
 
 // Executors gets the executors.
 func (f *Feature) Executors() []feature.Executor {
-	return []feature.Executor{NewHelpExecutor(f.featureRegistry)}
+	return []feature.Executor{NewExecutor(f.featureRegistry)}
 }
 
 // OnInitialLoad does nothing.

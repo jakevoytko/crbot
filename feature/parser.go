@@ -5,7 +5,7 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-// Parsers is used to multiplex on builtin ?* commands, and ensure that the
+// Parser is used to multiplex on builtin ?* commands, and ensure that the
 // commands are correctly formatted.
 type Parser interface {
 	// The user-facing name of the command. Must be unique.

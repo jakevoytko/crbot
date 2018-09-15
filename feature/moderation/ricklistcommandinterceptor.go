@@ -27,12 +27,12 @@ func (i *RickListCommandInterceptor) Intercept(command *model.Command, s api.Dis
 	//   a rickroll.
 	if channel, err := s.Channel(command.ChannelID.Format()); err == nil {
 		isPrivate := channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM
-		isAllowed := command.Type == model.Type_Learn || command.Type == model.Type_None
+		isAllowed := command.Type == model.CommandTypeLearn || command.Type == model.CommandTypeNone
 		if isPrivate && !isAllowed {
 			for _, ricked := range i.rickList {
 				if ricked.Format() == command.Author.ID {
 					return &model.Command{
-						Type:      model.Type_RickList,
+						Type:      model.CommandTypeRickList,
 						Author:    nil,
 						ChannelID: command.ChannelID,
 					}, nil

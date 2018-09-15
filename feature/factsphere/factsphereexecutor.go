@@ -8,26 +8,27 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-type FactSphereExecutor struct {
+// Executor prints a random ?factsphere command for the user.
+type Executor struct {
 }
 
 // NewFactSphereExecutor works as advertised.
-func NewFactSphereExecutor() *FactSphereExecutor {
-	return &FactSphereExecutor{}
+func NewFactSphereExecutor() *Executor {
+	return &Executor{}
 }
 
 // GetType returns the type of this feature.
-func (e *FactSphereExecutor) GetType() int {
-	return model.Type_FactSphere
+func (e *Executor) GetType() int {
+	return model.CommandTypeFactSphere
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
-func (e *FactSphereExecutor) PublicOnly() bool {
+func (e *Executor) PublicOnly() bool {
 	return false
 }
 
 // Execute returns a random factsphere fact
-func (e *FactSphereExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
+func (e *Executor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
 	_, err := s.ChannelMessageSend(channelID.Format(), factSphereFacts[rand.Intn(len(factSphereFacts))])
 	if err != nil {
 		log.Info("Error sending factsphere message", err)

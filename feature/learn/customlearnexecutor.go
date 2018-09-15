@@ -10,28 +10,28 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
-// LearnExecutor learns a user-generated command.
-type LearnExecutor struct {
+// CustomLearnExecutor learns a user-generated command.
+type CustomLearnExecutor struct {
 	commandMap stringmap.StringMap
 }
 
-// NewLearnExecutor works as advertised.
-func NewLearnExecutor(commandMap stringmap.StringMap) *LearnExecutor {
-	return &LearnExecutor{commandMap: commandMap}
+// NewCustomLearnExecutor works as advertised.
+func NewCustomLearnExecutor(commandMap stringmap.StringMap) *CustomLearnExecutor {
+	return &CustomLearnExecutor{commandMap: commandMap}
 }
 
 // GetType returns the type of this feature.
-func (f *LearnExecutor) GetType() int {
-	return model.Type_Learn
+func (f *CustomLearnExecutor) GetType() int {
+	return model.CommandTypeLearn
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
-func (e *LearnExecutor) PublicOnly() bool {
+func (f *CustomLearnExecutor) PublicOnly() bool {
 	return false
 }
 
 // Execute replies over the given channel with a help message.
-func (f *LearnExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
+func (f *CustomLearnExecutor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
 	if command.Learn == nil {
 		log.Fatal("Incorrectly generated learn command", errors.New("wat"))
 	}

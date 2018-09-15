@@ -24,7 +24,7 @@ func NewRickListInfoExecutor(config *config.Config) *RickListInfoExecutor {
 
 // GetType returns the type.
 func (e *RickListInfoExecutor) GetType() int {
-	return model.Type_RickListInfo
+	return model.CommandTypeRickListInfo
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
@@ -33,7 +33,9 @@ func (e *RickListInfoExecutor) PublicOnly() bool {
 }
 
 const (
+	// MsgRickListEmpty prints that nobody is on the rickroll moderation list
 	MsgRickListEmpty = "Nobody is on the ricklist."
+	// MsgRickListUsers is a header for who is on the rickroll moderation list
 	MsgRickListUsers = "On the Rick list: "
 )
 

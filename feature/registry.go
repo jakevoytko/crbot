@@ -37,7 +37,7 @@ func (r *Registry) Register(feature Feature) error {
 	// Register regular parsers.
 	for _, parser := range feature.Parsers() {
 		if _, ok := r.nameToParser[parser.GetName()]; ok {
-			return errors.New(fmt.Sprintf("Duplicate parser: %v", parser.GetName()))
+			return fmt.Errorf("Duplicate parser: %v", parser.GetName())
 		}
 		if len(parser.GetName()) > 0 {
 			r.nameToParser[parser.GetName()] = parser
@@ -59,7 +59,7 @@ func (r *Registry) Register(feature Feature) error {
 	// Register executors.
 	for _, executor := range feature.Executors() {
 		if _, ok := r.typeToExecutor[executor.GetType()]; ok {
-			return errors.New(fmt.Sprintf("Duplicate executor: %v", executor.GetType()))
+			return fmt.Errorf("Duplicate executor: %v", executor.GetType())
 		}
 		r.typeToExecutor[executor.GetType()] = executor
 	}
@@ -101,16 +101,17 @@ func (r *Registry) IsInvokable(name string) bool {
 	return ok1 || ok2
 }
 
-// Gets the invokable feature names.
+// GetInvokableFeatureNames returns invokable feature names.
 func (r *Registry) GetInvokableFeatureNames() []string {
 	return r.invokableFeatureNames
 }
 
-// GetCommandInterceptors gets the execution interceptors.
+// CommandInterceptors return the execution interceptors.
 func (r *Registry) CommandInterceptors() []CommandInterceptor {
 	return r.interceptors
 }
 
+// GetInitialLoadFns return the initial load functions for each feature
 func (r *Registry) GetInitialLoadFns() []func(api.DiscordSession) error {
 	return r.initialLoadFns
 }

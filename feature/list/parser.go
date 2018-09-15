@@ -8,34 +8,35 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-// ListParser parses ?list commands.
-type ListParser struct{}
+// Parser parses ?list commands.
+type Parser struct{}
 
-// NewListParser works as advertised.
-func NewListParser() *ListParser {
-	return &ListParser{}
+// NewParser works as advertised.
+func NewParser() *Parser {
+	return &Parser{}
 }
 
 // GetName returns the named type of this feature.
-func (p *ListParser) GetName() string {
-	return model.Name_List
+func (p *Parser) GetName() string {
+	return model.CommandNameList
 }
 
 const (
+	// MsgHelpList is the help text for ?list
 	MsgHelpList = "Type `?list` to get the URL of a Gist with all builtin and learned commands"
 )
 
 // HelpText explains how to use ?list.
-func (p *ListParser) HelpText(command string) (string, error) {
+func (p *Parser) HelpText(command string) (string, error) {
 	return MsgHelpList, nil
 }
 
 // Parse parses the given list command.
-func (p *ListParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
+func (p *Parser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("parseList called with non-list command", errors.New("wat"))
 	}
 	return &model.Command{
-		Type: model.Type_List,
+		Type: model.CommandTypeList,
 	}, nil
 }

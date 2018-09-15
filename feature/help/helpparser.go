@@ -10,34 +10,35 @@ import (
 	"github.com/jakevoytko/crbot/util"
 )
 
-// HelpParser parses ?help commands.
-type HelpParser struct {
+// Parser parses ?help commands.
+type Parser struct {
 	featureRegistry *feature.Registry
 }
 
-// NewHelpParser works as advertised.
-func NewHelpParser(featureRegistry *feature.Registry) *HelpParser {
-	return &HelpParser{
+// NewParser works as advertised.
+func NewParser(featureRegistry *feature.Registry) *Parser {
+	return &Parser{
 		featureRegistry: featureRegistry,
 	}
 }
 
 // GetName returns the named type.
-func (p *HelpParser) GetName() string {
-	return model.Name_Help
+func (p *Parser) GetName() string {
+	return model.CommandNameHelp
 }
 
 const (
+	// MsgHelpHelp prints the results of ?help help
 	MsgHelpHelp = "Get help for help."
 )
 
-// GetHelpText returns the help text.
-func (p *HelpParser) HelpText(command string) (string, error) {
+// HelpText returns the help text.
+func (p *Parser) HelpText(command string) (string, error) {
 	return MsgHelpHelp, nil
 }
 
 // Parse parses the given help command.
-func (p *HelpParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
+func (p *Parser) Parse(splitContent []string, m *discordgo.MessageCreate) (*model.Command, error) {
 	if splitContent[0] != p.GetName() {
 		log.Fatal("parseHelp called with non-help command", errors.New("wat"))
 	}
@@ -49,7 +50,7 @@ func (p *HelpParser) Parse(splitContent []string, m *discordgo.MessageCreate) (*
 	}
 
 	return &model.Command{
-		Type: model.Type_Help,
+		Type: model.CommandTypeHelp,
 		Help: &model.HelpData{
 			Command: userCommand,
 		},

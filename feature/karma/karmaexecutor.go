@@ -11,33 +11,36 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
-type KarmaExecutor struct {
+// Executor increments or decrements karma and prints the results to the user.
+type Executor struct {
 	karmaMap stringmap.StringMap
 }
 
-// NewKarmaExecutor works as advertised.
-func NewKarmaExecutor(karmaMap stringmap.StringMap) *KarmaExecutor {
-	return &KarmaExecutor{karmaMap: karmaMap}
+// NewExecutor works as advertised.
+func NewExecutor(karmaMap stringmap.StringMap) *Executor {
+	return &Executor{karmaMap: karmaMap}
 }
 
 // GetType returns the type of this feature.
-func (e *KarmaExecutor) GetType() int {
-	return model.Type_Karma
+func (e *Executor) GetType() int {
+	return model.CommandTypeKarma
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.
-func (e *KarmaExecutor) PublicOnly() bool {
+func (e *Executor) PublicOnly() bool {
 	return true
 }
 
 const (
+	// MsgIncrementKarma prints the results of ?++ thing
 	MsgIncrementKarma = "%v has been upvoted. %v now has %d karma."
+	// MsgDecrementKarma prints the results of ?-- thing
 	MsgDecrementKarma = "%v has been downvoted. %v now has %d karma."
 )
 
 // Execute attempts to add karma to the total already in memory, or creates a
 // new record if it was not found.
-func (e *KarmaExecutor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
+func (e *Executor) Execute(s api.DiscordSession, channelID model.Snowflake, command *model.Command) {
 	if command.Karma == nil {
 		log.Fatal("Incorrectly generated karma command", errors.New("wat"))
 	}

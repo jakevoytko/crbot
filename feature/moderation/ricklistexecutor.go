@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	// MsgRickList is the canonical rickroll URL. Used only for super serious moderation
 	MsgRickList = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 )
 
@@ -21,7 +22,7 @@ func NewRickListExecutor() *RickListExecutor {
 
 // GetType returns the type.
 func (e *RickListExecutor) GetType() int {
-	return model.Type_RickList
+	return model.CommandTypeRickList
 }
 
 // PublicOnly returns whether the executor should be intercepted in a private channel.

@@ -20,7 +20,18 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
-func InitializeRegistry(commandMap stringmap.StringMap, karmaMap stringmap.StringMap, voteMap stringmap.StringMap, gist api.Gist, config *config.Config, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) *feature.Registry {
+// InitializeRegistry registers all of the features of the chatbot with the registry and returns the initialized
+// registry.
+func InitializeRegistry(
+	commandMap stringmap.StringMap,
+	karmaMap stringmap.StringMap,
+	voteMap stringmap.StringMap,
+	gist api.Gist,
+	config *config.Config,
+	clock model.UTCClock,
+	timer model.UTCTimer,
+	commandChannel chan<- *model.Command) *feature.Registry {
+
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
 	// a better pattern here.
@@ -49,9 +60,11 @@ func InitializeRegistry(commandMap stringmap.StringMap, karmaMap stringmap.Strin
 ///////////////////////////////////////////////////////////////////////////////
 
 const (
+	// MsgPublicOnly is a user-visible string for commands that cannot be executed in a private channels.
 	MsgPublicOnly = "Cannot execute `%s` in a private channel"
 )
 
+// HandleCommands pops commands off the command channel and attempts to dispatch them to a command executor.
 func HandleCommands(featureRegistry *feature.Registry, s api.DiscordSession, commandChannel <-chan *model.Command) {
 	for command := range commandChannel {
 		var err error // so I don't have to use := in the intercept() call
@@ -111,7 +124,7 @@ func parseCommand(commandMap stringmap.StringMap, registry *feature.Registry, m 
 	content := m.Content
 	if !strings.HasPrefix(content, "?") {
 		return &model.Command{
-			Type: model.Type_None,
+			Type: model.CommandTypeNone,
 		}, nil
 	}
 	splitContent := strings.Split(content, " ")
@@ -135,6 +148,6 @@ func parseCommand(commandMap stringmap.StringMap, registry *feature.Registry, m 
 
 	// No such command!
 	return &model.Command{
-		Type: model.Type_Unrecognized,
+		Type: model.CommandTypeUnrecognized,
 	}, nil
 }

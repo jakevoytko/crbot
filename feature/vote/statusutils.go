@@ -9,7 +9,7 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-// Returns the full status line of an in-progress vote.
+// StatusLine returns the full status line of an in-progress vote.
 func StatusLine(clock model.UTCClock, vote *model.Vote) string {
 	// Add the vote totals.
 	statusStr := statusString(vote)
@@ -29,7 +29,7 @@ func StatusLine(clock model.UTCClock, vote *model.Vote) string {
 	return statusStr + ". " + votesForStr + ", " + votesAgainstStr + ". " + timeString
 }
 
-// Returns the full status line of a concluded vote.
+// CompletedStatusLine generates the full status line of a concluded vote.
 func CompletedStatusLine(vote *model.Vote) string {
 	statusStr := MsgStatusInconclusive
 	switch vote.VoteOutcome {
@@ -71,12 +71,17 @@ func statusString(vote *model.Vote) string {
 }
 
 const (
-	MsgNoTimeRemaining       = "No time remaining in vote"
-	MsgMinutesRemaining      = "%v minutes remaining"
-	MsgSecondsRemaining      = "%v seconds remaining"
+	// MsgNoTimeRemaining prints that there is no time left
+	MsgNoTimeRemaining = "No time remaining in vote"
+	// MsgMinutesRemaining prints the minutes remaining
+	MsgMinutesRemaining = "%v minutes remaining"
+	// MsgSecondsRemaining prints the seconds remaining
+	MsgSecondsRemaining = "%v seconds remaining"
+	// MsgMillisecondsRemaining is a time output for a few milliseconds remaining
 	MsgMillisecondsRemaining = "%v milliseconds remaining"
 )
 
+// TimeString generates a user-readable string for the duration calculated from input
 func TimeString(clock model.UTCClock, timestampEnd time.Time) string {
 	currentTime := clock.Now()
 	remaining := timestampEnd.Sub(currentTime)
@@ -103,7 +108,7 @@ func TimeString(clock model.UTCClock, timestampEnd time.Time) string {
 	return timeString
 }
 
-// Iterates through active vote pointers to see if any require timers to be
+// HandleVotesOnInitialLoad iterates through active vote pointers to see if any require timers to be
 // re-fired.
 func HandleVotesOnInitialLoad(s api.DiscordSession, modelHelper *ModelHelper, clock model.UTCClock, timer model.UTCTimer, commandChannel chan<- *model.Command) error {
 	votes, err := modelHelper.MostRecentVotes()
@@ -119,7 +124,7 @@ func HandleVotesOnInitialLoad(s api.DiscordSession, modelHelper *ModelHelper, cl
 		if vote.VoteOutcome == model.VoteOutcomeNotDone {
 			timer.ExecuteAfter(vote.TimestampEnd.Sub(now), func() {
 				commandChannel <- &model.Command{
-					Type:      model.Type_VoteConclude,
+					Type:      model.CommandTypeVoteConclude,
 					ChannelID: vote.ChannelID,
 				}
 			})
