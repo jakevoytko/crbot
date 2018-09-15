@@ -51,7 +51,7 @@ func (e *RickListInfoExecutor) Execute(s api.DiscordSession, channel model.Snowf
 		ricklistedFormat := ricklisted.Format()
 		user, err := s.User(ricklistedFormat)
 		if err != nil {
-			log.Info(fmt.Sprintf("Unable to get info for user %s", ricklisted), err)
+			log.Info(fmt.Sprintf("Unable to get info for user %v", ricklisted), err)
 			users = append(users, ricklistedFormat)
 			continue
 		}
