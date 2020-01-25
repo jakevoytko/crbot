@@ -3,8 +3,9 @@ package karmalist
 import (
 	"bytes"
 	"sort"
+	"strconv"
+	"math"
 	"fmt"
-	//"strings"
 
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
@@ -14,12 +15,10 @@ import (
 )
 
 const (
-	// MsgGistAddress is a user-visible string announcing the url of the gist
-	MsgGistAddress = "The list of karma is here"
-	// MsgListBuiltins is a user-visible header for the list of builtins
+	// MsgGistAddress is a user-visible string announcing the url of the hastebin
+	MsgGistAddress = "The list of karma is here:"
+	// MsgListKarma is a user-visible header for the list of Karma'd things
 	MsgListKarma = "Ahoy! Thar be karma below!"
-	// MsgListCustom is a user-visible header for the list of learned commands
-	MsgListCustom = "List of learned commands:"
 )
 
 // Executor uploads all command keys to hastebin and returns the url to the user
@@ -33,7 +32,7 @@ type Executor struct {
 func NewExecutor(featureRegistry *feature.Registry, karmaMap stringmap.StringMap, gist api.Gist) *Executor {
 	return &Executor{
 		featureRegistry: featureRegistry,
-		karmaMap:      karmaMap,
+		karmaMap:        karmaMap,
 		gist:            gist,
 	}
 }
@@ -50,28 +49,34 @@ func (e *Executor) PublicOnly() bool {
 
 // Execute uploads the command list to github and pings the gist link in chat.
 func (e *Executor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
-
 	all, err := e.karmaMap.GetAll()
 	if err != nil {
-		log.Fatal("Error reading all karma", err)
+		log.Fatal("Error reading all the karma", err)
 	}
-	// https://stackoverflow.com/questions/42629541/go-lang-sort-a-2d-array
-	custom := make([]string, 0, len(all))
-	for name, kcnt := range all {
-		combo := name + ": " + kcnt
-		custom = append(custom, combo)
+
+	type sortableKarma struct {
+		displayKarma   string
+		absKarma int
 	}
-	sort.Strings(custom)
+	var karmaStore []sortableKarma
+
+	for k, v := range all {
+			displayKarma := k + ": " + v
+			floatKarma, _ := strconv.ParseFloat(v, 32)
+			absKarma := int(math.Abs(floatKarma))
+			karmaStore = append(karmaStore, sortableKarma{displayKarma, absKarma})
+	}
+
+	sort.Slice(karmaStore, func(i, j int) bool {
+			return karmaStore[i].absKarma > karmaStore[j].absKarma
+	})
+
 	var buffer bytes.Buffer
-	// buffer.WriteString(strings.Join(all, ","))
 	buffer.WriteString(MsgListKarma)
 	buffer.WriteString("\n")
-	for _, name := range custom {
-		buffer.WriteString(name)
-		fmt.Printf("%s\n", name )
-		// if strings.Contains(all[name], "$1") {
-		buffer.WriteString("\n")
-		// }
+	for _, kv := range karmaStore {
+		buffer.WriteString(kv.displayKarma)
+		fmt.Printf("%s\n", kv.displayKarma)
 		buffer.WriteString("\n")
 	}
 /*
