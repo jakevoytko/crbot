@@ -11,6 +11,7 @@ import (
 	"github.com/jakevoytko/crbot/feature/factsphere"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/karma"
+	"github.com/jakevoytko/crbot/feature/karmalist"
 	"github.com/jakevoytko/crbot/feature/learn"
 	"github.com/jakevoytko/crbot/feature/list"
 	"github.com/jakevoytko/crbot/feature/moderation"
@@ -40,6 +41,7 @@ func InitializeRegistry(
 		factsphere.NewFeature(featureRegistry),
 		help.NewFeature(featureRegistry),
 		karma.NewFeature(featureRegistry, karmaMap),
+		karmalist.NewFeature(featureRegistry, karmaMap, gist),
 		learn.NewFeature(featureRegistry, commandMap),
 		list.NewFeature(featureRegistry, commandMap, gist),
 		moderation.NewFeature(featureRegistry, config),

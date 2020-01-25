@@ -12,6 +12,7 @@ const (
 	CommandTypeFactSphere
 	CommandTypeHelp
 	CommandTypeKarma
+	CommandTypeKarmaList
 	CommandTypeLearn
 	CommandTypeList
 	CommandTypeNone
@@ -28,6 +29,7 @@ const (
 	CommandNameHelp           = "?help"
 	CommandNameKarmaIncrement = "?++"
 	CommandNameKarmaDecrement = "?--"
+	CommandNameKarmaList      = "?karmalist"
 	CommandNameLearn          = "?learn"
 	CommandNameList           = "?list"
 	CommandNameRickListInfo   = "?ricklist"
