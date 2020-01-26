@@ -4,10 +4,10 @@ go_library(
     name = "go_default_library",
     srcs = [
         "customexecutor.go",
+        "customlearnexecutor.go",
+        "customlearnparser.go",
         "customparser.go",
         "feature.go",
-        "learnexecutor.go",
-        "learnparser.go",
         "unlearnexecutor.go",
         "unlearnparser.go",
     ],

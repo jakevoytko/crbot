@@ -3,9 +3,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "executor.go",
         "feature.go",
-        "listexecutor.go",
-        "listparser.go",
+        "parser.go",
     ],
     importpath = "github.com/jakevoytko/crbot/feature/list",
     visibility = ["//visibility:public"],
