@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strconv"
 	"math"
-	"fmt"
 
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/feature"
@@ -76,7 +75,6 @@ func (e *Executor) Execute(s api.DiscordSession, channel model.Snowflake, comman
 	buffer.WriteString("\n")
 	for _, kv := range karmaStore {
 		buffer.WriteString(kv.displayKarma)
-		fmt.Printf("%s\n", kv.displayKarma)
 		buffer.WriteString("\n")
 	}
 
