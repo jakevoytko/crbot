@@ -3,9 +3,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "feature.go",
-        "listexecutor.go",
-        "listparser.go",
+        "karmalistexecutor.go",
+        "karmalistfeature.go",
+        "karmalistparser.go",
     ],
     importpath = "github.com/jakevoytko/crbot/feature/karmalist",
     visibility = ["//visibility:public"],
