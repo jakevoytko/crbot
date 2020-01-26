@@ -413,7 +413,7 @@ func (r *Runner) SendKarmaListMessage(channel model.Snowflake) {
 	assertNewMessages(r.T, r.DiscordSession, []*Message{NewMessage(channel.Format(), "The list of karma is here: https://www.example.com/success")})
 	if r.GistsCount > 0 {
 		var buffer bytes.Buffer
-		buffer.WriteString("Ahoy! Thar be karma below!")
+		buffer.WriteString("Karma targets listed by intensity:")
 		buffer.WriteString("\n")
 		buffer.WriteString("Testing: 1")
 		buffer.WriteString("\n")
