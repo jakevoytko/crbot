@@ -16,7 +16,7 @@ import (
 
 const (
 	// MsgGistAddress is a user-visible string announcing the url of the hastebin
-	MsgGistAddress = "The list of karma is here:"
+	MsgGistAddress = "The list of karma is here"
 	// MsgListKarma is a user-visible header for the list of Karma'd things
 	MsgListKarma = "Ahoy! Thar be karma below!"
 )
@@ -79,12 +79,12 @@ func (e *Executor) Execute(s api.DiscordSession, channel model.Snowflake, comman
 		fmt.Printf("%s\n", kv.displayKarma)
 		buffer.WriteString("\n")
 	}
-/*
+
 	url, err := e.gist.Upload(buffer.String())
 	if err != nil {
 		s.ChannelMessageSend(channel.Format(), err.Error())
 		return
 	}
 	s.ChannelMessageSend(channel.Format(), MsgGistAddress+": "+url)
-	*/
+
 }
