@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
@@ -15,25 +14,32 @@ import (
 // before it is sent to the Gist api. Currently the only transformation is
 // sorting by magnitude. Future enhancements could be only showing hated or
 // loved things. Karma would need an overhaul to list users vs other since users
-// are stored by Discord username with no designation
+// are stored by plain text Discord username with no differentiation
 type ModelHelper struct {
-	StringMap stringmap.StringMap
-	gist      api.Gist
+	KarmaMap stringmap.StringMap
 }
 
 // NewModelHelper works as advertised.
-// I have no idea why I'm bothering to take arguments or return anything here.
-func NewModelHelper(stringMap stringmap.StringMap, gist api.Gist) *ModelHelper {
+func NewModelHelper(stringMap stringmap.StringMap) *ModelHelper {
 	return &ModelHelper{
-		StringMap: stringMap,
-		gist:      gist,
+		KarmaMap: stringMap,
 	}
 }
 
-func (h *ModelHelper) GetGistUrl(karmaMap stringmap.StringMap) (string, error) {
-	all, err := karmaMap.GetAll()
+const (
+	// Error string for when the Karma map fails
+	MsgKarmaMapFailed = "Error reading all the karma"
+	// Error string for when karma hasn't been stored yet.
+	MsgNoKarma = "Nothing has accumulated karma."
+)
+
+func (h *ModelHelper) GenerateList() string {
+	all, err := h.KarmaMap.GetAll()
 	if err != nil {
-		log.Fatal("Error reading all the karma", err)
+		log.Fatal(MsgKarmaMapFailed, err)
+	}
+	if len(all) <= 0 {
+		return MsgNoKarma
 	}
 
 	type sortableKarma struct {
@@ -61,5 +67,6 @@ func (h *ModelHelper) GetGistUrl(karmaMap stringmap.StringMap) (string, error) {
 		buffer.WriteString(kv.displayKarma)
 		buffer.WriteString("\n")
 	}
-	return h.gist.Upload(buffer.String())
+
+	return buffer.String()
 }

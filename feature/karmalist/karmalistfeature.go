@@ -19,7 +19,7 @@ func NewFeature(featureRegistry *feature.Registry, karmaMap stringmap.StringMap,
 	return &Feature{
 		featureRegistry: featureRegistry,
 		karmaMap:        karmaMap,
-		modelHelper:     NewModelHelper(karmaMap, gist),
+		modelHelper:     NewModelHelper(karmaMap),
 		gist:            gist,
 	}
 }

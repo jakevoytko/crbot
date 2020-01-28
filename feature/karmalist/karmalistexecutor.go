@@ -45,7 +45,8 @@ func (e *Executor) PublicOnly() bool {
 
 // Execute uploads the sorted karma list to the gist API and pings the gist link in chat.
 func (e *Executor) Execute(s api.DiscordSession, channel model.Snowflake, command *model.Command) {
-	if url, err := e.modelHelper.GetGistUrl(e.karmaMap); err != nil {
+	sortedKarma := e.modelHelper.GenerateList()
+	if url, err := e.gist.Upload(sortedKarma); err != nil {
 		s.ChannelMessageSend(channel.Format(), err.Error())
 		log.Info("Gist API failed", err)
 	} else {

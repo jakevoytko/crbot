@@ -406,18 +406,13 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 // SendKarmaListMessage senda a ?karmalist message to the bot
 func (r *Runner) SendKarmaListMessage(channel model.Snowflake) {
 	r.T.Helper()
-
 	sendMessage(r.DiscordSession, r.Handler, channel, "?karmalist")
 	r.DiscordMessagesCount++
 	r.GistsCount++
 	assertNewMessages(r.T, r.DiscordSession, []*Message{NewMessage(channel.Format(), "The list of karma is here: https://www.example.com/success")})
 	if r.GistsCount > 0 {
-		var buffer bytes.Buffer
-		buffer.WriteString("Karma targets listed by intensity:")
-		buffer.WriteString("\n")
-		buffer.WriteString("Testing: 1")
-		buffer.WriteString("\n")
-		generated := buffer.String()
+		karmaRunner := karmalist.NewModelHelper(r.KarmaMap)
+		generated := karmaRunner.GenerateList()
 		actual := r.Gist.Messages[len(r.Gist.Messages)-1]
 		if generated != actual {
 			r.T.Fatalf(fmt.Sprintf("Gist failure, got `%v` expected `%v`", actual, generated))
