@@ -6,22 +6,20 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
-// Feature is a Feature that lists commands that are available.
+// Feature is a Feature that lists karma on the crbot instance
 type Feature struct {
 	featureRegistry *feature.Registry
-	karmaMap      stringmap.StringMap
+	modelHelper     *ModelHelper
+	karmaMap        stringmap.StringMap
 	gist            api.Gist
 }
 
 // NewFeature returns a new Feature.
-func NewFeature(
-	featureRegistry *feature.Registry,
-	karmaMap stringmap.StringMap,
-	gist api.Gist) *Feature {
-
+func NewFeature(featureRegistry *feature.Registry, karmaMap stringmap.StringMap, gist api.Gist) *Feature {
 	return &Feature{
 		featureRegistry: featureRegistry,
-		karmaMap:      karmaMap,
+		karmaMap:        karmaMap,
+		modelHelper:     NewModelHelper(karmaMap, gist),
 		gist:            gist,
 	}
 }
@@ -41,9 +39,9 @@ func (f *Feature) FallbackParser() feature.Parser {
 	return nil
 }
 
-// Executors returns the list executors.
+// Executors returns the karmalist executors.
 func (f *Feature) Executors() []feature.Executor {
-	return []feature.Executor{NewExecutor(f.featureRegistry, f.karmaMap, f.gist)}
+	return []feature.Executor{NewExecutor(f.featureRegistry, f.karmaMap, f.modelHelper, f.gist)}
 }
 
 // OnInitialLoad does nothing.

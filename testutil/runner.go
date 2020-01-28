@@ -349,7 +349,7 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString(help.MsgHelpHelp)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?karmalist: ")
-		buffer.WriteString(karmalist.MsgHelpKarmaList) ///lkasdflsdafjlksadfj;lkasd;lkfjas;ldfkjasd;fkjasd;fkjasd;fkjasd;fkjas;lfkjasdkflj
+		buffer.WriteString(karmalist.MsgHelpKarmaList)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?learn: ")
 		buffer.WriteString(learn.MsgHelpLearn)

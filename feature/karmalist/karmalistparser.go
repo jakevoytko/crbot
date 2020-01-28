@@ -8,7 +8,7 @@ import (
 	"github.com/jakevoytko/crbot/model"
 )
 
-// Parser parses ?list commands.
+// Parser parses ?karmalist commands.
 type Parser struct{}
 
 // NewParser works as advertised.
@@ -22,7 +22,7 @@ func (p *Parser) GetName() string {
 }
 
 const (
-	// MsgHelpList is the help text for ?list
+	// MsgHelpList is the help text for ?karmalist
 	MsgHelpKarmaList = "Type `?karmalist` to get the URL of a hastebin with all them karma"
 )
 
