@@ -10,14 +10,14 @@ import (
 // Feature allows crbot to record changes in karma
 type Feature struct {
 	featureRegistry *feature.Registry
-	karmaMap        stringmap.StringMap
+	modelHelper     *ModelHelper
 }
 
 // NewFeature returns a new Feature.
 func NewFeature(featureRegistry *feature.Registry, karmaMap stringmap.StringMap) *Feature {
 	return &Feature{
 		featureRegistry: featureRegistry,
-		karmaMap:        karmaMap,
+		modelHelper:     NewModelHelper(karmaMap),
 	}
 }
 
@@ -41,7 +41,7 @@ func (f *Feature) FallbackParser() feature.Parser {
 
 // Executors gets the executors.
 func (f *Feature) Executors() []feature.Executor {
-	return []feature.Executor{NewExecutor(f.karmaMap)}
+	return []feature.Executor{NewExecutor(f.modelHelper)}
 }
 
 // OnInitialLoad does nothing.

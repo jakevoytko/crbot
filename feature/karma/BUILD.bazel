@@ -6,6 +6,7 @@ go_library(
         "feature.go",
         "karmaexecutor.go",
         "karmaparser.go",
+        "modelhelper.go",
     ],
     importpath = "github.com/jakevoytko/crbot/feature/karma",
     visibility = ["//visibility:public"],

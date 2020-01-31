@@ -3,22 +3,20 @@ package karma
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
-	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
 // Executor increments or decrements karma and prints the results to the user.
 type Executor struct {
-	karmaMap stringmap.StringMap
+	modelHelper *ModelHelper
 }
 
 // NewExecutor works as advertised.
-func NewExecutor(karmaMap stringmap.StringMap) *Executor {
-	return &Executor{karmaMap: karmaMap}
+func NewExecutor(modelHelper *ModelHelper) *Executor {
+	return &Executor{modelHelper: modelHelper}
 }
 
 // GetType returns the type of this feature.
@@ -45,33 +43,16 @@ func (e *Executor) Execute(s api.DiscordSession, channelID model.Snowflake, comm
 		log.Fatal("Incorrectly generated karma command", errors.New("wat"))
 	}
 
-	// Get the current value of karma (if it exists) and increment/decrement it
-	currentKarma := 0
-	has, err := e.karmaMap.Has(command.Karma.Target)
-	if err != nil {
-		log.Fatal("Couldn't check if target has karma", err)
-	}
-	if has {
-		currentKarmaStr, err := e.karmaMap.Get(command.Karma.Target)
-		if err != nil {
-			log.Fatal("Couldn't get target's current karma", err)
-		}
-		currentKarma, err = strconv.Atoi(currentKarmaStr)
-		if err != nil {
-			log.Fatal("Invalid karma value", err)
-		}
-	}
-
 	var newKarma int
+	var err error
 	if command.Karma.Increment {
-		newKarma = currentKarma + 1
+		newKarma, err = e.modelHelper.Increment(command.Karma.Target)
 	} else {
-		newKarma = currentKarma - 1
+		newKarma, err = e.modelHelper.Decrement(command.Karma.Target)
 	}
 
-	err = e.karmaMap.Set(command.Karma.Target, strconv.Itoa(newKarma))
 	if err != nil {
-		log.Fatal("Error storing new karma value", err)
+		log.Fatal("Error writing karma storage", err)
 	}
 
 	// Send ack.
