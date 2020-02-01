@@ -17,6 +17,7 @@ import (
 	"github.com/jakevoytko/crbot/feature/factsphere"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/karma"
+	"github.com/jakevoytko/crbot/feature/karmalist"
 	"github.com/jakevoytko/crbot/feature/learn"
 	"github.com/jakevoytko/crbot/feature/list"
 	"github.com/jakevoytko/crbot/feature/moderation"
@@ -347,6 +348,9 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString(" - ?help: ")
 		buffer.WriteString(help.MsgHelpHelp)
 		buffer.WriteString("\n")
+		buffer.WriteString(" - ?karmalist: ")
+		buffer.WriteString(karmalist.MsgHelpKarmaList)
+		buffer.WriteString("\n")
 		buffer.WriteString(" - ?learn: ")
 		buffer.WriteString(learn.MsgHelpLearn)
 		buffer.WriteString("\n")
@@ -390,6 +394,25 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 		}
 
 		generated := buffer.String()
+		actual := r.Gist.Messages[len(r.Gist.Messages)-1]
+		if generated != actual {
+			r.T.Fatalf(fmt.Sprintf("Gist failure, got `%v` expected `%v`", actual, generated))
+		}
+	}
+
+	r.AssertState()
+}
+
+// SendKarmaListMessage senda a ?karmalist message to the bot
+func (r *Runner) SendKarmaListMessage(channel model.Snowflake) {
+	r.T.Helper()
+	sendMessage(r.DiscordSession, r.Handler, channel, "?karmalist")
+	r.DiscordMessagesCount++
+	r.GistsCount++
+	assertNewMessages(r.T, r.DiscordSession, []*Message{NewMessage(channel.Format(), "The list of karma is here: https://www.example.com/success")})
+	if r.GistsCount > 0 {
+		karmaRunner := karmalist.NewModelHelper(r.KarmaMap)
+		generated := karmaRunner.GenerateList()
 		actual := r.Gist.Messages[len(r.Gist.Messages)-1]
 		if generated != actual {
 			r.T.Fatalf(fmt.Sprintf("Gist failure, got `%v` expected `%v`", actual, generated))
