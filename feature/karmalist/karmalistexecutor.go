@@ -12,7 +12,7 @@ const (
 	// MsgGistAddress is a user-visible string announcing the url of the hastebin
 	MsgGistAddress = "The list of karma is here"
 	// MsgListKarma is a user-visible header for the list of Karma'd things
-	MsgListKarma = "Karma targets listed by intensity:"
+	MsgListKarma = "Karma targets listed by Magnitude:"
 )
 
 // Executor uploads sorted karma list to hastebin and returns the url to the user
