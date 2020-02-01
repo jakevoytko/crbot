@@ -56,8 +56,16 @@ func (h *ModelHelper) GenerateList() string {
 		karmaStore = append(karmaStore, sortableKarma{displayKarma, absKarma})
 	}
 
-	sort.Slice(karmaStore, func(i, j int) bool {
-		return karmaStore[i].absKarma > karmaStore[j].absKarma
+	// Sort by karma and then alphabetically so that the same ordering is returned
+	// regardless of the ordering returned from redis
+	sort.SliceStable(karmaStore, func(i, j int) bool {
+		if karmaStore[i].absKarma > karmaStore[j].absKarma {
+			return true
+		} else if karmaStore[i].absKarma < karmaStore[j].absKarma {
+			return false
+		}
+
+		return karmaStore[i].displayKarma > karmaStore[j].displayKarma
 	})
 
 	var buffer bytes.Buffer
