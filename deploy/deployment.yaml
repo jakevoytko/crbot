@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crbot
+  labels:
+    app: crbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crbot
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: crbot
+    spec:
+      containers:
+        - name: crbot
+          image: bazel:crbot_image
+          args:
+            - --filename
+            - /secret.json
+            - --localhost
+            - host.docker.internal
