@@ -1,5 +1,6 @@
 secret.json
 *~
+*.swp
 bazel-*
 *.retry
 .vscode
