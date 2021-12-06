@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/config"
@@ -23,9 +24,10 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 
 func main() {
-	var filename = flag.String("filename", "secret.json", "Filename of configuration json")
-	var localhost = flag.String("localhost", "localhost", "Configurable localhost hostname, to allow for Docker's weirdness on OSX")
+	filename := flag.String("filename", "secret.json", "Filename of configuration json")
+	localhost := flag.String("localhost", "localhost", "Configurable localhost hostname, to allow for Docker's weirdness on OSX")
 
+	ctx := context.TODO()
 	flag.Parse()
 
 	// Parse config.
@@ -40,13 +42,13 @@ func main() {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	if _, err := redisClient.Ping().Result(); err != nil {
+	if _, err := redisClient.Ping(ctx).Result(); err != nil {
 		log.Fatal("Unable to initialize Redis", err)
 	}
 
-	commandMap := stringmap.NewRedisStringMap(redisClient, RedisCommandHash)
-	karmaMap := stringmap.NewRedisStringMap(redisClient, RedisKarmaHash)
-	voteMap := stringmap.NewRedisStringMap(redisClient, RedisVoteHash)
+	commandMap := stringmap.NewRedisStringMap(ctx, redisClient, RedisCommandHash)
+	karmaMap := stringmap.NewRedisStringMap(ctx, redisClient, RedisKarmaHash)
+	voteMap := stringmap.NewRedisStringMap(ctx, redisClient, RedisVoteHash)
 
 	gist := api.NewRemoteHastebin()
 

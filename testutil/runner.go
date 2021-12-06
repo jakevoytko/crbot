@@ -596,7 +596,7 @@ func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, ha
 			Timestamp:       "timestamp",
 			EditedTimestamp: "edited timestamp",
 			MentionRoles:    []string{},
-			Tts:             false,
+			TTS:             false,
 			MentionEveryone: false,
 			Author:          author,
 			Attachments:     []*discordgo.MessageAttachment{},

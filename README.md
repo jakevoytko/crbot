@@ -40,6 +40,10 @@ Running
 
 `go run *.go`
 
+or 
+
+`bazel run :crbot`
+
 You have to run this with a bot account. You can register a bot account for
 free [at the Discord site](https://discordapp.com/developers/docs/intro). Take
 the bot ID that you are given, and
@@ -47,6 +51,11 @@ visit
 [https://discordapp.com/oauth2/authorize?&client_id={$bot_id}](https://discordapp.com/oauth2/authorize?&client_id={bot-id}) in
 your browser, where {$bot_id} is replaced with the bot ID that you are given
 from the Discord developers site.
+
+Maintenance
+-----------
+
+`./update.sh` will do some basic maintenance of the go modules and Bazel dependencies.
 
 Before sending PR
 -------------------

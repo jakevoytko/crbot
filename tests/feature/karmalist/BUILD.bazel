@@ -3,10 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_test")
 go_test(
     name = "go_default_test",
     srcs = [
-    "feature_test.go",
-    "modelhelper_test.go",],
-    deps = ["//testutil:go_default_library",
-    "//feature/karma:go_default_library",
-    "//feature/karmalist:go_default_library",
+        "feature_test.go",
+        "modelhelper_test.go",
+    ],
+    deps = [
+        "//feature/karma:go_default_library",
+        "//feature/karmalist:go_default_library",
+        "//testutil:go_default_library",
     ],
 )

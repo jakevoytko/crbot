@@ -81,7 +81,7 @@ func (s *InMemoryDiscordSession) ChannelMessageSend(channel, message string) (*d
 		Timestamp:       "timestamp",
 		EditedTimestamp: "edited timestamp",
 		MentionRoles:    []string{},
-		Tts:             false,
+		TTS:             false,
 		MentionEveryone: false,
 		Author:          s.author,
 		Attachments:     []*discordgo.MessageAttachment{},
