@@ -22,12 +22,14 @@ type Config struct {
 	RedisDatabase int               `json:"redis_database"`
 }
 
-// SetDefaultConfig sets default values for config params that have them.
-func SetDefaultConfig(config *Config) {
-	config.RedisHost = "localhost"
-	config.RedisPort = 6379
-	config.RedisPassword = ""
-	config.RedisDatabase = 0
+// NewConfig builds a new config and sets default values for config params that have them.
+func NewConfig() Config {
+	return Config{
+		RedisHost:     "localhost",
+		RedisPort:     6379,
+		RedisPassword: "",
+		RedisDatabase: 0,
+	}
 }
 
 // ParseConfig reads the config from the given filename.
@@ -36,8 +38,7 @@ func ParseConfig(filename string) (*Config, error) {
 	if e != nil {
 		return nil, e
 	}
-	var config Config
-	SetDefaultConfig(&config)
+	config := NewConfig()
 	e = json.Unmarshal(f, &config)
 	return &config, e
 }
