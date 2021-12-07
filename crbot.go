@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"strconv"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-redis/redis/v8"
@@ -25,7 +26,6 @@ import (
 
 func main() {
 	filename := flag.String("filename", "secret.json", "Filename of configuration json")
-	localhost := flag.String("localhost", "localhost", "Configurable localhost hostname, to allow for Docker's weirdness on OSX")
 
 	ctx := context.TODO()
 	flag.Parse()
@@ -38,9 +38,10 @@ func main() {
 
 	// Initialize redis.
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     *localhost + ":6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     config.RedisHost + ":" + strconv.Itoa(config.RedisPort),
+		Username: config.RedisUsername,
+		Password: config.RedisPassword,
+		DB:       config.RedisDatabase,
 	})
 	if _, err := redisClient.Ping(ctx).Result(); err != nil {
 		log.Fatal("Unable to initialize Redis", err)
