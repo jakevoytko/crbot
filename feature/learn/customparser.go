@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/aetimmes/discordgo"
 	"github.com/jakevoytko/crbot/log"
 	"github.com/jakevoytko/crbot/model"
 	stringmap "github.com/jakevoytko/go-stringmap"
