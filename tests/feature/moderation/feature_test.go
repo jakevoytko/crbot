@@ -3,7 +3,7 @@ package moderation
 import (
 	"testing"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/aetimmes/discordgo"
 	"github.com/jakevoytko/crbot/feature/help"
 	"github.com/jakevoytko/crbot/feature/moderation"
 	"github.com/jakevoytko/crbot/testutil"

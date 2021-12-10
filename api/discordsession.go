@@ -1,6 +1,6 @@
 package api
 
-import "github.com/bwmarrin/discordgo"
+import "github.com/aetimmes/discordgo"
 
 // DiscordSession is an interface for interacting with Discord within a session
 // message handler.

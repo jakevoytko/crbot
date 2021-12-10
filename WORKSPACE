@@ -35,17 +35,17 @@ gazelle_dependencies()
 # go dependencies
 
 go_repository(
-    name = "com_github_bwmarrin_discordgo",
-    importpath = "github.com/bwmarrin/discordgo",
-    sum = "h1:BzrtTktixGHIu9Tt7dEE6diysEF9HWnXeHuoJEt2fH4=",
-    version = "v0.23.2",
+    name = "com_github_aetimmes_discordgo",
+    importpath = "github.com/aetimmes/discordgo",
+    sum = "h1:4EMElBB+8mMCyNuN3KdciU+4bTJP7I+RSR8TzDyk5xk=",
+    version = "v0.23.3",
 )
 
 go_repository(
     name = "org_golang_x_crypto",
     importpath = "golang.org/x/crypto",
-    sum = "h1:MUP6MR3rJ7Gk9LEia0LP2ytiH6MuCfs7qYz+47jGdD8=",
-    version = "v0.0.0-20211202192323-5770296d904e",
+    sum = "h1:QAqMVf3pSa6eeTsuklijukjXBlj7Es2QQplab+/RbQ4=",
+    version = "v0.0.0-20211209193657-4570a0811e8b",
 )
 
 go_repository(
@@ -250,8 +250,8 @@ go_repository(
 go_repository(
     name = "org_golang_x_sys",
     importpath = "golang.org/x/sys",
-    sum = "h1:FjkYO/PPp4Wi0EAUOVLxePm7qVW4r4ctbWpURyuOD0E=",
-    version = "v0.0.0-20211205182925-97ca703d548d",
+    sum = "h1:P+8mCzuEpyszAT6T42q0sxU+eveBAF/cJ2Kp0x6/8+0=",
+    version = "v0.0.0-20211209171907-798191bca915",
 )
 
 go_repository(

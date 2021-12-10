@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/aetimmes/discordgo"
 	"github.com/go-redis/redis/v8"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"

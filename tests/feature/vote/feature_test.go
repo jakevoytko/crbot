@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/aetimmes/discordgo"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/feature/vote"
 	"github.com/jakevoytko/crbot/testutil"
