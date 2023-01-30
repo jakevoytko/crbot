@@ -22,7 +22,7 @@ func (p *Parser) GetName() string {
 }
 
 const (
-	// MsgHelpList is the help text for ?karmalist
+	// MsgHelpKarmaList is the help text for ?karmalist
 	MsgHelpKarmaList = "Type `?karmalist` to get the URL of a hastebin with all them karma"
 )
 

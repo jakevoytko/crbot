@@ -15,4 +15,5 @@ go_test(
         "@com_github_bwmarrin_discordgo//:go_default_library",
         "@com_github_jakevoytko_go_stringmap//:go_default_library",
     ],
+    timeout = "short",
 )

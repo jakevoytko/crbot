@@ -25,7 +25,7 @@ const (
 func (g *InMemoryGist) Upload(content string) (string, error) {
 	if g.FailNext {
 		g.FailNext = false
-		return "", errors.New("Gist upload failed")
+		return "", errors.New("gist upload failed")
 	}
 
 	g.Messages = append(g.Messages, content)

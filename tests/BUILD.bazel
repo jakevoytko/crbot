@@ -10,4 +10,5 @@ go_test(
         "//feature/list:go_default_library",
         "//testutil:go_default_library",
     ],
+    timeout = "short",
 )

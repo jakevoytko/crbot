@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"errors"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -72,14 +73,15 @@ func NewInMemoryDiscordSession() *InMemoryDiscordSession {
 }
 
 // ChannelMessageSend records a new message delivery.
-func (s *InMemoryDiscordSession) ChannelMessageSend(channel, message string) (*discordgo.Message, error) {
+func (s *InMemoryDiscordSession) ChannelMessageSend(channel string, message string, options ...discordgo.RequestOption) (*discordgo.Message, error) {
 	s.Messages = append(s.Messages, NewMessage(channel, message))
+	editedTimestamp := time.Now()
 	return &discordgo.Message{
 		ID:              "id",
 		ChannelID:       channel,
 		Content:         message,
-		Timestamp:       "timestamp",
-		EditedTimestamp: "edited timestamp",
+		Timestamp:       time.Now().Add(-time.Hour),
+		EditedTimestamp: &editedTimestamp,
 		MentionRoles:    []string{},
 		TTS:             false,
 		MentionEveryone: false,
@@ -93,7 +95,7 @@ func (s *InMemoryDiscordSession) ChannelMessageSend(channel, message string) (*d
 
 // Channel returns the Channel struct of the given channel ID. Can be used to
 // determine attributes such as the channel name, topic, etc.
-func (s *InMemoryDiscordSession) Channel(channelID string) (*discordgo.Channel, error) {
+func (s *InMemoryDiscordSession) Channel(channelID string, options ...discordgo.RequestOption) (*discordgo.Channel, error) {
 	if channel := s.Channels[channelID]; channel != nil {
 		return channel, nil
 	}
@@ -108,7 +110,7 @@ func (s *InMemoryDiscordSession) SetChannel(channel *discordgo.Channel) {
 }
 
 // User returns the user struct of the given user ID.
-func (s *InMemoryDiscordSession) User(userID string) (*discordgo.User, error) {
+func (s *InMemoryDiscordSession) User(userID string, options ...discordgo.RequestOption) (*discordgo.User, error) {
 	if user := s.Users[userID]; user != nil {
 		return user, nil
 	}
