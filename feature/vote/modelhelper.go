@@ -43,16 +43,16 @@ const (
 )
 
 // ErrorOnlyOneVote indicates that a second vote cannot be started
-var ErrorOnlyOneVote = errors.New("Tried to start vote when one is already active")
+var ErrorOnlyOneVote = errors.New("tried to start vote when one is already active")
 
 // ErrorNoVoteActive indicates that the user can't vote if no vote is active
-var ErrorNoVoteActive = errors.New("Cannot vote when there is no active vote")
+var ErrorNoVoteActive = errors.New("cannot vote when there is no active vote")
 
 // ErrorAlreadyVoted indicates that the user can't vote twice
-var ErrorAlreadyVoted = errors.New("User already voted")
+var ErrorAlreadyVoted = errors.New("user already voted")
 
 // ErrorVoteHasOutcome indicates that the application already set the vote outcome, and to give up
-var ErrorVoteHasOutcome = errors.New("Cannot change vote outcome")
+var ErrorVoteHasOutcome = errors.New("cannot change vote outcome")
 
 // IsVoteActive returns whether there is a most-recent, active vote.
 func (h *ModelHelper) IsVoteActive(channelID model.Snowflake) (bool, error) {

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -20,10 +20,10 @@ func NewRemoteHastebin() *RemoteHastebin {
 }
 
 const (
-	msgHastebinPostFail     = "Unable to connect to Hastebin service. Give it a few minutes and try again"
-	msgHastebinResponseFail = "Failure reading response from Hastebin service"
-	msgHastebinStatusCode   = "Failed to upload Hastebin :("
-	msgHastebinURLFail      = "Failed getting url from Hastebin service"
+	msgHastebinPostFail     = "unable to connect to Hastebin service. Give it a few minutes and try again"
+	msgHastebinResponseFail = "failure reading response from Hastebin service"
+	msgHastebinStatusCode   = "failed to upload Hastebin :("
+	msgHastebinURLFail      = "failed getting url from Hastebin service"
 )
 
 // Upload uploads the given string to hastebin and returns the URL of the hastebin on success.
@@ -39,7 +39,7 @@ func (g *RemoteHastebin) Upload(contents string) (string, error) {
 
 	if response.StatusCode != 200 {
 		log.Info("Bad status code", errors.New("Code: "+strconv.Itoa(response.StatusCode)))
-		body, _ := ioutil.ReadAll(response.Body)
+		body, _ := io.ReadAll(response.Body)
 		log.Info("Response body: ", errors.New(string(body)))
 		return "", errors.New(msgHastebinStatusCode)
 	}

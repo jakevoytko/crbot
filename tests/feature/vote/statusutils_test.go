@@ -57,7 +57,7 @@ func TestHandleVotesOnInitialLoad_EmptyMap(t *testing.T) {
 	clock.Advance(vote.VoteDuration)
 
 	select {
-	case _, _ = <-commandChannel:
+	case <-commandChannel:
 		t.Errorf("Channel should have been empty")
 	default:
 	}
@@ -80,7 +80,7 @@ func TestHandleVotesOnInitialLoad_HalfDoneVote(t *testing.T) {
 
 	// Assert the channel is now empty.
 	select {
-	case _, _ = <-commandChannel:
+	case <-commandChannel:
 		t.Errorf("Channel should have been empty")
 	default:
 	}
@@ -104,7 +104,7 @@ func TestHandleVotesOnInitialLoad_HalfDoneVote(t *testing.T) {
 
 	// Assert the channel is now empty.
 	select {
-	case _, _ = <-commandChannel:
+	case <-commandChannel:
 		t.Errorf("Channel should have been empty")
 	default:
 	}
@@ -140,7 +140,7 @@ func TestHandleVotesOnInitialLoad_VoteExpired(t *testing.T) {
 
 	// Assert the channel is now empty.
 	select {
-	case _, _ = <-commandChannel:
+	case <-commandChannel:
 		t.Errorf("Channel should have been empty")
 	default:
 	}
@@ -168,7 +168,7 @@ func TestHandleVotesOnInitialLoad_PreviousExpriedVotesDoNotCauseNewConcludes(t *
 
 	// Assert the channel is now empty.
 	select {
-	case _, _ = <-commandChannel:
+	case <-commandChannel:
 		t.Errorf("Channel should have been empty")
 	default:
 	}

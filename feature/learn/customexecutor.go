@@ -52,7 +52,7 @@ func (e *CustomExecutor) Execute(s api.DiscordSession, channel model.Snowflake, 
 		log.Fatal("Error testing custom feature", err)
 	}
 	if !has {
-		log.Fatal("Accidentally found a mismatched call/response pair", errors.New("Call response mismatch"))
+		log.Fatal("Accidentally found a mismatched call/response pair", errors.New("call response mismatch"))
 	}
 
 	response, err := e.commandMap.Get(command.Custom.Call)

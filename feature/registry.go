@@ -37,7 +37,7 @@ func (r *Registry) Register(feature Feature) error {
 	// Register regular parsers.
 	for _, parser := range feature.Parsers() {
 		if _, ok := r.nameToParser[parser.GetName()]; ok {
-			return fmt.Errorf("Duplicate parser: %v", parser.GetName())
+			return fmt.Errorf("duplicate parser: %v", parser.GetName())
 		}
 		if len(parser.GetName()) > 0 {
 			r.nameToParser[parser.GetName()] = parser
@@ -51,7 +51,7 @@ func (r *Registry) Register(feature Feature) error {
 	// Register fallback parser.
 	if fallback := feature.FallbackParser(); fallback != nil {
 		if r.FallbackParser != nil {
-			return errors.New("More than one fallback parser found")
+			return errors.New("more than one fallback parser found")
 		}
 		r.FallbackParser = feature.FallbackParser()
 	}
@@ -59,7 +59,7 @@ func (r *Registry) Register(feature Feature) error {
 	// Register executors.
 	for _, executor := range feature.Executors() {
 		if _, ok := r.typeToExecutor[executor.GetType()]; ok {
-			return fmt.Errorf("Duplicate executor: %v", executor.GetType())
+			return fmt.Errorf("duplicate executor: %v", executor.GetType())
 		}
 		r.typeToExecutor[executor.GetType()] = executor
 	}
