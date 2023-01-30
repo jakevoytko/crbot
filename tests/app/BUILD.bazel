@@ -4,4 +4,5 @@ go_test(
     name = "go_default_test",
     srcs = ["system_test.go"],
     deps = ["//testutil:go_default_library"],
+    timeout = "short",
 )

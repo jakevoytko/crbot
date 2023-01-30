@@ -1,6 +1,6 @@
 package model
 
-import "github.com/aetimmes/discordgo"
+import "github.com/bwmarrin/discordgo"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constants

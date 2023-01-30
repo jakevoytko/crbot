@@ -10,7 +10,7 @@ import (
 	stringmap "github.com/jakevoytko/go-stringmap"
 )
 
-// Model helper add functions that abstract transformations to the Karma
+// ModelHelper adds functions that abstract transformations to the Karma
 // before it is sent to the Gist api. Currently the only transformation is
 // sorting by magnitude. Future enhancements could be only showing hated or
 // loved things. Karma would need an overhaul to list users vs other since users
@@ -27,12 +27,14 @@ func NewModelHelper(stringMap stringmap.StringMap) *ModelHelper {
 }
 
 const (
-	// Error string for when the Karma map fails
-	MsgKarmaMapFailed = "Error reading all the karma"
-	// Error string for when karma hasn't been stored yet.
-	MsgNoKarma = "Nothing has accumulated karma."
+	// MsgKarmaMapFailed is an error string for when the Karma map fails
+	MsgKarmaMapFailed = "error reading karma map"
+	// MsgNoKarma is an error string for when karma hasn't been stored yet.
+	MsgNoKarma = "nothing has accumulated karma"
 )
 
+// GenerateList returns a string of all the user:karma pairs in the map sorted by
+// magnitude. If there is no karma, it returns an error string.
 func (h *ModelHelper) GenerateList() string {
 	all, err := h.KarmaMap.GetAll()
 	if err != nil {

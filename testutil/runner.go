@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aetimmes/discordgo"
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/config"
@@ -429,7 +429,7 @@ func (r *Runner) SendVoteStatusMessage(channel model.Snowflake) {
 	sendMessage(r.DiscordSession, r.Handler, channel, "?votestatus")
 	r.DiscordMessagesCount++
 
-	activeVote, _ := r.ActiveVoteDataMap[channel]
+	activeVote := r.ActiveVoteDataMap[channel]
 
 	if activeVote == nil {
 		assertNewMessages(r.T, r.DiscordSession, []*Message{NewMessage(channel.Format(), vote.MsgNoActiveVote)})
@@ -588,13 +588,14 @@ func sendMessage(discordSession api.DiscordSession, handler func(api.DiscordSess
 }
 
 func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel model.Snowflake, message string) {
+	editedTimestamp := time.Now()
 	messageCreate := &discordgo.MessageCreate{ // nolint
-		&discordgo.Message{
+		Message: &discordgo.Message{
 			ID:              "messageID",
 			ChannelID:       channel.Format(),
 			Content:         message,
-			Timestamp:       "timestamp",
-			EditedTimestamp: "edited timestamp",
+			Timestamp:       time.Now().Add(-time.Hour),
+			EditedTimestamp: &editedTimestamp,
 			MentionRoles:    []string{},
 			TTS:             false,
 			MentionEveryone: false,
@@ -616,7 +617,7 @@ func flushChannel(discordSession api.DiscordSession, handler func(api.DiscordSes
 	// correct. Otherwise, processing would happen asynchronously, so it'd be
 	// impossible to assert that the program had behaved correctly.
 	noOp := &discordgo.MessageCreate{
-		&discordgo.Message{
+		Message: &discordgo.Message{
 			Author:    user,
 			ChannelID: channel.Format(),
 			Content:   "",

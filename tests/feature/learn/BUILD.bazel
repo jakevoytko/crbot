@@ -7,4 +7,5 @@ go_test(
         "//feature/learn:go_default_library",
         "//testutil:go_default_library",
     ],
+    timeout = "short",
 )

@@ -1,4 +1,5 @@
 secret.json
+dump.rdb
 *~
 *.swp
 bazel-*
