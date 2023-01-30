@@ -79,7 +79,8 @@ func (e *StatusExecutor) Execute(s api.DiscordSession, channel model.Snowflake, 
 		log.Fatal("Error pulling most recent vote", err)
 	}
 	if vote == nil {
-		log.Fatal("Nil vote found after vote already active", errors.New("Vote should not be null"))
+		log.Fatal("Nil vote found after vote already active", errors.New("vote should not be null"))
+		return
 	}
 
 	// The below creates a string like this:

@@ -589,7 +589,7 @@ func sendMessage(discordSession api.DiscordSession, handler func(api.DiscordSess
 
 func sendMessageAs(author *discordgo.User, discordSession api.DiscordSession, handler func(api.DiscordSession, *discordgo.MessageCreate), channel model.Snowflake, message string) {
 	editedTimestamp := time.Now()
-	messageCreate := &discordgo.MessageCreate{ // nolint
+	messageCreate := &discordgo.MessageCreate{
 		Message: &discordgo.Message{
 			ID:              "messageID",
 			ChannelID:       channel.Format(),

@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 
 	"github.com/jakevoytko/crbot/model"
 )
@@ -34,7 +34,7 @@ func NewConfig() Config {
 
 // ParseConfig reads the config from the given filename.
 func ParseConfig(filename string) (*Config, error) {
-	f, e := ioutil.ReadFile(filename)
+	f, e := os.ReadFile(filename)
 	if e != nil {
 		return nil, e
 	}
