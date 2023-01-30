@@ -3,7 +3,7 @@ package testutil
 import (
 	"errors"
 
-	"github.com/aetimmes/discordgo"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Message encapsulates a channel/message pair.

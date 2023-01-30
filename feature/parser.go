@@ -1,7 +1,7 @@
 package feature
 
 import (
-	"github.com/aetimmes/discordgo"
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/model"
 )
 

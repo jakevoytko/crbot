@@ -25,7 +25,7 @@ go_library(
         "//feature/moderation:go_default_library",
         "//feature/vote:go_default_library",
         "//model:go_default_library",
-        "@com_github_aetimmes_discordgo//:go_default_library",
+        "@com_github_bwmarrin_discordgo//:go_default_library",
         "@com_github_jakevoytko_go_stringmap//:go_default_library",
     ],
 )

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aetimmes/discordgo"
+	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/api"
 	"github.com/jakevoytko/crbot/app"
 	"github.com/jakevoytko/crbot/config"
