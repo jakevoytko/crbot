@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"regexp"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jakevoytko/crbot/model"
@@ -13,21 +12,21 @@ import (
 
 const (
 	// MsgHelpVote is the help text for ?vote
-	MsgHelpVote = "Type `?vote <message>` to call a yes/no vote on the given message. 5 votes must be cast before the vote can pass. The first character of the message must be alphanumeric.\n\nExample: `?vote are pirates better than ninjas?`"
+	MsgHelpVote = "Deprecated. Please use Discord polls."
 )
 
 // StartVoteParser parses ?vote commands.
 type StartVoteParser struct {
 }
 
-// NewStartVoteParser works as advertised.
-func NewStartVoteParser() *StartVoteParser {
+// NewDeprecatedVoteParser works as advertised.
+func NewDeprecatedVoteParser() *StartVoteParser {
 	return &StartVoteParser{}
 }
 
 // GetName returns the named type of this feature.
 func (p *StartVoteParser) GetName() string {
-	return model.CommandNameVote
+	return model.CommandNameVoteDeprecated
 }
 
 // HelpText explains how to use ?vote.
@@ -50,16 +49,12 @@ func (p *StartVoteParser) Parse(splitContent []string, m *discordgo.MessageCreat
 		return &model.Command{
 			Type: model.CommandTypeHelp,
 			Help: &model.HelpData{
-				Command: model.CommandNameVote,
+				Command: model.CommandNameVoteDeprecated,
 			},
 		}, nil
 	}
 
-	message := strings.Join(splitContent[1:], " ")
 	return &model.Command{
 		Type: model.CommandTypeVote,
-		Vote: &model.VoteData{
-			Message: message,
-		},
 	}, nil
 }
