@@ -25,21 +25,17 @@ const (
 	CommandTypeVoteConclude
 	CommandTypeVoteStatus
 
-	CommandNameFactSphere     = "?factsphere"
-	CommandNameHelp           = "?help"
-	CommandNameKarmaIncrement = "?++"
-	CommandNameKarmaDecrement = "?--"
-	CommandNameKarmaList      = "?karmalist"
-	CommandNameLearn          = "?learn"
-	CommandNameList           = "?list"
-	CommandNameRickListInfo   = "?ricklist"
-	CommandNameUnlearn        = "?unlearn"
-	CommandNameVote           = "?vote"
-	CommandNameVoteAgainstF2  = "?f2"
-	CommandNameVoteAgainstNo  = "?no"
-	CommandNameVoteInFavorF1  = "?f1"
-	CommandNameVoteInFavorYes = "?yes"
-	CommandNameVoteStatus     = "?votestatus"
+	CommandNameFactSphere           = "?factsphere"
+	CommandNameHelp                 = "?help"
+	CommandNameKarmaIncrement       = "?++"
+	CommandNameKarmaDecrement       = "?--"
+	CommandNameKarmaList            = "?karmalist"
+	CommandNameLearn                = "?learn"
+	CommandNameList                 = "?list"
+	CommandNameRickListInfo         = "?ricklist"
+	CommandNameUnlearn              = "?unlearn"
+	CommandNameVoteDeprecated       = "?vote"
+	CommandNameVoteStatusDeprecated = "?votestatus"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,5 +99,4 @@ type Command struct {
 	Karma   *KarmaData
 	Learn   *LearnData
 	Unlearn *UnlearnData
-	Vote    *VoteData
 }

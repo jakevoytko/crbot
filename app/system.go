@@ -26,12 +26,8 @@ import (
 func InitializeRegistry(
 	commandMap stringmap.StringMap,
 	karmaMap stringmap.StringMap,
-	voteMap stringmap.StringMap,
 	gist api.Gist,
-	config *config.Config,
-	clock model.UTCClock,
-	timer model.UTCTimer,
-	commandChannel chan<- *model.Command) *feature.Registry {
+	config *config.Config) *feature.Registry {
 
 	// Initializing builtin features.
 	// TODO(jvoytko): investigate the circularity that emerged to see if there's
@@ -45,7 +41,7 @@ func InitializeRegistry(
 		learn.NewFeature(featureRegistry, commandMap),
 		list.NewFeature(featureRegistry, commandMap, gist),
 		moderation.NewFeature(featureRegistry, config),
-		vote.NewFeature(featureRegistry, voteMap, clock, timer, commandChannel),
+		vote.NewFeature(featureRegistry),
 	}
 
 	for _, f := range allFeatures {

@@ -92,7 +92,7 @@ func NewRunner(t *testing.T) *Runner {
 
 	utcTimer := NewFakeUTCTimer()
 
-	registry := app.InitializeRegistry(customMap, karmaMap, voteMap, gist, &config.Config{RickList: rickList}, utcClock, utcTimer, commandChannel)
+	registry := app.InitializeRegistry(customMap, karmaMap, gist, &config.Config{RickList: rickList})
 
 	go app.HandleCommands(registry, discordSession, commandChannel)
 
@@ -122,7 +122,6 @@ func (r *Runner) AssertState() {
 	assertNumCommands(r.T, r.CustomMap, len(r.LearnDataMap))
 	assertNumGists(r.T, r.Gist, r.GistsCount)
 	assertNumDiscordMessages(r.T, r.DiscordSession, r.DiscordMessagesCount)
-	assertVote(r.T, r.UTCClock, r.VoteMap, r.ActiveVoteDataMap)
 
 	// Assert command map state.
 	for _, learn := range r.LearnDataMap {
@@ -172,111 +171,6 @@ func (r *Runner) SendLearnMessage(channel model.Snowflake, message string, learn
 		[]*Message{NewMessage(channel.Format(), fmt.Sprintf(learn.MsgLearnSuccess, learnData.Call))})
 	r.AssertState()
 	r.SendListMessage(channel)
-}
-
-// SendVoteMessageAs sends a ?vote message to the bot as the given user
-func (r *Runner) SendVoteMessageAs(author *discordgo.User, channel model.Snowflake) {
-	r.T.Helper()
-
-	sendMessageAs(author, r.DiscordSession, r.Handler, channel, "?vote a vote has been called")
-	r.DiscordMessagesCount++
-	r.ActiveVoteDataMap[channel] = newVoteData(channel, author, "a vote has been called", r.UTCClock.Now().Add(vote.VoteDuration))
-	assertNewMessages(r.T, r.DiscordSession,
-		[]*Message{NewMessage(channel.Format(), fmt.Sprintf(vote.MsgBroadcastNewVote, author.Mention(), "a vote has been called"))})
-	r.AssertState()
-}
-
-// CastBallotAs casts a ballot as the given user
-func (r *Runner) CastBallotAs(author *discordgo.User, channel model.Snowflake, inFavor bool) {
-	r.T.Helper()
-
-	voteString := "?no"
-	expectedMessage := fmt.Sprintf(vote.MsgVotedAgainst, author.Mention())
-	toAppend := &(r.ActiveVoteDataMap[channel].VotesAgainst)
-	if inFavor {
-		voteString = "?yes"
-		expectedMessage = fmt.Sprintf(vote.MsgVotedInFavor, author.Mention())
-		toAppend = &(r.ActiveVoteDataMap[channel].VotesFor)
-	}
-
-	sendMessageAs(author, r.DiscordSession, r.Handler, channel, voteString)
-
-	// Update internal state.
-	r.DiscordMessagesCount++
-	id, _ := model.ParseSnowflake(author.ID)
-	*toAppend = append(*toAppend, id)
-
-	// Reconstruct the status string and assert internal state.
-	activeVote := r.ActiveVoteDataMap[channel]
-	reconstructedVote := activeVote.Reconstruct()
-
-	assertNewMessages(r.T, r.DiscordSession, []*Message{
-		NewMessage(channel.Format(), expectedMessage+"\n"+vote.StatusLine(r.UTCClock, reconstructedVote)),
-	})
-	r.AssertState()
-}
-
-// CastDuplicateBallotAs casts a ballot as the user and expects no state change as a result
-func (r *Runner) CastDuplicateBallotAs(author *discordgo.User, channel model.Snowflake, inFavor bool) {
-	r.T.Helper()
-
-	voteString := "?no"
-	if inFavor {
-		voteString = "?yes"
-	}
-
-	sendMessageAs(author, r.DiscordSession, r.Handler, channel, voteString)
-
-	// Update internal state.
-	r.DiscordMessagesCount++
-
-	assertNewMessages(r.T, r.DiscordSession, []*Message{
-		NewMessage(channel.Format(), fmt.Sprintf(vote.MsgAlreadyVoted, author.Mention())),
-	})
-	r.AssertState()
-}
-
-// ExpireVote advances the clock enough that the vote expires, and fires the trigger.
-func (r *Runner) ExpireVote(channel model.Snowflake) {
-	r.T.Helper()
-
-	v := r.ActiveVoteDataMap[channel]
-
-	// Calculate the time to elapse to expire the given vote.
-	toElapse := v.TimestampEnd.Sub(r.UTCClock.Now())
-
-	// The UTC clock and UTC timer need to be advanced together.
-	r.UTCClock.Advance(toElapse)
-
-	// Elapse time requires a flush because it can generate the conclude command.
-	r.UTCTimer.ElapseTime(toElapse)
-	flushChannel(r.DiscordSession, r.Handler, channel)
-
-	// Update internal state.
-	r.DiscordMessagesCount++
-
-	// Calculate expected vote outcome.
-	voteOutcome := model.VoteOutcomeNotEnough
-	if len(v.VotesFor)+len(v.VotesAgainst) >= 5 {
-		voteOutcome = model.VoteOutcomeFailed
-		if len(v.VotesFor) > len(v.VotesAgainst) {
-			voteOutcome = model.VoteOutcomePassed
-		}
-	}
-
-	reconstructedVote := v.Reconstruct()
-	reconstructedVote.VoteOutcome = voteOutcome
-	statusLine := vote.CompletedStatusLine(reconstructedVote)
-
-	expectedMessage := fmt.Sprintf(vote.MsgVoteConcluded, v.Author.Mention()) +
-		"\n" +
-		statusLine
-
-	r.ActiveVoteDataMap[channel] = nil
-
-	assertNewMessages(r.T, r.DiscordSession,
-		[]*Message{NewMessage(channel.Format(), expectedMessage)})
-	r.AssertState()
 }
 
 // SendLearnMessageAs sends a ?learn message as the given user
@@ -336,12 +230,6 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString(" - ?--: ")
 		buffer.WriteString(karma.MsgHelpKarmaDecrement)
 		buffer.WriteString("\n")
-		buffer.WriteString(" - ?f1: ")
-		buffer.WriteString(vote.MsgHelpBallotInFavor)
-		buffer.WriteString("\n")
-		buffer.WriteString(" - ?f2: ")
-		buffer.WriteString(vote.MsgHelpBallotAgainst)
-		buffer.WriteString("\n")
 		buffer.WriteString(" - ?factsphere: ")
 		buffer.WriteString(factsphere.MsgHelpFactSphere)
 		buffer.WriteString("\n")
@@ -357,9 +245,6 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString(" - ?list: ")
 		buffer.WriteString(list.MsgHelpList)
 		buffer.WriteString("\n")
-		buffer.WriteString(" - ?no: ")
-		buffer.WriteString(vote.MsgHelpBallotAgainst)
-		buffer.WriteString("\n")
 		buffer.WriteString(" - ?ricklist: ")
 		buffer.WriteString(moderation.MsgHelpRickListInfo)
 		buffer.WriteString("\n")
@@ -367,13 +252,10 @@ func (r *Runner) SendListMessage(channel model.Snowflake) {
 		buffer.WriteString(learn.MsgHelpUnlearn)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?vote: ")
-		buffer.WriteString(vote.MsgHelpVote)
+		buffer.WriteString(vote.MsgHelpStatus)
 		buffer.WriteString("\n")
 		buffer.WriteString(" - ?votestatus: ")
 		buffer.WriteString(vote.MsgHelpStatus)
-		buffer.WriteString("\n")
-		buffer.WriteString(" - ?yes: ")
-		buffer.WriteString(vote.MsgHelpBallotInFavor)
 		buffer.WriteString("\n\n")
 
 		buffer.WriteString("List of learned commands:\n")
@@ -422,59 +304,6 @@ func (r *Runner) SendKarmaListMessage(channel model.Snowflake) {
 	r.AssertState()
 }
 
-// SendVoteStatusMessage sends a vote status message to the bot
-func (r *Runner) SendVoteStatusMessage(channel model.Snowflake) {
-	r.T.Helper()
-
-	sendMessage(r.DiscordSession, r.Handler, channel, "?votestatus")
-	r.DiscordMessagesCount++
-
-	activeVote := r.ActiveVoteDataMap[channel]
-
-	if activeVote == nil {
-		assertNewMessages(r.T, r.DiscordSession, []*Message{NewMessage(channel.Format(), vote.MsgNoActiveVote)})
-	} else {
-		// Calculate the expected status messages.
-		forMessage := vote.MsgOneVoteFor
-		if len(activeVote.VotesFor) != 1 {
-			forMessage = fmt.Sprintf(vote.MsgVotesFor, len(activeVote.VotesFor))
-		}
-		againstMessage := vote.MsgOneVoteAgainst
-		if len(activeVote.VotesAgainst) != 1 {
-			againstMessage = fmt.Sprintf(vote.MsgVotesAgainst, len(r.ActiveVoteDataMap[channel].VotesAgainst))
-		}
-		statusMessage := vote.MsgStatusVotesNeeded
-		if len(activeVote.VotesAgainst)+len(activeVote.VotesFor) >= 5 {
-			if len(activeVote.VotesFor) > len(activeVote.VotesAgainst) {
-				statusMessage = vote.MsgStatusVotePassing
-			} else {
-				statusMessage = vote.MsgStatusVoteFailing
-			}
-		}
-
-		// The time remaining is independently tested, so just assert its presence.
-		timeMessage := vote.TimeString(r.UTCClock, activeVote.TimestampEnd)
-
-		// Build the expected string and assert that it's in the message buffer.
-		var buffer bytes.Buffer
-		buffer.WriteString(fmt.Sprintf(vote.MsgVoteOwner, activeVote.Author.Username))
-		buffer.WriteString(activeVote.Message)
-		buffer.WriteString("\n")
-		buffer.WriteString(vote.MsgSpacer)
-		buffer.WriteString("\n")
-		buffer.WriteString(statusMessage)
-		buffer.WriteString(". ")
-		buffer.WriteString(forMessage)
-		buffer.WriteString(", ")
-		buffer.WriteString(againstMessage)
-		buffer.WriteString(". ")
-		buffer.WriteString(timeMessage)
-		assertNewMessages(r.T, r.DiscordSession, []*Message{NewMessage(channel.Format(), buffer.String())})
-	}
-
-	r.AssertState()
-}
-
 // AddUser adds a user in the test session
 func (r *Runner) AddUser(user *discordgo.User) {
 	r.DiscordSession.Users[user.ID] = user
@@ -515,23 +344,6 @@ func newVoteData(channel model.Snowflake, author *discordgo.User, message string
 	}
 }
 
-// Reconstruct creates a vote.Vote out of the local storage vote. This isn't
-// meant to be a complete reconstruction, but rather all the info necessary for
-// testing (mostly reproducing status lines).
-func (v *VoteData) Reconstruct() *model.Vote {
-	parsedSnowflake, _ := model.ParseSnowflake(v.Author.ID)
-	return model.NewVote(
-		0, /* voteID */
-		v.Channel,
-		parsedSnowflake,
-		v.Message,
-		time.Time{},
-		v.TimestampEnd,
-		v.VotesFor,
-		v.VotesAgainst,
-		model.VoteOutcomeNotDone)
-}
-
 func assertNumCommands(t *testing.T, customMap *stringmap.InMemoryStringMap, count int) {
 	t.Helper()
 
@@ -553,21 +365,6 @@ func assertNumDiscordMessages(t *testing.T, discordSession *InMemoryDiscordSessi
 
 	if len(discordSession.Messages) != count {
 		t.Errorf(fmt.Sprintf("Should have %v discord messages", count))
-	}
-}
-
-func assertVote(t *testing.T, utcClock model.UTCClock, voteMap *stringmap.InMemoryStringMap, activeVoteMap map[model.Snowflake]*VoteData) {
-	t.Helper()
-
-	modelHelper := vote.NewModelHelper(voteMap, utcClock)
-	for channel, vote := range activeVoteMap {
-		ok, _ := modelHelper.IsVoteActive(channel)
-		if vote != nil && !ok {
-			t.Errorf("Expected a vote to be active, but was not")
-		}
-		if vote == nil && ok {
-			t.Errorf("Expected a vote to not be active, but one was")
-		}
 	}
 }
 
