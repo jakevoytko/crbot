@@ -19,12 +19,12 @@ func NewStatusParser() *StatusParser {
 
 // GetName returns the named type.
 func (p *StatusParser) GetName() string {
-	return model.CommandNameVoteStatus
+	return model.CommandNameVoteStatusDeprecated
 }
 
 const (
 	// MsgHelpStatus is the help text for ?votestatus
-	MsgHelpStatus = "Prints the status of the current vote, or a message indicating that no vote is active"
+	MsgHelpStatus = "Deprecated. Please use Discord polls."
 )
 
 // HelpText returns the help text.

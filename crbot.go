@@ -49,7 +49,6 @@ func main() {
 
 	commandMap := stringmap.NewRedisStringMap(ctx, redisClient, RedisCommandHash)
 	karmaMap := stringmap.NewRedisStringMap(ctx, redisClient, RedisKarmaHash)
-	voteMap := stringmap.NewRedisStringMap(ctx, redisClient, RedisVoteHash)
 
 	gist := api.NewRemoteHastebin()
 
@@ -59,23 +58,11 @@ func main() {
 		log.Fatal("Error initializing Discord client library", err)
 	}
 
-	clock := model.NewSystemUTCClock()
-	timer := model.NewSystemUTCTimer()
-
 	// A command channel large enough to process a few commands without needing to
 	// block.
 	commandChannel := make(chan *model.Command, 10)
 
-	featureRegistry := app.InitializeRegistry(
-		commandMap, karmaMap, voteMap, gist, config, clock, timer, commandChannel)
-
-	// Run any initial load handlers up front.
-	for _, fn := range featureRegistry.GetInitialLoadFns() {
-		err := fn(discord)
-		if err != nil {
-			log.Info("Error running initial load function", err)
-		}
-	}
+	featureRegistry := app.InitializeRegistry(commandMap, karmaMap, gist, config)
 
 	go app.HandleCommands(featureRegistry, discord, commandChannel)
 
@@ -104,5 +91,4 @@ func main() {
 const (
 	RedisCommandHash = "crbot-custom-commands"
 	RedisKarmaHash   = "crbot-feature-karma"
-	RedisVoteHash    = "crbot-feature-vote"
 )
