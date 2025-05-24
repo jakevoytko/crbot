@@ -2,5 +2,5 @@
 
 set -eo pipefail
 
-bazel build //...:all
-bazel test //...:all
+go build ./...
+go test ./...

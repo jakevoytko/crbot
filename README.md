@@ -32,17 +32,12 @@ Prerequisites
 ---------------
 
 * Redis instance, standard port, no password, DB 0
-* A bazel build, running at least 0.5.3
 * Add `secret.json` with single key, `bot_token`
 
 Running
 --------
 
 `go run *.go`
-
-or 
-
-`bazel run :crbot`
 
 You have to run this with a bot account. You can register a bot account for
 free [at the Discord site](https://discordapp.com/developers/docs/intro). Take
@@ -55,12 +50,12 @@ from the Discord developers site.
 Maintenance
 -----------
 
-`./update.sh` will do some basic maintenance of the go modules and Bazel dependencies.
+`./update.sh` will do some basic maintenance of the go modules.
 
 Before sending PR
 -------------------
 
-`bazel run :go_default_test` from working directory.
+go test ./...
 
 If your PR adds features, please add tests in system_test.go that cover your new use cases.
 

@@ -2,6 +2,5 @@ secret.json
 dump.rdb
 *~
 *.swp
-bazel-*
 *.retry
 .vscode
